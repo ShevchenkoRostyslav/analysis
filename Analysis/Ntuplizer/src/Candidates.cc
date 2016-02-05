@@ -203,38 +203,6 @@ void Candidates<T>::Kinematics()
                higgs_dau_[n] = true;
          }
       }
-      if (is_patjet_ || is_pfjet_){
-    	  /*
-      JetCorrectorParameters *ResJetPar = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2L3Residual_AK4PFchs.txt");
-      JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L3Absolute_AK4PFchs.txt");
-      JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L2Relative_AK4PFchs.txt");
-      JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters("Summer15_25nsV7_DATA_L1FastJet_AK4PFchs.txt");
-      */
-    	  JetCorrectorParameters *ResJetPar, *L3JetPar, *L2JetPar, *L1JetPar;
-    	  std::string l1file = edm::FileInPath(iConfig.getParameter<std::string> ("L1JEC")).fullPath();
-    	  std::string l2file = edm::FileInPath(iConfig.getParameter<std::string> ("L2JEC")).fullPath();
-    	  std::string l3file = edm::FileInPath(iConfig.getParameter<std::string> ("L3JEC")).fullPath();
-    	  std::string lResfile = edm::FileInPath(iConfig.getParameter<std::string> ("ResJetJEC")).fullPath();
-
-    	  L1JetPar = new JetCorrectorParameters(l1file);
-    	  L2JetPar = new JetCorrectorParameters(l2file);
-    	  L3JetPar = new JetCorrectorParameters(l3file);
-    	  ResJetPar= new JetCorrectorParameters(lResfile);
-
-      std::vector<JetCorrectorParameters> vPar;
-      vPar.push_back(*L1JetPar);
-      vPar.push_back(*L2JetPar);
-      vPar.push_back(*L3JetPar);
-      vPar.push_back(*ResJetPar);
-
-      FactorizedJetCorrector *JetCorrector = new FactorizedJetCorrector(vPar);
-
-      JetCorrector->setJetEta(candidates_[i].eta());
-      JetCorrector->setJetPt(candidates_[i].pt());
-
-      double correction = JetCorrector->getCorrection();
-      std::cout<<correction<<std::endl;
-      }
 
       pt_[n]  = candidates_[i].pt();
       eta_[n] = candidates_[i].eta();

@@ -19,9 +19,9 @@ for pset in process.GlobalTag.toGet.value():
 process.GlobalTag.RefreshEachRun = cms.untracked.bool( False )
 process.GlobalTag.ReconnectEachRun = cms.untracked.bool( False )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(3000) )
 
-output_file = 'output.root'
+output_file = 'output_miniaod.root'
 ## TFileService
 process.TFileService = cms.Service("TFileService",
 	fileName = cms.string(output_file)
@@ -122,13 +122,13 @@ process.MssmHbb     = cms.EDAnalyzer("Ntuplizer",
     											"HLT_DoubleJetsC100_DoubleBTagCSV0p85_DoublePFJetsC160_v",
     											"HLT_DoubleJetsC112_DoubleBTagCSV0p9_DoublePFJetsC112MaxDeta1p6_v",
     											"HLT_DoubleJetsC112_DoubleBTagCSV0p85_DoublePFJetsC172_v",
-                                    "HLT_DoubleJet90_Double30_TripleBTagCSV0p67_v",
-                                    "HLT_QuadJet45_DoubleBTagCSV0p67_v",
-                                    "HLT_QuadJet45_TripleBTagCSV0p67_v",
-                                    "HLT_QuadPFJet_DoubleBTagCSV_VBF_Mqq200_v",
-                                    "HLT_QuadPFJet_DoubleBTagCSV_VBF_Mqq240_v",
-                                    "HLT_QuadPFJet_SingleBTagCSV_VBF_Mqq460_v",
-                                    "HLT_QuadPFJet_SingleBTagCSV_VBF_Mqq500_v",
+                                    #"HLT_DoubleJet90_Double30_TripleBTagCSV0p67_v",
+                                    #"HLT_QuadJet45_DoubleBTagCSV0p67_v",
+                                    #"HLT_QuadJet45_TripleBTagCSV0p67_v",
+                                    #"HLT_QuadPFJet_DoubleBTagCSV_VBF_Mqq200_v",
+                                    #"HLT_QuadPFJet_DoubleBTagCSV_VBF_Mqq240_v",
+                                    #"HLT_QuadPFJet_SingleBTagCSV_VBF_Mqq460_v",
+                                    #"HLT_QuadPFJet_SingleBTagCSV_VBF_Mqq500_v",
                                    ),
     TriggerObjectStandAlone  = cms.VInputTag(
                                              cms.InputTag("selectedPatTrigger","","PAT"),
@@ -170,14 +170,7 @@ secFiles = cms.untracked.vstring()
 process.source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/0887DF7D-766F-E511-A040-0025905A6136.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/0CD9A7F9-726F-E511-9BB0-0025905A60A6.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/0E2F6212-7A6F-E511-88FB-00261894387C.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/10258F15-7A6F-E511-9633-002590593878.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/14C59C7B-766F-E511-B494-003048FFD7C2.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/187A1DD3-7B6F-E511-A2F0-002590596498.root',
-       '/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/1A46877D-766F-E511-B79A-0025905B8590.root'
+		'/store/data/Run2015D/BTagCSV/MINIAOD/05Oct2015-v1/30000/1A46877D-766F-E511-B79A-0025905B8590.root'
 ] );
 
 

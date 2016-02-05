@@ -8,10 +8,10 @@ int compareJEC(){
 	TTree *miniAOD, *reJec;
 
 	miniAODjecTree -> GetObject("MssmHbb/Events/slimmedJetsPuppi",miniAOD);
-	newJecTree     -> GetObject("MssmHbb/Events/slimmedJetsPuppi",reJec);
+	newJecTree     -> GetObject("MssmHbb/Events/patJetsReapplyJEC",reJec);
 
-	miniAOD->Draw("pt[0]>>oldJecTH");
-	reJec->Draw("pt[0]>>newJecTH","","E same");
+	miniAOD->Draw("e[0]>>oldJecTH");
+	reJec->Draw("e[0]>>newJecTH","","E same");
 
 	return 0;
 }

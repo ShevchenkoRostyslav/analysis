@@ -19,7 +19,7 @@ for pset in process.GlobalTag.toGet.value():
 process.GlobalTag.RefreshEachRun = cms.untracked.bool( False )
 process.GlobalTag.ReconnectEachRun = cms.untracked.bool( False )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(3000) )
 
 output_file = 'output_new_jec.root'
 ## TFileService
@@ -65,29 +65,59 @@ process.primaryVertexFilter = cms.EDFilter("VertexSelector",
 )
 
 ## ============ NEW JEC ================
+# Load SQL file
 
-# add .txt files with latest JEC
-# Not sure that AK4PFchs should be used. Maybe AK4PFPuppi ???
-L1JEC = cms.string("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_5_2/src/Analysis/Ntuplizer/test/Summer15_25nsV7_DATA_L1FastJet_AK4PFchs.txt");
-L2JEC = cms.string("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_5_2/src/Analysis/Ntuplizer/test/Summer15_25nsV7_DATA_L2Relative_AK4PFchs.txt");
-L3JEC = cms.string("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_5_2/src/Analysis/Ntuplizer/test/Summer15_25nsV7_DATA_L3Absolute_AK4PFchs.txt");
-ResJetJEC = cms.string("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_5_2/src/Analysis/Ntuplizer/test/Summer15_25nsV7_DATA_L2L3Residual_AK4PFchs.txt");
+process.load("CondCore.DBCommon.CondDBCommon_cfi")
+from CondCore.DBCommon.CondDBSetup_cfi import *
+process.jec = cms.ESSource("PoolDBESSource",
+      DBParameters = cms.PSet(
+        messageLevel = cms.untracked.int32(0)
+        ),
+      timetype = cms.string('runnumber'),
+      toGet = cms.VPSet(
+      cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Summer15_25nsV7_DATA_AK4PF'),
+            label  = cms.untracked.string('AK4PF')
+            ),
+      cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Summer15_25nsV7_DATA_AK4PFchs'),
+            label  = cms.untracked.string('AK4PFchs')
+            ),
+      cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string('JetCorrectorParametersCollection_Summer15_25nsV7_DATA_AK4PFPuppi'),
+            label  = cms.untracked.string('AK4PFPuppi')
+            ),
+      ##..................................................
+      ## here you add as many jet types as you need
+      ## note that the tag name is specific for the particular sqlite file 
+      ), 
+      connect = cms.string('sqlite:Summer15_25nsV7_DATA.db')
+     # uncomment above tag lines and this comment to use MC JEC
+     # connect = cms.string('sqlite:Summer12_V7_MC.db')
+)
+## add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+
+#Re-correcting pat::Jets and jets from MiniAOD
 
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
 process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
-                                                                             src = cms.InputTag("slimmedJets"),
-                                                                             levels = ['L1FastJet',
-                                                                                       'L2Relative',
-                                                                                       'L3Absolute'],
-                                                                             payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
+  src = cms.InputTag("slimmedJetsPuppi"),
+  levels = ['L1FastJet', 
+        'L2Relative', 
+        'L3Absolute'],
+  payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
 
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
 process.patJetsReapplyJEC = patJetsUpdated.clone(
-                                                         jetSource = cms.InputTag("slimmedJets"),
-                                                         jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
-                                                         )
+  jetSource = cms.InputTag("slimmedJetsPuppi"),
+  jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
+  )
 
-#process.p = cms.Sequence( process.patJetCorrFactorsReapplyJEC + process. patJetsReapplyJEC )
+#process.p = cms.Sequence( process.patJetCorrFactorsReapplyJEC + process.patJetsReapplyJEC )
 
 ## ============  THE NTUPLIZER!!!  ===============
 process.MssmHbb     = cms.EDAnalyzer("Ntuplizer",
@@ -96,7 +126,7 @@ process.MssmHbb     = cms.EDAnalyzer("Ntuplizer",
     TotalEvents     = cms.InputTag("TotalEvents"),
     FilteredEvents  = cms.InputTag("FilteredEvents"),
     PatJets         = cms.VInputTag(
-                                    cms.InputTag("slimmedJetsPuppi","","PAT"),
+                                    cms.InputTag("patJetsReapplyJEC"),
                                     cms.InputTag("slimmedJetsAK8PFCHSSoftDropPacked","SubJets","PAT")
                                     ), 
     PatMETs         = cms.VInputTag(
@@ -183,9 +213,7 @@ process.p = cms.Path(
                       process.TotalEvents *
                       process.primaryVertexFilter *
                       process.triggerSelection * 
-                      process.FilteredEvents *
-                      (process.patJetCorrFactorsReapplyJEC +
-                      process.patJetsReapplyJEC) *
+                      process.FilteredEvents * ( process.patJetCorrFactorsReapplyJEC + process.patJetsReapplyJEC ) *
                       process.MssmHbb
                     )
 
