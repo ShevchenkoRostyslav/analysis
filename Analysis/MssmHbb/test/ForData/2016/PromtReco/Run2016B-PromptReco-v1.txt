@@ -1,0 +1,15 @@
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_15.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_1.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_7.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_2.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_3.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_4.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_14.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_5.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_6.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_10.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_8.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_11.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_13.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_12.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_summer_conferences_2016_v1/BTagCSV/Run2016B-PromptReco-v1/160727_073739/0000/ntuple_9.root

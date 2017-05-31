@@ -1,0 +1,4 @@
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_prompt_2016Hv2v3_v1/BTagCSV/Run2016H-PromptReco-v2/161109_131715/0000/ntuple_102.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_prompt_2016Hv2v3_v1/BTagCSV/Run2016H-PromptReco-v2/161109_131715/0000/ntuple_103.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_prompt_2016Hv2v3_v1/BTagCSV/Run2016H-PromptReco-v2/161109_131715/0000/ntuple_104.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_prompt_2016Hv2v3_v1/BTagCSV/Run2016H-PromptReco-v2/161109_131715/0000/ntuple_105.root
