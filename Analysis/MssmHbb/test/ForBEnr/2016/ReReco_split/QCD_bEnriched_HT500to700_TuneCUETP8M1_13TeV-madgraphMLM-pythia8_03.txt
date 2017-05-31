@@ -1,0 +1,2 @@
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/MC/Moriond17/80x_moriond_2017_tranchiv_v1/QCD_bEnriched_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170105_170747/0000/ntuple_16.root
+/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/MC/Moriond17/80x_moriond_2017_tranchiv_v1/QCD_bEnriched_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170105_170747/0000/ntuple_17.root
