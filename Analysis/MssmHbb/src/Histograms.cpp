@@ -226,6 +226,8 @@ void Histograms::Make(const int &size, const bool & lowM) {
 	histo_["template_eff_pTonl_VIS_up"]			= new TH1D("template_eff_pTonl_VIS_up","",vis_bins,0,xMax);
 	histo_["template_eff_bonl_VIS_down"]		= new TH1D("template_eff_bonl_VIS_down","",vis_bins,0,xMax);
 	histo_["template_eff_bonl_VIS_up"]		= new TH1D("template_eff_bonl_VIS_up","",vis_bins,0,xMax);
+	histo_["template_PDF_VIS_down"]		        = new TH1D("template_PDF_VIS_down","",vis_bins,0,xMax);
+	histo_["template_PDF_VIS_up"]		        = new TH1D("template_PDF_VIS_up","",vis_bins,0,xMax);
 
 //	syst_["Pileup"]
 
@@ -534,7 +536,7 @@ void Histograms::DeclareDataMCHistograms(const int &size){
 
 
 	//Systematic list:
-	std::vector<std::string> Syst = {"_eff_pTonl_","_PU_","_eff_b_","_eff_l_","_scale_j_","_res_j_","_eff_bonl_"};
+	std::vector<std::string> Syst = {"_eff_pTonl_","_PU_","_eff_b_","_eff_l_","_scale_j_","_res_j_","_eff_bonl_", "_PDF_"};
 	//Variation list:
 	std::vector<std::string> Variation = {"up","down"};
 
@@ -595,7 +597,7 @@ std::map<std::string, TH2*>& Histograms::getHisto2D() {
 
 void Histograms::MakeM12Templates(const std::size_t& nbins, const double& xmin, const double& xmax){
 
-	std::array<std::string,15> syst = {{"Mbb","eff_b_down","eff_b_up","eff_l_down","eff_l_up","scale_j_down","scale_j_up","res_j_down","res_j_up","PU_down","PU_up","eff_pTonl_down","eff_pTonl_up","eff_bonl_up","eff_bonl_down"}};
+	std::array<std::string,17> syst = {{"Mbb","eff_b_down","eff_b_up","eff_l_down","eff_l_up","scale_j_down","scale_j_up","res_j_down","res_j_up","PU_down","PU_up","eff_pTonl_down","eff_pTonl_up","eff_bonl_up","eff_bonl_down", "PDF_up", "PDF_down"}};
 	for(const auto& h: syst){
 		std::string name = "template_" + h;
 		if(histo_[name] != nullptr) throw std::invalid_argument("Histogram: " + name + " already exists. Check spelling");

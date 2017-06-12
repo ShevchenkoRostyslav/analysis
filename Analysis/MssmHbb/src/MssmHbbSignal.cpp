@@ -120,6 +120,9 @@ void MssmHbbSignal::fillHistograms(const std::shared_ptr<Collection<Jet> > &offl
 
 			(histo_.getHisto())["template_eff_bonl_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
 			(histo_.getHisto())["template_eff_bonl_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
+			
+			(histo_.getHisto())["template_PDF_up"]->Fill(obj12.M(),weight/weight_["PDF_central"] * weight_["PDF_up"]);
+			(histo_.getHisto())["template_PDF_down"]->Fill(obj12.M(),weight/weight_["PDF_central"] * weight_["PDF_down"]);
 
 			//visualisation
 			(histo_.getHisto())["template_Mbb_VIS"]->Fill(obj12.M(),weight);
@@ -137,6 +140,9 @@ void MssmHbbSignal::fillHistograms(const std::shared_ptr<Collection<Jet> > &offl
 
 			(histo_.getHisto())["template_eff_bonl_VIS_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
 			(histo_.getHisto())["template_eff_bonl_VIS_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
+			
+			(histo_.getHisto())["template_PDF_VIS_up"]->Fill(obj12.M(),weight/weight_["PDF_central"] * weight_["PDF_up"]);
+            (histo_.getHisto())["template_PDF_VIS_down"]->Fill(obj12.M(),weight/weight_["PDF_central"] * weight_["PDF_down"]);
 		}
 	}
 	else if (JESshift_ < 0 && JERshift_ == 0){
