@@ -9,6 +9,9 @@
 #include <chrono>
 #include "Analysis/MssmHbb/interface/JetAnalysisBase.h"
 
+// LHAPDF
+#include "LHAPDF/LHAPDF.h"
+
 using namespace analysis;
 using namespace analysis::tools;
 using namespace analysis::mssmhbb;
