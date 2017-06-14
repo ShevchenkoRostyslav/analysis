@@ -12,6 +12,7 @@
 // LHAPDF
 #include "LHAPDF/LHAPDF.h"
 
+
 using namespace analysis;
 using namespace analysis::tools;
 using namespace analysis::mssmhbb;
@@ -463,6 +464,11 @@ void JetAnalysisBase::applySelection(){
 //            			  	  	   pWeight_->BTagWeight(hCorrections2D_["hRelBTagEff2D"], LeadJet[1].pt(), LeadJet[1].eta());
 //        	  }
 
+				if(signalMC_) {
+					// PDF uncertainty
+					pdfUncertainties(this->genScale(), this->pdf());
+				}
+
 	    }
 //	    weight_["M12"] = pWeight_->M12Weight(*hCorrections1D_["hM12Weight_bbx"],(LeadJet[0].p4() + LeadJet[1].p4()).M());
 
@@ -846,3 +852,30 @@ const double JetAnalysisBase::mHat(){
 	return mHat_;
 }
 
+
+const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analysis::tools::PDF& partons) {
+
+	const LHAPDF::PDFSet set("PDF4LHC15_mc");
+	const size_t nmem = set.size()-1;
+  const std::vector<LHAPDF::PDF*> pdfs = set.mkPDFs();
+
+  std::vector<double> pdf1Vec, pdf2Vec;
+  for (size_t imem = 0; imem <= nmem; imem++) {
+    pdf1Vec.push_back(pdfs[imem]->xfxQ(partons.id.first, partons.x.first, genScale));
+    pdf2Vec.push_back(pdfs[imem]->xfxQ(partons.id.second, partons.x.second, genScale));
+  }
+	std::cout << pdf1Vec[0] << " - " << pdf2Vec[0] << std::endl;
+	double meanValXsec = 0;
+	for (size_t imem = 0; imem <= nmem; imem++) {
+		meanValXsec += pdf1Vec[imem]*pdf2Vec[imem];
+	}
+	meanValXsec /= nmem;
+	double stdDeviation = 0;
+	for (size_t imem = 0; imem <= nmem; imem++) {
+		double diff = (pdf1Vec[imem]*pdf2Vec[imem] - meanValXsec);
+		stdDeviation += diff*diff;
+	}
+	stdDeviation = std::sqrt(stdDeviation/(nmem-1));
+
+
+}
