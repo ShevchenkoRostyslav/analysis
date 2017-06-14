@@ -122,6 +122,9 @@ namespace analysis{
         virtual void combineBTagSFs(const std::array<BTagScaleFactor::ScaleFactor,3>& sf);
         virtual void combineBTagSFs(const std::array< std::vector<BTagScaleFactor::ScaleFactor> , 3 >& sf, const std::vector<double>& lumis, const double& lumi_tot);
 
+				// PDF uncertainties
+				const void pdfUncertainties(const double& genScale, const analysis::tools::PDF& pdf);
+
         void Ht(const double & Ht);
         const double & Ht();
 
