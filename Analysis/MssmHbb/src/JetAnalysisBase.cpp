@@ -854,7 +854,7 @@ const double JetAnalysisBase::mHat(){
 
 const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analysis::tools::PDF& partons) {
 
-	const LHAPDF::PDFSet set("PDF4LHC15_mc");
+	const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
 	const size_t nmem = set.size()-1;
   const std::vector<LHAPDF::PDF*> pdfs = set.mkPDFs();
 
