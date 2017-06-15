@@ -53,14 +53,14 @@ public:
 //	void Initialise();
 
 	void CheckPdfFamily();
-	void GetPdf(const int& degree, const std::string& name);
+	void GetPdf(RooWorkspace & w, const int& degree, const std::string& name);
 
 private:
 
 	void PrintRooFitResults(RooFitResult& r);
-	Chi2Ndf PlotFitResult(const std::string& pdf_name, const std::string& output);
+	Chi2Ndf PlotFitResult(RooWorkspace & w,RooFitResult& roofitresult,const std::string& pdf_name, const std::string& output);
 	double CalculateChi2();
-	void AdjustPDFVars(const int& relative_index = 0);
+	void AdjustPDFVars(RooWorkspace & w,const int& relative_index = 0);
 
 	std::string pdf_family_;
 	std::string obs_name_;

@@ -21,3 +21,4 @@
 <bin name="CreateInput_13TeV" file="CreateInput_13TeV.cc" />
 <bin name="Prob" file="ProbabilityDensityFunctions_test.C" />
 <bin name="FTest"file="../test/FTest_test.cpp" />
+<bin name="FitRewBBnB" file="../test/FitRewBBnB.cpp" />

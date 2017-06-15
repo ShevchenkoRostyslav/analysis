@@ -5,6 +5,7 @@
  *      Author: shevchen
  */
 #include <iostream>
+#include "TSystem.h"
 
 #include "TCanvas.h"
 #include "RooFitResult.h"
@@ -15,8 +16,12 @@
 
 using namespace analysis::backgroundmodel;
 
+std::vector<RooRealVar> GetRooRealVars(RooWorkspace& w, const std::vector<std::string>& names);
+void SetVarsInWorkspace(RooWorkspace &w, const std::vector<RooRealVar>& vars);
+std::vector<std::string> GetRooRealVarNames(RooWorkspace & w);
+
 FTest::FTest(TH1 & data_obs, RooRealVar & observable, const std::string& pdf_family) :
-		pdf_family_(pdf_family), data_name_("data") {
+		pdf_family_(pdf_family), data_name_("data"), workspace_("workspace") {
 	/*
 	 * Constructor from TH1 and RooRealVar observable
 	 */
@@ -27,7 +32,7 @@ FTest::FTest(TH1 & data_obs, RooRealVar & observable, const std::string& pdf_fam
 }
 
 FTest::FTest(RooDataSet & data_obs, RooRealVar & observable, const std::string& pdf_family) :
-		pdf_family_(pdf_family) {
+		pdf_family_(pdf_family), workspace_("workspace") {
 	/*
 	 * Constructor from RooDataSet and RooRealVar observable
 	 */
@@ -38,7 +43,7 @@ FTest::FTest(RooDataSet & data_obs, RooRealVar & observable, const std::string& 
 }
 
 FTest::FTest(TH1 & data_obs, const double& xmin, const double& xmax, const std::string& pdf_family) :
-	pdf_family_(pdf_family), obs_name_("observable"), data_name_("data") {
+	pdf_family_(pdf_family), obs_name_("observable"), data_name_("data"), workspace_("workspace") {
 	/*
 	 * Constructor from TH1 and xmin and xmax of observable
 	 */
@@ -49,7 +54,7 @@ FTest::FTest(TH1 & data_obs, const double& xmin, const double& xmax, const std::
 }
 
 FTest::FTest(RooDataSet & data_obs, const double& xmin, const double& xmax, const std::string& pdf_family) :
-	pdf_family_(pdf_family), obs_name_("observable") {
+	pdf_family_(pdf_family), obs_name_("observable"), workspace_("workspace") {
 	/*
 	 * Constructor from RooDataSet and xmin and xmax of observable
 	 */
@@ -69,22 +74,8 @@ void FTest::PerformFTest(const int& max_degree,const std::string& output_folder,
 
 	CheckPdfFamily();
 	TCanvas can("can","can",800,600);
-
-	auto &data = *GetFromRooWorkspace<RooDataSet>(workspace_, data_name_);
-	auto &x    = *GetFromRooWorkspace<RooRealVar>(workspace_, obs_name_);
-
-//	std::string null_pdf_name = "pdf_null";
-//	int null_degree = 0;
-//	if(pdf_family_.find("bern")!=std::string::npos) null_degree = 1;
-//	GetPdf(null_degree,null_pdf_name);
-//	auto &null_pdf = *GetFromRooWorkspace<RooAbsPdf>(workspace_,null_pdf_name);
-//
-//	auto &fitResult_null = *null_pdf.fitTo(data,RooFit::Save(),RooFit::PrintLevel(0),RooFit::Verbose(0),RooFit::SplitRange(),RooFit::Offset(1));
-//	PrintRooFitResults(fitResult_null);
-//	auto chi2ndf_null = PlotFitResult(null_pdf_name, output_folder + "/NullPdf");
-//
-//	auto chi2_null = chi2ndf_null.chi2;
-//	std::cout<<"chi2_null/ndf = "<<chi2_null/chi2ndf_null.ndf<<std::endl;
+	std::vector<RooRealVar> pdf_vars;
+	std::vector<std::string> pdf_vars_names;
 
 	double chi2_null = 0;
 	int begin_degree = 0;
@@ -94,13 +85,23 @@ void FTest::PerformFTest(const int& max_degree,const std::string& output_folder,
 	//FTest loop - each iteration number of parameters is increasing by 1
 	begin_degree = null_degree;
 	for(int i = null_degree; i < max_degree; ++i){
+
+		RooWorkspace temp_workspace("workspace");
+		temp_workspace.import( *GetFromRooWorkspace<RooRealVar>(workspace_, obs_name_) );
+		temp_workspace.import( *GetFromRooWorkspace<RooDataSet>(workspace_, data_name_) );
+
+		auto &data = *GetFromRooWorkspace<RooDataSet>(temp_workspace, data_name_);
+		auto &x    = *GetFromRooWorkspace<RooRealVar>(temp_workspace, obs_name_);
+
 		std::string pdf_name = "pdf" + std::to_string(i);
-		GetPdf(i,pdf_name);
-		auto &pdf = *workspace_.pdf((pdf_name).c_str());
-		AdjustPDFVars(i - begin_degree);
+		GetPdf(temp_workspace,i,pdf_name);
+		auto &pdf = *temp_workspace.pdf((pdf_name).c_str());
+		if( i != begin_degree) SetVarsInWorkspace(temp_workspace,pdf_vars);//CopyRooRealVars(workspace_,temp_workspace);
+		AdjustPDFVars(temp_workspace, i - begin_degree);
+
 		auto &fitResult = *pdf.fitTo(data,RooFit::Save(),RooFit::PrintLevel(0),RooFit::Verbose(0),RooFit::Minimizer("Minuit2", "migrad"), RooFit::Hesse(1),RooFit::Offset(1));
 		PrintRooFitResults(fitResult);
-		auto chi2ndf = PlotFitResult(pdf_name, output_folder + "/" + pdf_name);
+		auto chi2ndf = PlotFitResult(temp_workspace,fitResult,pdf_name, output_folder + "/" + pdf_name);
 		auto chi2 = chi2ndf.chi2;
 		auto ndf = chi2ndf.ndf;
 		auto minnll = fitResult.minNll();
@@ -117,15 +118,21 @@ void FTest::PerformFTest(const int& max_degree,const std::string& output_folder,
 		chi2_null = chi2;
 		null_degree = i;
 		minnll_null = minnll;
+		std::string workspace_output_path = output_folder + "/" + pdf_name + "/workspace";
+		gSystem->mkdir(workspace_output_path.c_str(), true);
+		pdf.SetName("background");
+		pdf_vars_names = GetRooRealVarNames(temp_workspace);
+		pdf_vars = GetRooRealVars(temp_workspace,pdf_vars_names);
+		temp_workspace.writeToFile( (workspace_output_path + "/FitContainer.root").c_str());
 	}
 }
 
-void FTest::GetPdf(const int& degree, const std::string& name){
+void FTest::GetPdf(RooWorkspace & w, const int& degree, const std::string& name){
 	/*
 	 * Method to get PDF according to
 	 * the choosen pdf_family
 	 */
-	ProbabilityDensityFunctions pdfs(workspace_,obs_name_.c_str(),false);
+	ProbabilityDensityFunctions pdfs(w,obs_name_.c_str(),false);
 	pdfs.setPeakStart(280);
 	pdfs.setPdf(pdf_family_ + "," + std::to_string(degree) , name);
 }
@@ -153,20 +160,34 @@ void FTest::PrintRooFitResults(RooFitResult& r){
 	r.floatParsFinal().Print("v");
 }
 
-Chi2Ndf FTest::PlotFitResult(const std::string& pdf_name, const std::string& output_name){
+Chi2Ndf FTest::PlotFitResult(RooWorkspace & w, RooFitResult& roofitresult, const std::string& pdf_name, const std::string& output_name){
 	/*
 	 * Method to draw fit results
 	 */
 	// Top frame
-	auto &x    = *GetFromRooWorkspace<RooRealVar>(workspace_, obs_name_);
-	auto &data = *GetFromRooWorkspace<RooDataSet>(workspace_, data_name_);
-	auto &pdf  = *GetFromRooWorkspace<RooAbsPdf> (workspace_, pdf_name);
+	auto &x    = *GetFromRooWorkspace<RooRealVar>(w, obs_name_);
+	auto &data = *GetFromRooWorkspace<RooDataSet>(w, data_name_);
+	auto &pdf  = *GetFromRooWorkspace<RooAbsPdf> (w, pdf_name);
 	auto &frame_up = *x.frame();
 	frame_up.SetTitle("");
 
 	//Draw data points and PDF
 	data.plotOn(&frame_up,RooFit::MarkerSize(0.8),RooFit::Name("data"));
-	pdf.plotOn(&frame_up,RooFit::LineColor(kRed),RooFit::Name(pdf_name.c_str()));
+	pdf.plotOn(&frame_up,RooFit::LineColor(kWhite),RooFit::Name(pdf_name.c_str()), RooFit::LineWidth(0.01));
+	pdf.plotOn(&frame_up,
+			RooFit::VisualizeError(roofitresult, 2, true),
+			RooFit::LineColor(kBlue),
+			RooFit::LineStyle(kSolid),
+			RooFit::FillColor(kOrange),
+			RooFit::LineWidth(1.5));
+
+    pdf.plotOn(&frame_up,
+    		RooFit::VisualizeError(roofitresult, 1, true),
+			RooFit::LineColor(kBlue),
+			RooFit::LineStyle(kSolid),
+			RooFit::FillColor(kGreen+1),
+			RooFit::LineWidth(1.5));
+    pdf.plotOn(&frame_up,RooFit::LineColor(kWhite),RooFit::Name(pdf_name.c_str()), RooFit::LineWidth(0.01));
 
 	//Calculate chi2
 	int pdf_nfloatpars = (pdf.getParameters(data)->selectByAttrib("Constant", kFALSE))->getSize();
@@ -275,14 +296,13 @@ std::string FTest::DefineSubrange(){
 	return sub_range;
 }
 
-void FTest::AdjustPDFVars(const int& relative_index){
+void FTest::AdjustPDFVars(RooWorkspace & w, const int& relative_index){
 	/*
 	 * Method to hard code initial parameters
 	 */
 	if( DefineSubrange() == "sr2"){
 		if(pdf_family_ == "superdijetlinearprod"){
 			if(relative_index == 2){
-				std::cout<<"WTF"<<std::endl;
 //				workspace_.var("parc")->setVal(55.75);
 //				std::cout<<"WTF"<<std::endl;
 //				workspace_.var("para_dijet")->setVal(12.42);
@@ -290,84 +310,138 @@ void FTest::AdjustPDFVars(const int& relative_index){
 //				workspace_.var("parb_dijet")->setVal(0.125);
 //				std::cout<<"WTF"<<std::endl;
 //				workspace_.var("par0_dijet")->setVal(0.011);
-				std::cout<<"WTF"<<std::endl;
-				workspace_.var("par1_dijet")->setVal(0.); workspace_.var("par1_dijet")->setMin(-0.001); workspace_.var("par1_dijet")->setMax(0.001);
-				std::cout<<"WTF"<<std::endl;
+				w.var("par1_dijet")->setVal(0.); w.var("par1_dijet")->setMin(-0.001); w.var("par1_dijet")->setMax(0.001);
 			}
 		}
 		else if(pdf_family_ == "supernovosibirsk"){
+			if(relative_index == 0){
+				w.var("peak")->setVal(272.56);
+                                w.var("width")->setVal(52.94);
+                                w.var("tail")->setVal(-0.83);
+			}
 			if(relative_index == 1){
-				workspace_.var("peak")->setVal(299);
-				workspace_.var("width")->setVal(49.5);
-				workspace_.var("tail")->setVal(-0.98);
-				workspace_.var("par0")->setVal(0.0002);
+				w.var("peak")->setVal(299);
+				w.var("width")->setVal(49.5);
+				w.var("tail")->setVal(-0.98);
+				w.var("par0")->setVal(0.0002);
 			}
 			if(relative_index == 2){
-				workspace_.var("par1")->setVal(0);
+				w.var("par1")->setVal(0);
 			}
 		}
 	}
 	else if(DefineSubrange() == "sr1"){
 		if(pdf_family_.find("superdijeteffprod") != std::string::npos){
 			if(relative_index == 0 || relative_index == 1 || relative_index == 2 || relative_index == 3){
-				workspace_.var("para_dijet")->setMin(1);
-				workspace_.var("mean_dijet")->setVal(167.0);
-				workspace_.var("para_dijet")->setVal(11.0);
-				workspace_.var("parb_dijet")->setVal(0.1);
-				if(relative_index == 1) workspace_.var("par0_dijet")->setVal(0.);
+				w.var("para_dijet")->setMin(1);
+				w.var("mean_dijet")->setVal(167.0);
+				w.var("para_dijet")->setVal(11.0);
+				w.var("parb_dijet")->setVal(0.1);
+				if(relative_index == 1) w.var("par0_dijet")->setVal(0.);
 				if(relative_index == 2){
-					workspace_.var("par0_dijet")->setVal(0.15);
-					workspace_.var("par1_dijet")->setVal(0.028);
+					w.var("par0_dijet")->setVal(0.15);
+					w.var("par1_dijet")->setVal(0.028);
 
 				}
 				if(relative_index == 3) {
-					workspace_.var("mean_dijet")->setVal(127.7);
-					workspace_.var("para_dijet")->setVal(2.21);
-					workspace_.var("parb_dijet")->setVal(0.07);
-					workspace_.var("par0_dijet")->setVal(0.156);
-					workspace_.var("par1_dijet")->setVal(0.027);
-					workspace_.var("slope_novoeff")->setVal(0.015);
-					workspace_.var("turnon_novoeff")->setVal(229);
-					workspace_.var("par2_dijet")->setVal(0); workspace_.var("par2_dijet")->setMin(-0.001); workspace_.var("par2_dijet")->setMax(0.001);
+					w.var("mean_dijet")->setVal(127.7);
+					w.var("para_dijet")->setVal(2.21);
+					w.var("parb_dijet")->setVal(0.07);
+					w.var("par0_dijet")->setVal(0.156);
+					w.var("par1_dijet")->setVal(0.027);
+					w.var("slope_novoeff")->setVal(0.015);
+					w.var("turnon_novoeff")->setVal(229);
+					w.var("par2_dijet")->setVal(0); w.var("par2_dijet")->setMin(-0.001); w.var("par2_dijet")->setMax(0.001);
 
 				}
 			}
 		}
 		else if(pdf_family_ == "supernovoeffprod"){
 			if(relative_index == 0){
-				workspace_.var("peak")->setVal(268);
-				workspace_.var("width")->setVal(63);
-				workspace_.var("tail")->setVal(-0.45);
-				workspace_.var("slope_novoeff")->setVal(0.016);
-				workspace_.var("turnon_novoeff")->setVal(223);
+				w.var("peak")->setVal(268);
+				w.var("width")->setVal(63);
+				w.var("tail")->setVal(-0.45);
+				w.var("slope_novoeff")->setVal(0.016);
+				w.var("turnon_novoeff")->setVal(223);
 			}
-			if (relative_index == 1) workspace_.var("par0")->setVal(-0.0006);
+			if (relative_index == 1) w.var("par0")->setVal(-0.0006);
 			if(relative_index == 2){
-				workspace_.var("peak")->setVal(268);
-				workspace_.var("width")->setVal(63);
-				workspace_.var("tail")->setVal(-0.45);
-				workspace_.var("par0")->setVal(-0.0006);
-				workspace_.var("slope_novoeff")->setVal(0.016);
-				workspace_.var("turnon_novoeff")->setVal(223);
-				workspace_.var("par1")->setVal(0.0); workspace_.var("par1")->setMin(-0.001); workspace_.var("par1")->setMax(0.001);
+				w.var("peak")->setVal(268);
+				w.var("width")->setVal(63);
+				w.var("tail")->setVal(-0.45);
+				w.var("par0")->setVal(-0.0006);
+				w.var("slope_novoeff")->setVal(0.016);
+				w.var("turnon_novoeff")->setVal(223);
+				w.var("par1")->setVal(0.0); w.var("par1")->setMin(-0.001); w.var("par1")->setMax(0.001);
 			}
 			if(relative_index == 3){
-				workspace_.var("par1")->setVal(5.15274e-06);
-				workspace_.var("par2")->setVal(-4.37699e-09); workspace_.var("par2")->setMin(-0.001); workspace_.var("par2")->setMax(0.001);
-				workspace_.var("peak")->setVal(257.217); workspace_.var("peak")->setError(0.646384);
-				workspace_.var("width")->setVal(42.5049); workspace_.var("width")->setError(0.312648);
-				workspace_.var("tail")->setVal(-0.108706); workspace_.var("tail")->setError(0.00430771);
-				workspace_.var("par0")->setVal(-0.00276266); workspace_.var("par0")->setError(1.4847e-05);
-				workspace_.var("slope_novoeff")->setVal(0.00399448);
-				workspace_.var("turnon_novoeff")->setVal(556.661);
+				w.var("par1")->setVal(5.15274e-06);
+				w.var("par2")->setVal(-4.37699e-09); w.var("par2")->setMin(-0.001); w.var("par2")->setMax(0.001);
+				w.var("peak")->setVal(257.217); w.var("peak")->setError(0.646384);
+				w.var("width")->setVal(42.5049); w.var("width")->setError(0.312648);
+				w.var("tail")->setVal(-0.108706); w.var("tail")->setError(0.00430771);
+				w.var("par0")->setVal(-0.00276266); w.var("par0")->setError(1.4847e-05);
+				w.var("slope_novoeff")->setVal(0.00399448);
+				w.var("turnon_novoeff")->setVal(556.661);
 			}
 		}
 	}
 	if(pdf_family_.find("supernovosibirsk") != std::string::npos && DefineSubrange() == "sr3" &&
 			relative_index == 0){
-		workspace_.var("peak")->setVal(425);
-		workspace_.var("width")->setVal(60);
-		workspace_.var("tail")->setVal(-0.9);
+		w.var("peak")->setVal(425);
+		w.var("width")->setVal(60);
+		w.var("tail")->setVal(-0.9);
 	}
 
+}
+
+std::vector<RooRealVar> GetRooRealVars(RooWorkspace& w, const std::vector<std::string>& names){
+	/*
+	 * Function to get copies of RooRealVars from the
+	 * Workspace
+	 */
+	std::vector<RooRealVar> v;
+	for(const auto& n : names){
+		RooRealVar var(*w.var(n.c_str()),n.c_str());
+		v.push_back(var);
+	}
+	return v;
+}
+
+void SetVarsInWorkspace(RooWorkspace &w, const std::vector<RooRealVar>& vars){
+	/*
+	 * Function to set vars in the workspace according to vars
+	 */
+	std::cout<<"\nWorkspace content: "<<w.GetName()<<" VARS"<<std::endl;
+	w.Print("v");
+	for(const auto& v : vars){
+		RooRealVar &init = *w.var(v.GetName());
+		init.setVal(v.getValV());
+		init.setError(v.getError());
+		init.setMax(v.getMax());
+		init.setMin(v.getMin());
+		init.Print();
+	}
+}
+
+std::vector<std::string> GetRooRealVarNames(RooWorkspace & w){
+	/*
+	 * Function to get a pair of NAME : DOUBLE & from RooRealVar
+	 *
+	 * To be written in TTree
+	 */
+	std::vector<std::string> par_names;
+	TIterator &s_iter = *w.componentIterator();
+	auto *s_var = s_iter.Next();
+		while(s_var){
+			std::string class_name = s_var->ClassName();
+			std::string name = s_var->GetName();
+			if(class_name == "RooRealVar"){
+				if(name != "mbb" && name != "weight"){
+					par_names.push_back(name);
+				}
+			}
+			s_var = s_iter.Next();
+		}
+		return par_names;
 }

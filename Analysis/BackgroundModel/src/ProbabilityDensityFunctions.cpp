@@ -225,7 +225,7 @@ void ProbabilityDensityFunctions::getSuperDiJet(const std::string& name, const i
 		par1_name += "_" + name;
 		par2_name += "_" + name;
 	}
-	RooRealVar mean = RooRealVar( mean_name.c_str(), "mean", 170.0, 0., 199.0, "GeV");
+	RooRealVar mean = RooRealVar( mean_name.c_str(), "mean", 130.0, 0., 199.0, "GeV"); //170
 	RooRealVar par1 = RooRealVar( par1_name.c_str(), "para", 2.0, 0.0, 50.0);
 	RooRealVar par2 = RooRealVar( par2_name.c_str(), "parb",  0.001, 0.001, 1.0);
 	RooSuperDiJet pdf(name.c_str(),name.c_str(),var,mean,par1,par2,arg_list);
