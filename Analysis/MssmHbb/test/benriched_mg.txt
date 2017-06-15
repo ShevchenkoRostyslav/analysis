@@ -1,8 +1,0 @@
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/QCD_bEnriched_madgraphMLM/QCD_bEnriched_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.txt

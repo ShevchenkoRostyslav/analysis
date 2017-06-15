@@ -1,1 +1,0 @@
-/nfs/dust/cms/user/shevchen/samples/miniaod/2015/76X/76x_summer_conferences_2016_v1/MSSMHbb_Private/SUSYGluGluToBBHToBB_M-500_TuneCUETP8M1_13TeV-pythia8.txt
