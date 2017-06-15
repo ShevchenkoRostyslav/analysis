@@ -43,7 +43,13 @@ JetAnalysisBase::JetAnalysisBase(const std::string & inputFilelist, const double
 		//Define MC type
 		if(findStrings(inputFilelist,"susy")) signalMC_ = true;
 		else signalMC_ = false;
-		if(signalMC_) this->setupXSections();
+		if(signalMC_) {
+			this->setupXSections();
+			// define PDF set to be used
+			const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
+			// get the PDF vector from LHAPDF
+			pdfs = set.mkPDFs();
+		}
 
 		//Add specific to MC trees
 		this->addTree<GenParticle>("GenParticles","MssmHbb/Events/prunedGenParticles");
