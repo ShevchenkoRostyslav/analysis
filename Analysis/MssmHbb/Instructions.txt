@@ -1,0 +1,91 @@
+1. Selection
+
+compile: scram b at /Analysis/MssmHbb/bin/
+macro: /Analysis/MssmHbb/bin/AllInOneTool.cpp - main macro. Has its own help menu that can be studied. Usage: AllInOneTool -h
+Ntuple production: run python script runAnalysis.py to use grid. check runAnalysis.py -h for help menu
+config file for production using grid: /Analysis/MssmHbb/test/config_uni.cfg
+config file for single test/short job: /Analysis/MssmHbb/test/config_signal.cfg
+
+To check/change selection cuts please use constructors of the next classes:
+
+bbH->bb signal selection: /Analysis/MssmHbb/src/MssmHbbSignal.cpp
+qcd double-b selection : /Analysis/MssmHbb/src/selectionDoubleB.cpp
+qcd double-b selection (for Data/MC comparison): /Analysis/MssmHbb/src/DataMcComparison.cpp
+kinematic trigger efficiency: /Analysis/MssmHbb/src/TriggerEfficiency.cc
+bbnb selection: /Analysis/MssmHbb/src/bbx.cpp
+
+2. Data vs MC comparison plots
+
+compile: by root compiler, no need to use scram b
+macro: /Analysis/MssmHbb/data_vs_mc.C
+run: at /Analysis/MssmHbb/ - root data_vs_mc.C
+
+3. Signal Efficiency, sensitivity
+
+compile: by root compiler, no need to use scram b
+macro: /Analysis/MssmHbb/sensitivity/signalEfficiency.C
+run: at /Analysis/MssmHbb/sensitivity/ - root signalEfficiency.C
+
+4. Fisher-test
+
+compile: scram b at Analysis/BackgroundModel
+macro: Analysis/BackgroundModel/test/FTest_test.cpp - main macro to run FTest. Change the input data and pdf to be studied, if needed. Results will be stored automatically. Be sure that folders for this results exist.
+run: at Analysis/BackgroundModel - FTest 
+class: Analysis/BackgroundModel/interface/FTest.h
+
+5. Bias study
+
+compile: scram b at /Analysis/MssmHbb/bin/
+macro: /Analysis/MssmHbb/bin/Bias_study_binned.cpp - check Bias_study_binned -h for a help menu
+run: to run a big production campaign go to /Analysis/MssmHbb/python and modify bias_config.py. Then at /Analysis/MssmHbb/bin/ run python ../python/runBiasTest.py.
+Check job status via qstat. When all jobs are done - run python ../python/Bias_output_merger.py
+
+To make plots of a bias results go to Analysis/MssmHbb/macros/Bias, modify input files and run - root DrawBiasPlots.cpp 
+
+6. Combine tool
+
+To use combine tool one has to setup another CMSSW_7_4_7 release and following instructions from the combination group setup the combine tool there.
+
+- Produce datacards
+data cards for the parametric approach can be produced using /Analysis/MssmHbb/python/mk_parametric_datacards.py .Please change the output folder. To produce mssm
+cards put model = 'mssm'. To add bias term to the data cards, please use basename_of_template = 'bias_parametric_datacard_template.txt'
+
+-run combine tool
+--asymptotic limits
+
+source CMSSW_7_4_7
+go to /Analysis/MssmHbb/python/ change input dir at runAsymptotic.py . run with python runAsymptotic.py
+
+--MLL 
+
+source CMSSW_7_4_7
+go to /Analysis/MssmHbb/python/ change input dir at runMLL.py . run with python runMLL.py . Be sure with configurations!!!!! 
+
+1. Results and Limits
+
+- Model independent
+
+compile: scram b at /Analysis/MssmHbb/bin/
+macro: /Analysis/MssmHbb/test/HbbLimits_test.cpp - plot model independent limits. Change the path2016 string to the actual folder of Hbb.Limits results of the combine tool;
+used class: Analysis/MssmHbb/interface/HbbLimits.h 
+
+- MSSM Limits
+
+compile: scram b at /Analysis/MssmHbb/bin/
+macro: /Analysis/MssmHbb/macros/limits/plotTanBetaLimits.cpp - plot MSSM limtis, comparison of 7+8 and 13 TeV only results, combination of 13 + 8 + 7 TeV if needed.
+used class: Analysis/MssmHbb/interface/HbbLimits.h 
+
+- 2HDM Limits
+
+compile: scram b at /Analysis/MssmHbb/bin/
+--f(mA,tan(beta))
+macro: /Analysis/MssmHbb/macros/limits/Plot2HDM_mA_tanB.cpp - plot 2HDM limits as a function of mA and tan(beta) for particular value of cos(beta-alpha)
+--f(cos(beta-alpha),tan(beta))
+macro: /Analysis/MssmHbb/macros/limits/Plot2HDM_cosBA_tanB.cpp - plot 2HDM limits as a function of cos(beta-alpha) and tan(beta) for particular value of mA
+--2D significance f(cos(beta-alpha),tan(beta))
+macro: /Analysis/MssmHbb/macros/limits/Plot2HDM_2D.cpp - plot 2HDM significance 2D for particular value of mA
+
+- Pre/Post fit mass plots (NOT FINISHED - 3d subrange)
+
+compile: by root compiler, no need to use scram b
+macro: /Analysis/MssmHbb/macros/limits/mass_fit.cpp - plot pre/post fit mass distribution.
