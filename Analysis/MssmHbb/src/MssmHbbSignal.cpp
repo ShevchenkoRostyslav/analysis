@@ -106,55 +106,55 @@ void MssmHbbSignal::fillHistograms(const std::shared_ptr<Collection<Jet> > &offl
 
 		if(signalMC_){
 			(histo_.getHisto())["template_Mbb"]->Fill(obj12.M(),weight);
-			(histo_.getHisto())["template_SFb_up"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_up"]);
-			(histo_.getHisto())["template_SFb_down"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_down"]);
+			(histo_.getHisto())["template_eff_b_up"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_up"]);
+			(histo_.getHisto())["template_eff_b_down"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_down"]);
 
-			(histo_.getHisto())["template_SFl_up"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_up"]);
-			(histo_.getHisto())["template_SFl_down"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_down"]);
+			(histo_.getHisto())["template_eff_l_up"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_up"]);
+			(histo_.getHisto())["template_eff_l_down"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_down"]);
 
 			(histo_.getHisto())["template_PU_up"]->Fill(obj12.M(),weight/weight_["PU_central"] * weight_["PU_up"]);
 			(histo_.getHisto())["template_PU_down"]->Fill(obj12.M(),weight/weight_["PU_central"] * weight_["PU_down"]);
 
-			(histo_.getHisto())["template_PtEff_up"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_up"]);
-			(histo_.getHisto())["template_PtEff_down"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_down"]);
+			(histo_.getHisto())["template_eff_pTonl_up"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_up"]);
+			(histo_.getHisto())["template_eff_pTonl_down"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_down"]);
 
-			(histo_.getHisto())["template_BTagEff_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
-			(histo_.getHisto())["template_BTagEff_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
+			(histo_.getHisto())["template_eff_bonl_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
+			(histo_.getHisto())["template_eff_bonl_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
 
 			//visualisation
 			(histo_.getHisto())["template_Mbb_VIS"]->Fill(obj12.M(),weight);
-			(histo_.getHisto())["template_SFb_VIS_up"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_up"]);
-			(histo_.getHisto())["template_SFb_VIS_down"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_down"]);
+			(histo_.getHisto())["template_eff_b_VIS_up"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_up"]);
+			(histo_.getHisto())["template_eff_b_VIS_down"]->Fill(obj12.M(),weight/weight_["SFb_central"] * weight_["SFb_down"]);
 
-			(histo_.getHisto())["template_SFl_VIS_up"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_up"]);
-			(histo_.getHisto())["template_SFl_VIS_down"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_down"]);
+			(histo_.getHisto())["template_eff_l_VIS_up"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_up"]);
+			(histo_.getHisto())["template_eff_l_VIS_down"]->Fill(obj12.M(),weight/weight_["SFl_central"] * weight_["SFl_down"]);
 
 			(histo_.getHisto())["template_PU_VIS_up"]->Fill(obj12.M(),weight/weight_["PU_central"] * weight_["PU_up"]);
 			(histo_.getHisto())["template_PU_VIS_down"]->Fill(obj12.M(),weight/weight_["PU_central"] * weight_["PU_down"]);
 
-			(histo_.getHisto())["template_PtEff_VIS_up"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_up"]);
-			(histo_.getHisto())["template_PtEff_VIS_down"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_down"]);
+			(histo_.getHisto())["template_eff_pTonl_VIS_up"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_up"]);
+			(histo_.getHisto())["template_eff_pTonl_VIS_down"]->Fill(obj12.M(),weight/weight_["PtEff_central"] * weight_["PtEff_down"]);
 
-			(histo_.getHisto())["template_BTagEff_VIS_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
-			(histo_.getHisto())["template_BTagEff_VIS_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
+			(histo_.getHisto())["template_eff_bonl_VIS_up"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_up"]);
+			(histo_.getHisto())["template_eff_bonl_VIS_down"]->Fill(obj12.M(),weight/weight_["BTagEff_central"] * weight_["BTagEff_down"]);
 		}
 	}
 	else if (JESshift_ < 0 && JERshift_ == 0){
-		(histo_.getHisto())["template_JES_down"]->Fill(obj12.M(),weight);
-		(histo_.getHisto())["template_JES_VIS_down"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_scale_j_down"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_scale_j_VIS_down"]->Fill(obj12.M(),weight);
 	}
 	else if (JESshift_ > 0 && JERshift_ == 0){
-		(histo_.getHisto())["template_JES_up"]->Fill(obj12.M(),weight);
-		(histo_.getHisto())["template_JES_VIS_up"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_scale_j_up"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_scale_j_VIS_up"]->Fill(obj12.M(),weight);
 	}
 	else if (JERshift_ > 0 && JESshift_ == 0){
-		(histo_.getHisto())["template_JER_up"]->Fill(obj12.M(),weight);
-		(histo_.getHisto())["template_JER_VIS_up"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_res_j_up"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_res_j_VIS_up"]->Fill(obj12.M(),weight);
 //		std::cout<<"JERshift: "<<JERshift_<<" Match: "<<jet1.matched(genJets_->name())<<" sf: "<<jet1.JerSfUp()<<" pt: "<<jet1.pt()<<std::endl;
 	}
 	else if (JERshift_ < 0 && JESshift_ == 0){
-		(histo_.getHisto())["template_JER_down"]->Fill(obj12.M(),weight);
-		(histo_.getHisto())["template_JER_VIS_down"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_res_j_down"]->Fill(obj12.M(),weight);
+		(histo_.getHisto())["template_res_j_VIS_down"]->Fill(obj12.M(),weight);
 //		std::cout<<"JERshift: "<<JERshift_<<" Match: "<<jet1.matched(genJets_->name())<<" sf: "<<jet1.JerSfDown()<<" pt: "<<jet1.pt()<<std::endl;
 	}
 //	if(TEST) std::cout<<"I'm out of MssmHbbSignal::fillHistograms"<<std::endl;
@@ -191,6 +191,8 @@ double weight = 1;
 		weight = weight_["PtEff_central"] * weight_["PU_central"] * weight_["SFb_central"] * weight_["SFl_central"];// * weight_["Signal_Shape"];
 		weight *= weight_["BTagEff_central"];
 	}
+//	weight = weight_["PtEff_central"] * weight_["PU_central"];
+//	weight = 1;
 	//std::cout<<" weight = "<<weight<<" "<<weight_["dEta"]<<" "<<weight_["Lumi"]<<" "<<weight_["2DPt"]<<" "<<weight_["BTag"]<<" "<<weight_["PU_central"]<<" "<<weight_["SFb_central"]<<" "<<weight_["SFl_central"]<<std::endl;
 	return weight;
 }
@@ -237,7 +239,6 @@ void MssmHbbSignal::runAnalysis(const std::string &json, const std::string &outp
 	std::cout<<"Total number of events: "<<this->size()<<std::endl;
 	this->makeHistograms(100);
 	makeM12Templates(subranges);
-
 
 	if(signalMC_){
 		for(int i = 0; i < 3 ; ++i){

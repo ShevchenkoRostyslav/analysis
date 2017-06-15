@@ -29,15 +29,15 @@ int main(int argc, char ** argv){
 	//list of the inputs:
 	const string cmsswBase = getenv("CMSSW_BASE");
 	map<int,string> input_signal;
-	input_signal[300] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[350] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[400] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[500] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[600] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[700] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[900] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[1100] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1100_NormToTanB30/workspace/signal_workspace.root";
-	input_signal[1300] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300_NormToTanB30/workspace/signal_workspace.root";
+//	input_signal[300] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300/workspace/signal_workspace.root";
+//	input_signal[350] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350/workspace/signal_workspace.root";
+//	input_signal[400] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400/workspace/signal_workspace.root";
+//	input_signal[500] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500/workspace/signal_workspace_500SR2.root";
+//	input_signal[600] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600/workspace/signal_workspace_600SR1.root";
+//	input_signal[700] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700/workspace/signal_workspace.root";
+//	input_signal[900] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900/workspace/signal_workspace.root";
+	input_signal[1100] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1100/workspace/signal_workspace_1100SR2.root";
+//	input_signal[1300] = cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300/workspace/signal_workspace.root";
 
 	for(const auto& mass : input_signal){
 		addSignalBias(mass.second);
@@ -68,7 +68,7 @@ void addSignalBias(const string& signal_wsp){
 	//get parent directory for signal file
 	fs::path p(signal_wsp.c_str());
 	string signal_dir = p.parent_path().string();
-	string out_path = signal_dir + "/signal_bias_workspace.root";
+	string out_path = signal_dir + "/signal_bias_workspace_1100SR2.root";
 
 	wOut.writeToFile( out_path.c_str());
 	wOut.Print("v");

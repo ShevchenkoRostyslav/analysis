@@ -9,6 +9,7 @@
 <use name="roofit" />
 <use name="Analysis/Tools"/>
 <use name="boost_program_options" />
+<use name="lhapdf"/>
 <export>
   <lib name="1"/>
 </export>

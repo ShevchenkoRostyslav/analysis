@@ -9,6 +9,8 @@
 #include <RooPlot.h>
 
 #include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
+#include "Analysis/MssmHbb/interface/utilLib.h"
+#include "Analysis/Tools/interface/RooFitUtils.h"
 
 using namespace std;
 using namespace RooFit;
@@ -25,24 +27,26 @@ int post_fit_plot(){
 	 * Macro to plot post-fit M_{12} fit
 	 */
 	style.set(PRIVATE);
+	string mass_point = "500";
 
-	TFile *fIn = new TFile( (cmsswBase + "/src/Analysis/MssmHbb/datacards/201702/13/1xBins/mlfit_1.root").c_str(),"READ");
+	TFile *fIn = new TFile( (cmsswBase + "/src/Analysis/MssmHbb/datacards/201705/18/mll/independent/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	//201702/13/1xBins/mlfit_1.root
 	TFile *fBg = new TFile( (cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/background_workspace_TurnOnFix_5000bins.root").c_str(),"READ");
 
 	//Get Histograms
-	TH1F *bg 		= (TH1F*) fIn->Get("shapes_fit_s/bbHTo4b/total_background");	// post-fit BG
-	TH1F *signal 	= (TH1F*) fIn->Get("shapes_fit_s/bbHTo4b/total_signal");		// post-fit Signal
-	TH1F *total 	= (TH1F*) fIn->Get("shapes_fit_s/bbHTo4b/total");				// post-fit Total
-	TH1F *data 		= (TH1F*) getDataHist(*(RooWorkspace*) fBg->Get("workspace"),*bg);
+	TH1F *bg 		= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_background");	// post-fit BG
+	TH1F *signal 	= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_signal"); 	// post-fit Signal
+	TH1F *total 	= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total");			// post-fit Total
+	TH1F *data 		= (TH1F*) getDataHist(*GetFromTFile<RooWorkspace>(*fBg,"workspace"),*bg);
 
 	//Rebin histograms:
 	total->Scale(total->GetBinWidth(10));
 	signal->Scale(signal->GetBinWidth(10));
-	bg->Scale(bg->GetBinWidth(10));
+	bg->Scale(9);
+//	bg->Scale(bg->GetBinWidth(10));
 	total->Rebin(100);
 	signal->Rebin(100);
 	data->Rebin(100);
-	bg->Rebin(100);
+//	bg->Rebin(100);
 
 	draw(data,total,signal,bg);
 
@@ -93,7 +97,7 @@ void draw(TH1F* data, TH1F *total, TH1F *signal, TH1F *bg){
 	/*
 	 * function to draw post-fit plot from histograms
 	 */
-	const double scale_factor = 20;
+	const double scale_factor = 200;
 	TCanvas *can = new TCanvas("can","can",800,600);
 //	style.InitHist(total,"M_{12}, [GeV]","Events",1,0);
 //	style.InitData(total);
@@ -127,7 +131,7 @@ void draw(TH1F* data, TH1F *total, TH1F *signal, TH1F *bg){
 	signal->SetFillColor(2);
 	signal->SetLineColor(2);
 
-	bg->SetFillColor(kBlue-4);
+//	bg->SetFillColor(kBlue-4);
 	bg->SetLineWidth( (Width_t) 1.1);
 	bg->SetLineColor(kBlue-4);
 	bg->Draw("hsame");
@@ -186,8 +190,8 @@ void draw(TH1F* data, TH1F *total, TH1F *signal, TH1F *bg){
 
 
 TH1* getDataHist(RooWorkspace& w, TH1& binning){
-	RooDataHist &dataHist 	= *(RooDataHist*) w.data("data_obs");
-	RooRealVar &mbb			= *(RooRealVar*) w.var("mbb");
-	TH1F *data 		= (TH1F*) dataHist.createHistogram("data_obs",mbb,RooFit::Binning(binning.GetNbinsX(), binning.GetXaxis()->GetXmin(), binning.GetXaxis()->GetXmax()));
+	auto &dataHist 		= *analysis::GetFromRooWorkspace<RooDataHist>(w,"data_obs");
+	auto &mbb			= *analysis::GetFromRooWorkspace<RooRealVar>(w,"mbb");
+	auto *data 			=  static_cast<TH1F*>(dataHist.createHistogram("data_obs",mbb,RooFit::Binning(binning.GetNbinsX(), binning.GetXaxis()->GetXmin(), binning.GetXaxis()->GetXmax())));
 	return data;
 }

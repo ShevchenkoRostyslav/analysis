@@ -59,7 +59,7 @@ int fit_correction(){
    TH1::SetDefaultSumw2();
 
    //Setup Ratio
-   RatioPlots ratio(PRIVATE);
+   RatioPlots ratio(PRELIMINARY);
    ratio.SetRatioRange(0.5,1.5);
    ratio.SetRatioTitle("Data/MC");
 //   ratio.set(PRIVATE);
@@ -247,7 +247,7 @@ int fit_correction(){
   ax_plot->GetXaxis()->SetTitleOffset(1.);
   ax_plot->SetTitle(";p^{(1)}_{T}, [GeV]; #epsilon");
   ax_plot->Draw();
-  TLegend *leg3in1_leg_data = new TLegend(0.5,0.5,0.8,0.8);
+  TLegend *leg3in1_leg_data = new TLegend(0.4,0.4,0.85,0.8);
   lowm_fit_sigmoid2[0]->SetLineColor(1);
   lowm_fit_sigmoid2[0]->Draw("same");
   lowm_fit_sigmoid2[1]->SetLineColor(2);
@@ -267,7 +267,7 @@ int fit_correction(){
 
   TCanvas *can3in1_fits_mc = new TCanvas("can3in1_fits_mc","can3in1_fits in MC",1000,800);
   ax_plot->Draw();
-  TLegend *leg3in1_leg_mc = new TLegend(0.5,0.5,0.7,0.7);
+  TLegend *leg3in1_leg_mc = new TLegend(0.4,0.4,0.85,0.8);
   lowm_fit_sigmoid2_mc[0]->SetLineColor(1);
   lowm_fit_sigmoid2_mc[0]->Draw("same");
   lowm_fit_sigmoid2_mc[1]->SetLineColor(2);
@@ -277,7 +277,7 @@ int fit_correction(){
   lowm_fit_sigmoid2_mc[2]->SetLineStyle(9);
   lowm_fit_sigmoid2_mc[2]->Draw("same");
 
-  leg3in1_leg_mc->SetHeader("QCD, #hat{p_{T}} MC");
+  leg3in1_leg_mc->SetHeader("QCD, #hat{p_{T}} MC             ");
   leg3in1_leg_mc->AddEntry(lowm_fit_sigmoid2_mc[0],"0<|#eta|<0.6","l");
   leg3in1_leg_mc->AddEntry(lowm_fit_sigmoid2_mc[1],"0.6<|#eta|<1.7","l");
   leg3in1_leg_mc->AddEntry(lowm_fit_sigmoid2_mc[2],"1.7<|#eta|<2.2","l");

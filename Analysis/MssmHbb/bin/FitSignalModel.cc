@@ -60,23 +60,23 @@ void setParameters(RooWorkspace& w, const RooWorkspace& central);
 
 int main(int argc, char* argv[]) {
   const auto cmsswBase = static_cast<std::string>(gSystem->Getenv("CMSSW_BASE"));
-  style.set(PRIVATE);
+  style.set(PRELIMINARY);
   gStyle->SetTitleXOffset(1.3);
   gStyle->SetTitleYOffset(1.15);
   gStyle->SetTitleSize(0.04,"XYZ");
 
 	std::map<int,std::string> signal;
-	string selection = "ReReco_35673fb";//"ReReco_36615fb_SFb";//
-	string mssm_normTanB = "_NormToTanB30";
-	signal[300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[350] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[400] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-400_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[500] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-500_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[600] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-600_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[700] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-700_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[900] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-900_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[1100] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1100_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[1300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	string selection = "";//"ReReco_36615fb_SFb";//
+	string mssm_normTanB = "";//"_NormToTanB30";
+	signal[300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[350] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[400] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-400_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[500] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-500_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[600] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-600_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[700] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-700_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[900] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-900_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[1100] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1100_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+	signal[1300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
 /**/
   int rebin = 1;
   const int verbosity = 1;
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   std::string histo_name = "templates/bbH_Mbb_VIS";
   std::string histo_name_240 = "bbH_Mbb";
   //List of shape uncertainties
-  std::vector<std::string> shape_unc = {"JES","JER","PtEff","SFb"};//{};//
+  std::vector<std::string> shape_unc = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};//{};//
   map<string,int> colors;
   colors["Up"] = 4;
   colors["Down"] = 2;
@@ -135,7 +135,8 @@ int main(int argc, char* argv[]) {
 			  std::cout<<"***************"<<syst<<" : "<<s<<"***************"<<std::endl;
 			  std::cout<<"***************************************"<<std::endl;
 
-			  hname = histo_name_240 + "_" + CMS + "_" + syst + "_" + energy + s;
+//			  hname = histo_name_240 + "_" + CMS + "_" + syst + "_" + energy + s;
+			  hname = histo_name_240 + "_" + syst + s;
 //			  hname = "templates/" + histo_name_240 + "_" + CMS + "_" + syst + "_VIS_" + energy + s;
 			  TH1D* hSignal_syst = (TH1D*) f.Get(hname.c_str());
 			  if(hSignal_syst == nullptr) throw std::logic_error("Wrong histo name: " + hname + " has been provided");
@@ -147,7 +148,7 @@ int main(int argc, char* argv[]) {
 			  fit_syst.setModel(ab::FitContainer::Type::signal,model);
 			  RooWorkspace& w = fit_syst.getWorkspace();
 			  setParameters(w,wC);
-          	  if(syst == "JER") {
+          	  if(syst == "CMS_res_j_13TeV") {
           		  if(model == "bukin"){
           			  fixParameters("Xp",w,wC);
           			  fixParameters("rho1",w,wC);
@@ -160,7 +161,7 @@ int main(int argc, char* argv[]) {
           			fixParameters("tail_shift",w,wC);
           		  }
           	  }
-          	  else if (syst == "JES"){
+          	  else if (syst == "CMS_scale_j_13TeV"){
           		  if(model == "bukin"){
           			  fixParameters("sigp",w,wC);
           			  fixParameters("rho1",w,wC);
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]) {
           			  fixShiftParameter(w,wC);
           		  }
           	  }
-          	  else if (syst == "PtEff"){
+          	  else if (syst == "CMS_eff_pTonl_13TeV"){
           		  if(model == "bukin"){
           			fixParameters("sigp",w,wC);
           			fixParameters("Xp",w,wC);
@@ -186,7 +187,7 @@ int main(int argc, char* argv[]) {
           			fixParameters("tail_shift",w,wC);
           		  }
           	  }
-          	  else if (syst == "SFb"){
+          	  else if (syst == "CMS_eff_b_13TeV"){
           		  if(model == "bukin"){
           			  fixParameters("Xp",w,wC);
           			fixParameters("sigp",w,wC);
@@ -199,7 +200,7 @@ int main(int argc, char* argv[]) {
                	std::unique_ptr<RooFitResult> Signalfit_syst = fit_syst.FitSignal(model);
 
                	//Write signal normalisation
-               	TH1D* hSignal_240_syst = (TH1D*) f.Get((histo_name_240 + "_" + CMS + "_" + syst  + "_" + energy + s).c_str());
+               	TH1D* hSignal_240_syst = (TH1D*) f.Get((hname).c_str());
                	RooRealVar signal_norm("signal_norm","signal_norm",hSignal_240_syst->Integral());
                	signal_norm.setConstant(true);
                	fit_syst.Import(signal_norm);

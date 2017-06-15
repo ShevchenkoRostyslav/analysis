@@ -5,6 +5,7 @@
  *      Author: rostyslav
  */
 #include <stdlib.h>
+#include "LHAPDF/LHAPDF.h"
 #include <chrono>
 #include "Analysis/MssmHbb/interface/JetAnalysisBase.h"
 

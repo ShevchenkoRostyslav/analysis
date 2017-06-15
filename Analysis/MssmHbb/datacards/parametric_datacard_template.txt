@@ -4,30 +4,30 @@ kmax *   number of nuisance parameters
 -----------------
 observation OBSERVATION
 -----------------
-shapes bbH_Mbb 	bbHTo4b SIGNAL_SHAPE_WS workspace:signal
+shapes bbHMASS 	bbHTo4b SIGNAL_SHAPE_WS workspace:signal
 shapes QCD_Mbb 	bbHTo4b BG_SHAPE_WS workspace:background
 shapes data_obs bbHTo4b DATA_SHAPE_WS workspace:data_obs
 bin                        bbHTo4b    bbHTo4b
-process                    bbH_Mbb    QCD_Mbb
+process                    bbHMASS    QCD_Mbb
 process                       0          1
 rate                          1          1
 ------------------------------------------------
 # Signal rate uncertainties
-CMS_lumi_13TeV              lnN    1.026   -
-CMS_SFl_13TeV               lnN    OFFLINE_SFL -
-CMS_PU_13TeV                lnN    PILEUP -
-CMS_BTagEff_13TeV           lnN    ONLINE_SFB - 
-CMS_pdfas_model_13TeV       lnN    MODEL_PDFAS -
-CMS_scale_model_13TeV       lnN    MODEL_SCALE -
+lumi_13TeV              lnN    1.026   -   1.026
+CMS_eff_l_13TeV               lnN    OFFLINE_SFL - OFFLINE_SFL
+CMS_PU_13TeV                lnN    PILEUP - PILEUP
+CMS_eff_bonl_13TeV           lnN    ONLINE_SFB - ONLINE_SFB
+pdf_gg       lnN    MODEL_PDFAS - MODEL_PDFAS
+QCDscale       lnN    MODEL_SCALE - MODEL_SCALE
 ------------------------------------------------
 # Background rate uncertainties
 CMS_bkgd_qcd_13TeV rateParam bbHTo4b QCD_Mbb 1 [0.8,1.2]
 -------------------------------------------------
 #signal shape nuisance uncert.
-JES            param 0.0 1.0
-JER            param 0.0 1.0
-PtEff          param 0.0 1.0
-SFb            param 0.0 1.0
+CMS_scale_j_13TeV            param 0.0 1.0
+CMS_res_j_13TeV            param 0.0 1.0
+CMS_eff_pTonl_13TeV          param 0.0 1.0
+CMS_eff_b_13TeV            param 0.0 1.0
 #bg shape nuisance uncert.
 SHAPE_BG1
 SHAPE_BG2
@@ -36,5 +36,5 @@ SHAPE_BG4
 SHAPE_BG5
 SHAPE_BG6
 
-signal group = CMS_lumi_13TeV CMS_SFl_13TeV CMS_PU_13TeV CMS_BTagEff_13TeV JES JER PtEff SFb
+#signal group = lumi_13TeV CMS_eff_l_13TeV CMS_PU_13TeV CMS_eff_bonl_13TeV pdf_gg QCDscale CMS_scale_j_13TeV CMS_res_j_13TeV CMS_eff_pTonl_13TeV CMS_eff_b_13TeV
 #background group = CMS_bkgd_qcd_13TeV

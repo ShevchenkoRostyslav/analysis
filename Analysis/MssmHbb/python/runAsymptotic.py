@@ -37,7 +37,7 @@ def runCombineTool(combine,data_card,m):
 if __name__ == '__main__':
 
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/15/Asymptotic/mssm/Bernstein8_Bias/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/independent/no_bias/1100_SR2/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #if combination of 7+8+13 is performed:
@@ -66,9 +66,15 @@ if __name__ == '__main__':
             if m == '300' and 'Bernstein' in datacard_folder:
                 rMin = '-30'
                 rMax = '30'
-            combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' --minimizerStrategy 0 --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v5' #-t -1 --expectSignal=0 
+            if m == '300':
+                rMin = '-10'
+                rMax = '10'
+            if m == '350':
+                rMax = '20'
+                rMin = '-10'
+            combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' --minimizerStrategy 0 --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v5'# -t -1 --expectSignal=0' 
         else:
-            combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' -v 5' #-t -1 --expectSignal=0 
+            combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' -v 5'# -t -1 --expectSignal=0'
         combine += ' ' + combine_add
         #run combination tool
         runCombineTool(combine,data_card,m)

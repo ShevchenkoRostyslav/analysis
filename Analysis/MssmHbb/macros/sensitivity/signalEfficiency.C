@@ -21,19 +21,19 @@ void signalEfficiency()
    std::map<int,TFile* > inFlowM;
    std::map<int,TFile* > inF2015M;
    std::map<int,TFile* > inFtoComp;
-   std::string samples_name_2016 = "ReReco_35673fb";//"ReReco_PU_test_subrange_presc";//
-   std::string samples_comp		 = "ReReco_36615fb_OnlBTag";
-   std::string samples_name_2015 = "_signalEff_test_SF";//"_signalEff_test";//
+   std::string samples_name_2016 = "";//"ReReco_PU_test_subrange_presc";//
+   std::string samples_comp		 = "efficiency_test_nobtag";
+   std::string samples_name_2015 = "signalEff_test_SF";//"_signalEff_test";//
 
-   inFlowM[300] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[350] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[400] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-400_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[500]		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-500_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[600]		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-600_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[700] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-700_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[900] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-900_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[1100] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1100_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inFlowM[1300] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[300] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[350] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[400] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-400_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[500]		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-500_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[600]		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-600_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[700] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-700_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[900] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-900_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[1100] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1100_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+   inFlowM[1300] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2016 + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
 
    inFtoComp[300] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_comp + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
    inFtoComp[350] 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_comp + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8.root").c_str());
@@ -47,15 +47,15 @@ void signalEfficiency()
 
 //   inF2015M[200] 	= new TFile("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-200_TuneCUETP8M1_13TeV-pythia8.root");
 //   inF2015M[250] 	= new TFile("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal_" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-250_TuneCUETP8M1_13TeV-pythia8.root");
-   inF2015M[300] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inF2015M[350] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-350_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inF2015M[400] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-400_TuneCUETP8M1_13TeV-pythia8.root").c_str());
-   inF2015M[500]	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-500_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
-   inF2015M[600]	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-600_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
-   inF2015M[700] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-700_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
-   inF2015M[900] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-900_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
-   inF2015M[1100] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-1100_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
-   inF2015M[1300] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-1300_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[300] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-300_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+//   inF2015M[350] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-350_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+//   inF2015M[400] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_SUSYGluGluToBBHToBB_M-400_TuneCUETP8M1_13TeV-pythia8.root").c_str());
+//   inF2015M[500]	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-500_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[600]	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-600_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[700] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-700_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[900] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-900_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[1100] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_chayanit-SUSYGluGluToBBHToBB_M-1100_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
+//   inF2015M[1300] 	= new TFile(("/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_7_6_3_patch2/src/Analysis/MssmHbb/output/MssmHbbSignal" + samples_name_2015 + "_lowM_clange-SUSYGluGluToBBHToBB_M-1300_cfg_GEN_DIGI76X_RECO76X_MiniAODv2_76X-17d438ff51ec6b3cada9e499a5a978e0.root").c_str());
 
    std::map<int,double> signal_efficiency_8TeV;
    signal_efficiency_8TeV[200] = 2.85e-03;
@@ -67,19 +67,18 @@ void signalEfficiency()
    signal_efficiency_8TeV[700] = 2.9e-03;
    signal_efficiency_8TeV[900] = 1.39e-03;
 
-   style.set(PRIVATE);
+   style.set(PRELIMINARY);
    style.drawStandardTitle();
    gStyle->SetTitleXOffset(1.);
 
-   std::vector<std::map<int,TFile* > > datasets {inFlowM};
-   std::vector<std::string> legends {"2016"};
-   std::vector<double> lumis {35673.};
+   std::vector<std::map<int,TFile* > > datasets {inFlowM,inFtoComp};
+   std::vector<std::string> legends {"2016","no offline b-tag"};
+   std::vector<double> lumis {35673.,35673.};
 
    //Signal Efficiency calculation
    efficiency(datasets,legends,lumis);
    sensitivity(datasets,legends);
 
-   std::cout<<"WTF: "<<inFlowM.size()<<std::endl;
    //LowM
    TGraphErrors *Eff = new TGraphErrors(inFlowM.size());
    Eff->SetMarkerStyle(20);
@@ -322,7 +321,8 @@ void efficiency(const  std::vector<std::map<int,TFile* > >& files,const std::vec
 
 	for(unsigned int i = 0; i != Efficiencies.size(); ++i){
 		TGraphErrors& eff = Efficiencies.at(i);
-		eff.SetMaximum(0.021);
+//		eff.SetMaximum(0.021);
+		eff.SetMaximum(0.5);
 		if(i==0) eff.Draw("APL");
 		else eff.Draw("PLsame");
 

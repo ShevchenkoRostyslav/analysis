@@ -1,3 +1,9 @@
+/*
+ * macro to test performance of HbbLimits class
+ * In the end is used to produce model independent
+ * results.
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,57 +28,64 @@ HbbStyle style;
 int main(){
 
 	HbbLimits limits(true,true);
-	style.set(PRIVATE);
-	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/15/Asymptotic/";//mssm/Hbb.limits
-	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION"; //production_corseBins_cosB_A_-1_1_tanB_1-100 //
-	string thdm_type = "type3";
-	string thdm_scans = "/nfs/dust/cms/user/shevchen/SusHiScaner/output/" + thdm_production + "/rootFiles/Histograms3D_" + thdm_type + "_mA_mH.root";
-//	double mass = 300;
-//	double cB_A = 0.1;
-	string boson = "both";
-	vector<Limit> null_vec;
-	string modification_to_name = "Bernstein8_Bias/";
-	string output = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170515/" + modification_to_name;
+	style.set(PRELIMINARY);
 
-	limits.SetHiggsBoson(boson);
+	//Path to the folder with Hbb.Limits - results of the combine tool.
+	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/independent/no_bias/normal/";//mssm/Hbb.limits
+	// Output name prefix
+	string modification_to_name = "1100SR2_vs_Normal_";
+	// Output folder WARNING:folder should exist!!!!
+	string output = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170614/" + modification_to_name;
 
+	//Position of the TLegend
 	TLegend legenda(0.62,0.55,0.85,0.75);
 	legenda.SetFillColor(0);
 	legenda.SetTextSize(0.035);
 	legenda.SetBorderSize(0);
 
-	string path_to_compare = path2016 + "No_Bias/Hbb.limits";
-	vector<Limit> GBR_to_compare = limits.ReadCombineLimits(path_to_compare);
-	limits.Write(GBR_to_compare,path_to_compare);
-
 	/*
 	 * Model independent limits should be calculated with differ from model-dep. datacards
 	 */
-	string path2016_indep = path2016 + modification_to_name + "Hbb.limits";
+	string path2016_indep = path2016 + "Hbb.limits";
 	vector<Limit> GBR2016 = limits.ReadCombineLimits(path2016_indep);
 	limits.Write(GBR2016,path2016_indep);
 	string output_independet_limits = output + "Hbb_Limits_2016";
+
+	//in case of comparison - GBR_to_compare should be used as a second argument to the HbbLimits::LimitPlotter method
+	string path_to_compare = path2016 + "../1100_SR2/Hbb.limits";
+	vector<Limit> GBR_to_compare = limits.ReadCombineLimits(path_to_compare);
+	limits.Write(GBR_to_compare,path_to_compare);
+
+	//if comparison is not needed - insert null_vec as thr second argument
+	vector<Limit> null_vec;
 	limits.LimitPlotter(GBR2016,GBR_to_compare,legenda,output_independet_limits,0.1,30,200,1300,"35.7(2016)","M_{#Phi} [GeV]","95%C.L. limit on #sigma x BR [pb]",true);
 
 	/*
 	 * MSSM limits
 	 */
-	string path2016_mssm = path2016 + "mssm/" + modification_to_name + "Hbb.limits";
-	vector<Limit> GBR2016_mssm = limits.ReadCombineLimits(path2016_mssm);
-	vector<Limit> mssm_limits = limits.GetMSSMLimits(GBR2016,"/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root");
-	legenda.SetX1NDC(0.65);	legenda.SetX2NDC(0.92);
-	legenda.SetY1NDC(0.17);	legenda.SetY2NDC(0.44);
-	legenda.Clear();
-	string output_mssm_tanB_limits = output + boson + "_MSSM_tanB_brazil";
-
-	path_to_compare = path2016 + "mssm/No_Bias/Hbb.limits";
-	vector<Limit> GBR2016_mssm_co_compare = limits.ReadCombineLimits(path_to_compare);
-	vector<Limit> mssm_limits_to_compare  = limits.GetMSSMLimits(GBR2016_mssm_co_compare,"/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root");
-	limits.LimitPlotter(mssm_limits,mssm_limits_to_compare,legenda,output_mssm_tanB_limits,0,60,200,900,"35.7(2016)","M_{#Phi} [GeV]","tan(#beta)",false);
+//	string boson = "both";
+//	limits.SetHiggsBoson(boson);
+//	string path2016_mssm = path2016 + "mssm/" + modification_to_name + "Hbb.limits";
+//	vector<Limit> GBR2016_mssm = limits.ReadCombineLimits(path2016_mssm);
+//	vector<Limit> mssm_limits = limits.GetMSSMLimits(GBR2016,"/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root");
+//	legenda.SetX1NDC(0.65);	legenda.SetX2NDC(0.92);
+//	legenda.SetY1NDC(0.17);	legenda.SetY2NDC(0.44);
+//	legenda.Clear();
+//	string output_mssm_tanB_limits = output + boson + "_MSSM_tanB_brazil";
+//
+//	path_to_compare = path2016 + "mssm/No_Bias/Hbb.limits";
+//	vector<Limit> GBR2016_mssm_co_compare = limits.ReadCombineLimits(path_to_compare);
+//	vector<Limit> mssm_limits_to_compare  = limits.GetMSSMLimits(GBR2016_mssm_co_compare,"/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root");
+//	limits.LimitPlotter(mssm_limits,null_vec,legenda,output_mssm_tanB_limits,0,60,200,900,"35.7(2016)","M_{#Phi} [GeV]","tan(#beta)",false);
 //	/*
 //	 * 2HDM limits
 //	 */
-//	string path2016_2hdm = path2016 + "mssm/Hbb.limits";
+//	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION"; //production_corseBins_cosB_A_-1_1_tanB_1-100 //
+//	string thdm_type = "type3";
+//	string thdm_scans = "/nfs/dust/cms/user/shevchen/SusHiScaner/output/" + thdm_production + "/rootFiles/Histograms3D_" + thdm_type + "_mA_mH.root";
+//	double mass = 300;
+//	double cB_A = 0.1;
+//	string path2016_2hdm = path2016 + "mssm/" + modification_to_name + "Hbb.limits";
 //	vector<Limit> GBR2016_2hdm = limits.ReadCombineLimits(path2016_2hdm);
 //	vector<Limit> TanB_2HDM_Limits;
 //	HbbLimits::THDMScan scan;

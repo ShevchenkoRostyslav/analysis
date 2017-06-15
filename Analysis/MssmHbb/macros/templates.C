@@ -41,7 +41,7 @@ void templates()
    std::map<int,TFile* > inF;
    std::vector<TH1D*> histo;
 
-   style.set(PRIVATE);
+   style.set(PRELIMINARY);
 
 
    TExec *er_0 = new TExec("er_0","gStyle->SetErrorX(0)");

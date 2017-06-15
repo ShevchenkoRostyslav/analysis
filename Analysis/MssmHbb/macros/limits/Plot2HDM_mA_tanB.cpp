@@ -1,3 +1,15 @@
+/*
+ * plotTanBetaLimits.cpp
+ *
+ *  Created on: 9 Mar 2017
+ *  Author: shevchen
+ *
+ *  Macro to calculate and plot 2HDM limits
+ *  as a function of mA and tanBeta for particluar
+ *  value of cos(beta-alpha)
+ */
+
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,10 +35,13 @@ void Plot_finale_1(const std::vector<Limit>& limits,
 		const std::string& Lumi,
 		const std::string& xtitle,
 		const std::string& ytitle,
+		const std::string& thdm_type,
 		const bool& logY);
 //TGraph GetAtlasZhll_flipped();
 
 TGraph GetAtlasZhll_flipped();
+TGraph GetAtlasZhll_type2();
+
 HbbStyle style;
 
 void AtlasMeasurementsStyle(TGraph &gr);
@@ -37,20 +52,26 @@ using namespace analysis::mssmhbb;
 int main(){
 
 	HbbLimits limits(true,true);
-	style.set(PRIVATE);
-	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201703/08/asymptotic/mssm/Hbb.limits";
-	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION"; //production_corseBins_cosB_A_-1_1_tanB_1-100 //
-	string thdm_type = "type3";
+	style.set(PRELIMINARY);
+	//paths with results of the combine tool
+	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/18/Asymptotic/mssm/Hbb.limits";
+	//Details of the 2HDM produciton
+	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION";
+	// type of the 2hdm: type2 or type3
+	string thdm_type = "type2";
 	string thdm_scans = "/nfs/dust/cms/user/shevchen/SusHiScaner/output/" + thdm_production + "/rootFiles/Histograms3D_" + thdm_type + "_mA_mH.root";
+	//value of cos(beta-alpha)
+	double cB_A = 0.1;
 
+	//higgs boson: H/A/both
 	string boson = "both";
-	string output_dir = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170309/";
+	string output_dir = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170518/2hdm/";
 
 	vector<Limit> GBR2016 = limits.ReadCombineLimits(path2016);
 	vector<Limit> TanB_2HDM_Limits;
 	TH3D GxBR_2hdm_3D;
 	TH2D GxBR_2hdm_cB_A;
-	double cB_A = 0.1;
+
 	limits.SetHiggsBoson(boson);
 
 	GxBR_2hdm_3D = limits.Get2HDM_GxBR_3D(thdm_scans);
@@ -63,10 +84,10 @@ int main(){
 	leg_2HDM_tB.SetTextSize(0.035);
 	leg_2HDM_tB.SetBorderSize(0);
 	string output_2HDM_tanB_limits = output_dir + boson + "_2HDM_" + thdm_type + "_Limits_tanB_cB_A" + to_string((double)cB_A) + "_brazil";
-	Plot_finale_1(TanB_2HDM_Limits,leg_2HDM_tB,output_2HDM_tanB_limits,0.5,60,200,900,"35.7","M_{#Phi} [GeV]","tan(#beta)",true);
+	Plot_finale_1(TanB_2HDM_Limits,leg_2HDM_tB,output_2HDM_tanB_limits,0.5,60,200,900,"35.7","M_{#Phi} [GeV]","tan(#beta)",thdm_type,true);
 	output_2HDM_tanB_limits += "_zoomed";
 	leg_2HDM_tB.Clear();
-	Plot_finale_1(TanB_2HDM_Limits,leg_2HDM_tB,output_2HDM_tanB_limits,0.5,60,300,900,"35.7","M_{#Phi} [GeV]","tan(#beta)",true);
+	Plot_finale_1(TanB_2HDM_Limits,leg_2HDM_tB,output_2HDM_tanB_limits,0.5,60,300,900,"35.7","M_{#Phi} [GeV]","tan(#beta)",thdm_type,true);
 
 }
 
@@ -80,6 +101,7 @@ void Plot_finale_1(const std::vector<Limit>& limits,
 		const std::string& Lumi,
 		const std::string& xtitle,
 		const std::string& ytitle,
+		const std::string& thdm_type,
 		const bool& logY){
 
 	bool blindData_ = true;
@@ -156,7 +178,8 @@ void Plot_finale_1(const std::vector<Limit>& limits,
 
 //	TGraph GetAtlasZhll_flipped();
 
-	TGraph atlas_zhll 	= GetAtlasZhll_flipped();
+	TGraph atlas_zhll_flipped 	= GetAtlasZhll_flipped();
+	TGraph atlas_zhll_type2		= GetAtlasZhll_type2();
 
 	TCanvas *canv = new TCanvas("canv", "histograms", 600, 600);
 
@@ -171,16 +194,21 @@ void Plot_finale_1(const std::vector<Limit>& limits,
 	if (!blindData_)
 		obsG->Draw("lpsame");
 
-	AtlasMeasurementsStyle(atlas_zhll);
-	atlas_zhll.Draw("CFsame");
-
+	AtlasMeasurementsStyle(atlas_zhll_flipped);
+	AtlasMeasurementsStyle(atlas_zhll_type2);
+	if(thdm_type == "type3"){
+		atlas_zhll_flipped.Draw("CFsame");
+	}
+	else if (thdm_type == "type2"){
+		atlas_zhll_type2.Draw("CFsame");
+	}
 
 	if (!blindData_)
 		leg.AddEntry(obsG,"Observed","lp");
 	leg.AddEntry(expG,"Expected","fl");
 	leg.AddEntry(innerBand,"#pm1#sigma Expected","f");
 	leg.AddEntry(outerBand,"#pm2#sigma Expected","f");
-	leg.AddEntry(&atlas_zhll,"by A#rightarrow Zh, ATLAS","f");
+	leg.AddEntry(&atlas_zhll_flipped,"by A#rightarrow Zh, ATLAS","f");
 	style.drawStandardTitle();
 
 	TPad * pad = (TPad*)canv->GetPad(0);
@@ -252,4 +280,47 @@ TGraph GetAtlasZhll_flipped(){
 		TGraph fl_lower_left(cos_lower_left.size(),cos_lower_left.data(),tan_lower_left.data());
 
 		return fl_lower_left;
+}
+
+TGraph GetAtlasZhll_type2(){
+	vector<pair<double,double>> lower_left= {
+			make_pair(220,0.5),
+			make_pair(225,1.21),
+			make_pair(230,1.68),
+			make_pair(235,1.95),
+			make_pair(240,2.18),
+			make_pair(245,2.27),
+			make_pair(250,2.36),
+			make_pair(255,2.50),
+			make_pair(260,2.59),
+			make_pair(265,2.64),
+			make_pair(270,2.68),
+			make_pair(275,2.77),
+			make_pair(280,2.82),
+			make_pair(285,2.86),
+			make_pair(290,2.91),
+			make_pair(295,2.95),
+			make_pair(300,3.00),
+			make_pair(305,3.10),
+			make_pair(310,3.12),
+			make_pair(315,3.19),
+			make_pair(320,3.25),
+			make_pair(325,3.38),
+			make_pair(330,3.50),
+			make_pair(335,3.63),
+			make_pair(337,3.69),
+			make_pair(340,3.50),
+			make_pair(345,3.13),
+			make_pair(350,0.5)
+	};
+
+	std::vector<double> cos_lower_left, tan_lower_left;
+	for(const auto& val : lower_left) {
+		cos_lower_left.push_back(val.first);
+		tan_lower_left.push_back(val.second);
+	}
+
+	TGraph fl_lower_left(cos_lower_left.size(),cos_lower_left.data(),tan_lower_left.data());
+
+	return fl_lower_left;
 }

@@ -68,16 +68,44 @@ def createCleanDir(dir_name):
         print(e)
         
 
+def AdjustSignalStrength(mass, bg_only):
+    '''Funciton to Adjust signla strength accroding to the mass point
+    and bg_only fit or not.
+    
+    '''
+    rmin = '-10'
+    rmax = '10'
+    if(bg_only):
+        rmin = '-10'#'-0.001'
+        rmax = '10'#'0.001'
+    else:
+        if mass == '300' or mass == '350':
+            rmin = '-10'
+            rmax = '20'
+        elif mass == '400':
+            rmin = '-10'
+            rmax = '20'
+        else:
+            rmin = '-20'
+            rmax = '20'
+    
+    r_string = '--rMin=' + rmin + ' --rMax=' + rmax
+    return r_string
+            
+
 if __name__ == '__main__':
 
+    #bg_only fit?
+    bg_only = True
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/15/mll_forBias/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/mll_forBias/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #list of mass points
-    mass = ['300','350','400','500','600','700','900','1100','1300']
+    mass = ['500','600','1100']
+    #mass = ['300','350','400','500','600','700','900','1100','1300']
     #combine preferences to be added
-    combine_add = '--freezeNuisanceGroups signal --expectSignal=0'# --freezeNuisances CMS_bkgd_qcd_13TeV'
+    combine_add = ''#'--saveWorkspace '#'--plots --saveShapes --saveWithUncertainties -t -1'#'--freezeNuisanceGroups signal --expectSignal=0'# --freezeNuisances CMS_bkgd_qcd_13TeV'
     for m in mass:
         dir_path =  datacard_folder + '/mll_M-' + m
         data_card = 'hbb_mbb' + m + '_mssm-13TeV.txt'
@@ -87,12 +115,15 @@ if __name__ == '__main__':
         copyDatacardToDir(data_card,dir_path)
         #adjust combine command
         if m == '300' or m == '350':# or m == '500':
-            combine = 'combine -M MaxLikelihoodFit -t -1 --rMin=-10 --rMax=20 --robustFit 1 --minimizerAlgoForMinos Minuit2,Migrad --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v 5'
-        elif m == '400':
-            combine = 'combine -M MaxLikelihoodFit -t -1 --rMin=-10 --rMax=20 --robustFit 1 -v 5'
+            combine = 'combine -M MaxLikelihoodFit --robustFit 1 --minimizerAlgoForMinos Minuit2,Migrad --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v 5'
         else:
-            combine = 'combine -M MaxLikelihoodFit -t -1 --rMin=-20 --rMax=20 --robustFit 1 -v 5'
+            combine = 'combine -M MaxLikelihoodFit --robustFit 1 -v 5'
         combine += ' ' + combine_add
+        #special emulation for the background only fit
+        if(bg_only): combine +=  ' --freezeNuisanceGroups signal'
+        #add r-limits
+        r_string = AdjustSignalStrength(m,bg_only)
+        combine += ' ' + r_string
         #run combination tool
         print (combine)
         runCombineTool(combine,data_card,dir_path,m)

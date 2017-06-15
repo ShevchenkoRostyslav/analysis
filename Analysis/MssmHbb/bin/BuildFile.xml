@@ -9,6 +9,7 @@
 <use name="Analysis/Tools" />
 <use name="Analysis/MssmHbb" />
 <use name="Analysis/BackgroundModel" />
+<use name="lhapdf"/>
 <export>
   <lib name="1"/>
 </export>
@@ -51,3 +52,8 @@
 <bin   name="Bias_study_binned"         file="Bias_study_binned.cpp"></bin>
 <bin   name="FitBG_study"				file="FitBG_study.cpp"></bin>
 <bin   name="FitTestDraw"				file="../macros/Background/FitTest.cpp"></bin>
+<bin   name="bgFit_vs_SignalShapes"		file="../macros/Background/bgFit_vs_SignalShapes.cpp"></bin>
+<bin   name="bgShape"					file="../macros/Background/bgShape.cpp"></bin>
+
+#Generator MC level study
+<bin   name="mass_dependence"			file="../macros/Gen_level/mass_dependence.cpp"></bin>

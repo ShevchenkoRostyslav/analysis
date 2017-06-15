@@ -34,7 +34,7 @@ void DrawGraphs(vector<TGraph>& graphs2HDM, const vector<string> &BRs, const dou
 void GetTHDMHistos(TFile& name,map<string,TH3F*>&,const vector<string>&);
 
 string boson = "H";
-string mA = "300";
+string mA = "1100";
 
 int main(){
 	HbbStyle style;
@@ -58,7 +58,6 @@ int main(){
 //	MSSM benchm,ark file
 	string mssm_bench = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root";
 	CompareBrs(sinB_As,tanBetas,stoi(mA),BRs,thdm_fname,mssm_bench);
-	cout<<"WTF: "<<stoi(mA)<<endl;
 	return 0;
 }
 

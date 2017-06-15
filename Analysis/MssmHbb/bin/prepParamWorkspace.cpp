@@ -65,26 +65,28 @@ typedef map<string, map<string, pair<string,string> > > myMap;
 
 void setup_bg(const string& in_path,const string& out_path, TH1& data_obs);
 void setup_bg(const string& in_path,const string& out_path, const bool& generate_asimov = true);
-void setup_signal(const string& in_path, const vector<string>& syst);
+void setup_signal(const string& in_path, const vector<string>& syst, const string& out_suffix = "");
 string SignalModel(const vector<string>& parameters);
 string GetDirName(const string& filename);
 void setMbb(RooRealVar& var, const string& path);
 
 int main(int argc, char ** argv){
 	try {
+		//Additional suffix for the ouptut signal workspace name
+		string name_suffix = "_1100SR2";
 
 		//list of the inputs:
 		const string cmsswBase = getenv("CMSSW_BASE");
 		vector<string> input_signal = {
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900",
 				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1100",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300",
+//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300",
 								};
 		vector<string> input_background = {
 				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root",
@@ -101,7 +103,7 @@ int main(int argc, char ** argv){
 //				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/FitContainer_workspace_SR2.root",
 //				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr3/FitContainer_workspace_SR3.root",
 		};
-		vector<string> systematics = {"JES","JER","PtEff","SFb"};
+		vector<string> systematics = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};
 
 		options_description desc("Options");
 		desc.add_options()
@@ -144,8 +146,8 @@ int main(int argc, char ** argv){
 //				TClass *cl = gROOT->GetClass(key->GetClassName());
 //				if (!cl->InheritsFrom("RooDataSet")) continue;
 				try {
-					setup_bg(input_background.at(i),GetDirName(data_obs.at(i)),false);
-//					setup_bg(input_background.at(i),GetDirName(data_obs.at(i)),*((TH1D*) temp.Get("data_obs")));
+//					setup_bg(input_background.at(i),GetDirName(data_obs.at(i)),false);
+					setup_bg(input_background.at(i),GetDirName(data_obs.at(i)),*((TH1D*) temp.Get("data_obs")));
 				} catch (exception& e) {
 					cerr<<e.what()<<endl;
 					return ERROR_BG_WORKSPACE;
@@ -156,7 +158,7 @@ int main(int argc, char ** argv){
 		//Create signal workspace
 		for(const auto& in : input_signal){
 			try {
-				setup_signal(in + "_NormToTanB30",systematics);
+				setup_signal(in /* + "_NormToTanB30" */,systematics,name_suffix);
 			} catch (exception& e) {
 				cerr<<e.what()<<endl;
 				return ERROR_SIGNAL_WORKSPACE;
@@ -218,6 +220,7 @@ void setup_bg(const string& in_path,const string& out_path, const bool& generate
 		wOut.var("turnon_novoeff")->setConstant();
 		add_name += "_TurnOnFix";
 	}
+	if(out_path.find("sr2") != std::string::npos) wOut.var("tail1")->setRange(-10,10);
 
 	add_name += "_" + std::to_string(nbins) + "bins";
 	wOut.Print("v");
@@ -274,12 +277,13 @@ void setup_bg(const string& in_path,const string& out_path, TH1& data_obs){
 //		add_name += "_limitlessBG";
 	}
 	add_name += "_" + std::to_string(nbins) + "bins";
+	if(out_path.find("sr2") != std::string::npos) wOut.var("tail1")->setRange(-10,10);
 //	add_name += "_inBins";
 	wOut.Print("v");
 	wOut.writeToFile((out_path + "/background_workspace" + add_name + ".root").c_str());
 }
 
-void setup_signal(const string& in_folder, const vector<string>& syst){
+void setup_signal(const string& in_folder, const vector<string>& syst, const string& out_suffix){
 	//Sanity check of input folder
 	if(gSystem->AccessPathName(in_folder.c_str())) throw invalid_argument("Error in <prepParamWorkspace::setup_signal>: Wrong path: " + in_folder);
 	//Sanity check of central WP
@@ -326,6 +330,7 @@ void setup_signal(const string& in_folder, const vector<string>& syst){
 		RooWorkspace& wInUp = *( (RooWorkspace*) fInUp.Get("workspace") );
 		RooWorkspace& wInDown = *( (RooWorkspace*) fInDown.Get("workspace") );
 		//RooRealVar for nuisance:
+//		string nuisance_name = s;
 		RooRealVar nuisance(s.c_str(),s.c_str(),0,-4,4);
 		for(const auto &par : parameters){
 			if(!wInUp.var(par.c_str())->hasError()  && par != "signal_norm" ) continue;
@@ -371,7 +376,7 @@ void setup_signal(const string& in_folder, const vector<string>& syst){
 	}
 	else throw logic_error("ERROR");
 	w.import(*func.get());
-	string out_path = in_folder + "/workspace/signal_workspace.root";
+	string out_path = in_folder + "/workspace/signal_workspace" + out_suffix + ".root";
 	std::cout<<"***************************************"<<std::endl;
 	std::cout<<"*************** M = "<<out_path<<"***************"<<std::endl;
 	std::cout<<"***************************************"<<std::endl;
@@ -404,24 +409,27 @@ string GetDirName(const string& filename){
 }
 
 void setMbb(RooRealVar& var, const string& path){
-//	std::size_t nbins;
 	double max;
 	double min;
 	int mass = returnMassPoint(path);
-	if(mass == 300 || mass == 350 || mass == 400 || mass == 500){
-//		nbins = 45;
-		min = 200;
-		max = 650;
+	vector<int> sr1 = {300,350,400,500};
+	vector<int> sr2 = {600,700,900};
+	vector<int> sr3 = {1100,1300};
+	if( find(sr3.begin(),sr3.end(),mass) != sr3.end()) {
+		min = 500;
+		max = 1700;
 	}
-	else if (mass == 600 || mass == 700 || mass == 900){
-//		nbins = 42;
+	else if( find(sr2.begin(),sr2.end(),mass) != sr2.end() ){
 		min = 350;
 		max = 1190;
 	}
-	else{
-//		nbins = 48;
-		min = 500.;
-		max = 1700;
+	else if ( find(sr1.begin(),sr1.end(),mass) != sr1.end() ) {
+		min = 200;
+		max = 650;
 	}
+	else {
+		throw invalid_argument("AdjustMbbVariable:: No sub-range for mass: " + to_string(mass));
+	}
+
 	var.setRange(min,max);
 }

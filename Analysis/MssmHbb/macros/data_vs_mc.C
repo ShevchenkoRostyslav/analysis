@@ -23,27 +23,29 @@ int data_vs_mc(){
 
 	std::string selection = "DataMC_ReReco";
 	std::string lowM = "lowM";
-	std::string MCsample = "bEnriched_Tot";//"bbbvsbbx";//"QCD_Pt";//
+	std::string MCsample = "bbbvsbbx";//"bEnriched_Tot";//"bbbvsbbx";//"QCD_Pt";//
 	std::string lumi = "35673fb";
-	TFile *data_low_m = new TFile( ("../output/" + selection + "_" + lumi + "_" + lowM + "_Run2016.root").c_str() );
-	TFile *mc_low_m 	 = new TFile( ("../output/" + selection + "_" + lumi + "_" + lowM + "_" + MCsample + ".root").c_str() );
-//	TFile *data_low_m = new TFile( "../output/DataMC_3b_ReReco_35673fb_lowM_QCD.root","READ" );
-//	TFile *mc_low_m 	 = new TFile( "../output/bbx_ReReco_35673fb_lowM_QCD.root","READ" );
+//	TFile *data_low_m = new TFile( ("../output/" + selection + "_" + lumi + "_" + lowM + "_Run2016.root").c_str() );
+//	TFile *mc_low_m 	 = new TFile( ("../output/" + selection + "_" + lumi + "_" + lowM + "_" + MCsample + ".root").c_str() );
+
+	//Input files
+	TFile *data_low_m = new TFile( "../output/DataMC_3b_ReReco_35673fb_lowM_QCD.root","READ" );
+	TFile *mc_low_m 	 = new TFile( "../output/bbx_ReReco_35673fb_lowM_QCD.root","READ" );
 	
 	TFile *fCorrection;
 
 	//Ratio plots
 	RatioPlots style;
-	style.set(PRIVATE);
+	style.set(PRELIMINARY);
 
 	//Declare list of Legends
 	map<string,TLegend*> leg;
 
 	//variables vector:
-	vector<string> Var={"diJet_b_m","jet_b_Ht","NumberOfJets_b","jet_b_pt1","jet_b_pt2","jet_b_eta1","jet_b_eta2","jet_b_phi1","jet_b_phi2","jet12_b_assym","jet_b_btag_csv1",
-						"jet_b_btag_csv2","jet_b_btag_cmva1","jet_b_btag_cmva2","jet_b_deta12","jet_b_dR12", "jet_b_dphi12",
-						"diJet_b_pt","diJet_b_eta","diJet_b_phi"};
-						//,"jet_b_dphi12"};
+	vector<string> Var={//"diJet_b_m","jet_b_Ht","NumberOfJets_b","jet_b_pt1","jet_b_pt2","jet_b_eta1","jet_b_eta2","jet_b_phi1","jet_b_phi2","jet12_b_assym","jet_b_btag_csv1",
+			//			"jet_b_btag_csv2","jet_b_btag_cmva1","jet_b_btag_cmva2","jet_b_deta12","jet_b_dR12", "jet_b_dphi12",
+			//			"diJet_b_pt","diJet_b_eta","diJet_b_phi"};
+						"diJet_b_m"};
 
 	//histo list:
 	map<string,TH1D*> h_data_low_m;

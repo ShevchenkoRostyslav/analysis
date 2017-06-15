@@ -41,11 +41,13 @@
 
 #include "Analysis/MssmHbb/interface/utilLib.h"
 #include "Analysis/Tools/interface/RooFitUtils.h"
+#include "Analysis/BackgroundModel/interface/RooFitQuality.h"
 #include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
 
 namespace fs = boost::filesystem;
 using namespace boost::program_options;
 using namespace analysis;
+using namespace analysis::backgroundmodel;
 
 using namespace std;
 using namespace RooFit;
@@ -196,7 +198,7 @@ void Bias_study(const int & mass,
 //	ROOT::Math::MinimizerOptions::SetDefaultPrintLevel(3);
 
 	std::cout << std::fixed;
-	TH1::SetDefaultSumw2();
+//	TH1::SetDefaultSumw2();
 	Printer p(test);
 	//Input message
 	p.PrintInputMessage(mass,signal_strength,pdf,generator);
@@ -262,6 +264,7 @@ void Bias_study(const int & mass,
 		TH1D &data_toy_sgn = *(TH1D*) pdf_sgn.createHistogram( ("data_toy_sgn" + toy_number).c_str(), mbb);
 		data_toy_sgn.Scale(ns_prefit/data_toy_sgn.Integral());
 
+
 //		SetPoissonBins(data_toy);
 		nbg_prefit = data_toy.Integral();
 		RooDataHist data_bg_toy( ("data_bg_toy"+toy_number).c_str(),"data_bg_toy", mbb, RooFit::Import(data_toy));
@@ -323,7 +326,19 @@ void Bias_study(const int & mass,
 //			p.PrintRooFitResults(*fitResult);
 		}
 		else {
-			fitResult = pdf_bkg_fit.fitTo(data_toy_sb, RooFit::Save(), RooFit::PrintLevel(1), RooFit::Verbose(1), RooFit::Minimizer("Minuit2", "migrad"), RooFit::Hesse(1), RooFit::Offset(1));
+//			fitResult = pdf_bkg_fit.fitTo(data_toy_sb, RooFit::Save(), RooFit::PrintLevel(1), RooFit::Verbose(1), RooFit::Minimizer("Minuit2", "migrad"), RooFit::Hesse(1), RooFit::Offset(1));
+			RooAbsReal &nll = *pdf_bkg_fit.createNLL(data_toy_sb);
+			RooMinimizer m(nll);
+			m.setMinimizerType("Minuit2");
+			m.setOffsetting(true);
+			m.setPrintLevel(3);
+//			m.setWarnLevel(3);
+			m.setVerbose(kTRUE);
+			m.setEps(1e-09);
+			m.optimizeConst(kTRUE);
+			m.minimize("Minuit2","Migrad") ;
+			m.hesse();
+			fitResult = m.save();
 		}
 	  	p.PrintRooFitResults(*fitResult);
 	  	minuit_status = fitResult->status();
@@ -337,8 +352,12 @@ void Bias_study(const int & mass,
 	  	}
 	  	else pdf_bkg_fit.plotOn(&xframe1, RooFit::Name("fit_curve"));
 
-	  	chi_2 = xframe1.chiSquare("fit_curve", "data_curve", npars_pdf + 1);	//floating parameters from sig+bkg fit including n_b,n_s
-	  	std::cout << "Chi^2 from the fit = " << chi_2 << std::endl;
+//	  	chi_2 = xframe1.chiSquare("fit_curve", "data_curve", npars_pdf + 1);	//floating parameters from sig+bkg fit including n_b,n_s
+	  	RooFitQuality fit_quality;
+	  	Chi2Ndf chi2ndf = fit_quality.chiSquare(xframe1,"fit_curve", "data_curve",npars_pdf + 1);
+	  	chi_2 = chi2ndf.chi2 / chi2ndf.ndf;
+	  	std::cout<<"Chi2 / ndf = "<<chi2ndf.chi2<<" / "<<chi2ndf.ndf<<" = "<<chi_2<<std::endl;
+	  	std::cout << "Chi^2/df from the fit = " << chi_2 << std::endl;
 
 		ns_postfit = roo_nsignal.getValV();
 		nbg_postfit = roo_nbkg.getValV();
@@ -482,6 +501,8 @@ const boost::program_options::variables_map ParseUserInput(const int& argc, cons
 			("toy_max,t",value<int>()->required(),"Number of toys")
 			("pdf,f",value<std::string>()->required(),"Select nominal PDF to fit toys data: \n"
 			" \textnovoeffprod_G4_R1;\n"
+			" \tsupernovoeffprod2_G4_R1;\n"
+			" \tsupernovoeffprod3_G4_R1;\n"
 			" \tberneffprod9par_G4_R1;\n"
 			" \tberneffprod8par_G4_R1;\n"
 			" \tdijetv3logprod_G4_R1;\n"
@@ -489,15 +510,21 @@ const boost::program_options::variables_map ParseUserInput(const int& argc, cons
 			" \tnovoeffprod_G7_R1;\n"
 			" \tberneffprod7par_G7_R1;\n"
 			" \tnovosibirsk_G4_R2;\n"
+			" \tsupernovosibirsk1_G4_R2;\n"
+			" \tsupernovosibirsk2_G4_R2;\n"
 			" \tdijetexp_G4_R2;\n"
 			" \tnovosibirsk_G7_R2;\n"
 			" \tdijetexp_G7_R2;\n"
 			" \tnovosibirsk_G4_R3;\n"
+			" \tsupernovosibirsk1_G4_R3;\n"
+			" \tsupernovosibirsk2_G4_R3;\n"
 			" \tdijetexp_G4_R3;\n"
 		 	" \tnovosibirsk_G7_R3;\n"
 			" \tdijetexp_G7_R3;\n")
 			("generator,g",value<std::string>()->required(),"Select alternative PDF to produce toys data: \n"
 			" \textnovoeffprod_G4_R1;\n"
+			" \tsupernovoeffprod2_G4_R1;\n"
+			" \tsupernovoeffprod3_G4_R1;\n"
 			" \tberneffprod9par_G4_R1;\n"
 			" \tberneffprod8par_G4_R1;\n"
 			" \tdijetv3logprod_G4_R1;\n"
@@ -622,16 +649,22 @@ RooRealVar* AdjustMbbVariable(RooWorkspace& w, const double& mass, const std::st
 	/*
 	 * Function to adjust Mbb x-variable
 	 */
+	vector<int> sr1 = {300,350,400,500};
+	vector<int> sr2 = {600,700,900};
+	vector<int> sr3 = {1100,1300};
 	int nbins = 500;
 	auto *mbb = GetFromRooWorkspace<RooRealVar>(w,mbb_name);
-	if(mass == 1100 || mass == 1300){
+	if( find(sr3.begin(),sr3.end(),mass) != sr3.end()) {
 		mbb->setRange(500,1700);
 	}
-	else if(mass == 600 || mass == 700 || mass == 900){
+	else if( find(sr2.begin(),sr2.end(),mass) != sr2.end() ){
 		mbb->setRange(350,1190);
 	}
-	else{
+	else if ( find(sr1.begin(),sr1.end(),mass) != sr1.end() ) {
 		mbb->setRange(200,650);
+	}
+	else {
+		throw invalid_argument("AdjustMbbVariable:: No sub-range for mass: " + to_string(mass));
 	}
 	mbb->setBins(nbins);
 
@@ -674,6 +707,14 @@ std::string GetPdfPath(const std::string & pdf, const Printer& p, int & npar){
 		npar = 6;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/fullBBnB/extnovoeffprod_200to650_10GeV__45bins/workspace/FitContainer_workspace.root";
 	}
+	else if (findStrings(pdf,"supernovoeffprod2_G4_R1")){
+		npar = 7;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr1/supernovoeffprod/pdf2/workspace/FitContainer.root";
+	}
+	else if (findStrings(pdf,"supernovoeffprod3_G4_R1")){
+		npar = 8;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr1/supernovoeffprod/pdf3/workspace/FitContainer.root";
+	}
 	else if(findStrings(pdf,"berneffprod9par_G4_R1")) {
 		npar = 11;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/Prescale_v5/berneff9_200_to_650_10GeV_G4/workspace/FitContainer_workspace.root";
@@ -706,6 +747,14 @@ std::string GetPdfPath(const std::string & pdf, const Printer& p, int & npar){
 		npar = 3;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_350to1190_20GeV_G4/workspace/FitContainer_workspace.root";
 	}
+	else if (findStrings(pdf,"supernovosibirsk1_G4_R2") ){
+		npar = 4;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr2/supernovosibirsk/pdf1/workspace/FitContainer.root";
+	}
+	else if (findStrings(pdf,"supernovosibirsk2_G4_R2") ){
+		npar = 5;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr2/supernovosibirsk/pdf2/workspace/FitContainer.root";
+	}
 	else if(findStrings(pdf,"dijetexp_G4_R2")) {
 		npar = 3;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/dijetv2_350to1190_20GeV_G4/workspace/FitContainer_workspace.root";
@@ -722,6 +771,14 @@ std::string GetPdfPath(const std::string & pdf, const Printer& p, int & npar){
 	else if(findStrings(pdf,"novosibirsk_G4_R3")) {
 		npar = 3;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_500to1700_25GeV_G4/workspace/FitContainer_workspace.root";
+	}
+	else if (findStrings(pdf,"supernovosibirsk1_G4_R3") ){
+		npar = 4;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr3/supernovosibirsk/pdf1/workspace/FitContainer.root";
+	}
+	else if (findStrings(pdf,"supernovosibirsk2_G4_R3") ){
+		npar = 5;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr3/supernovosibirsk/pdf2/workspace/FitContainer.root";
 	}
 	else if(findStrings(pdf,"dijetexp_G4_R3")) {
 		npar = 3;
@@ -935,11 +992,13 @@ void FixTurnOn(RooWorkspace &w, const std::string& pdf_name){
 	/*
 	 * Function to fix turn-on curve
 	 */
-	if(pdf_name == "extnovoeffprod_G4_R1" || pdf_name == "extnovoeffprod_R1"){
+	if(pdf_name == "extnovoeffprod_G4_R1" || pdf_name == "extnovoeffprod_R1" || pdf_name == "supernovoeffprod2_G4_R1" || pdf_name == "supernovoeffprod3_G4_R1"){
 		w.var("turnon_novoeff")->setConstant();
 		w.var("slope_novoeff")->setConstant();
 	}
-	else if (pdf_name == "novosibirsk_G4_R2"){
+	else if (pdf_name == "novosibirsk_G4_R2" || pdf_name == "supernovosibirsk1_G4_R2" || pdf_name == "supernovosibirsk2_G4_R2"){
+	}
+	else if (pdf_name == "novosibirsk_G4_R3" || pdf_name == "supernovosibirsk1_G4_R3" || pdf_name == "supernovosibirsk2_G4_R3"){
 	}
 	else if (pdf_name == "berneffprod9par_G4_R1" || pdf_name == "berneffprod9par_R1"){
 		w.var("slope_novoeff")->setConstant();

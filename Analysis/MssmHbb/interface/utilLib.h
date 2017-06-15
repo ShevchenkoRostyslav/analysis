@@ -74,7 +74,7 @@ template <typename T> T* GetFromTFile(TFile& file, const std::string& obj_name){
 template <typename T> T* GetFromTFile(const std::string& file_name, const std::string& obj_name){
 	TFile f(file_name.c_str(),"READ");
 	CheckZombie(f);
-	auto *obj =  GetFromTFile<T>(f,obj_name);
+	auto *obj =  static_cast<T*>(GetFromTFile<T>(f,obj_name));
 	return obj;
 }
 

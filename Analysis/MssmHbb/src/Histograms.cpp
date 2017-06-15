@@ -184,16 +184,16 @@ void Histograms::Make(const int &size, const bool & lowM) {
 		 std::copy(std::begin(temp_bin_highM),std::end(temp_bin_highM),std::begin(temp_bin));
 	}
 	histo_["template_Mbb"]			=  new TH1D("template_Mbb","M_{12} of the di_jet object; di-Jet M_{12}, [GeV]",temp_bins,temp_bin);
-	histo_["template_SFb_down"]			= new TH1D("template_SFb_down","",temp_bins,temp_bin);
-	histo_["template_SFb_up"]			= new TH1D("template_SFb_up","",temp_bins,temp_bin);
+	histo_["template_eff_b_down"]			= new TH1D("template_eff_b_down","",temp_bins,temp_bin);
+	histo_["template_eff_b_up"]			= new TH1D("template_eff_b_up","",temp_bins,temp_bin);
 
-	//SFl
-	histo_["template_SFl_down"]			= new TH1D("template_SFl_down","",temp_bins,temp_bin);
-	histo_["template_SFl_up"]			= new TH1D("template_SFl_up","",temp_bins,temp_bin);
+	//eff_l
+	histo_["template_eff_l_down"]			= new TH1D("template_eff_l_down","",temp_bins,temp_bin);
+	histo_["template_eff_l_up"]			= new TH1D("template_eff_l_up","",temp_bins,temp_bin);
 
-	//JES
-	histo_["template_JES_down"]			= new TH1D("template_JES_down","",temp_bins,temp_bin);
-	histo_["template_JES_up"]			= new TH1D("template_JES_up","",temp_bins,temp_bin);
+	//scale_j
+	histo_["template_scale_j_down"]			= new TH1D("template_scale_j_down","",temp_bins,temp_bin);
+	histo_["template_scale_j_up"]			= new TH1D("template_scale_j_up","",temp_bins,temp_bin);
 
 	//JER
 	histo_["template_JER_down"]			= new TH1D("template_JER_down","",temp_bins,temp_bin);
@@ -204,28 +204,28 @@ void Histograms::Make(const int &size, const bool & lowM) {
 	histo_["template_PU_up"]				= new TH1D("template_PU_up","",temp_bins,temp_bin);
 
 	//Kinematic trigger efificiency
-	histo_["template_PtEff_down"]		= new TH1D("template_PtEff_down","",temp_bins,temp_bin);
-	histo_["template_PtEff_up"]			= new TH1D("template_PtEff_up","",temp_bins,temp_bin);
+	histo_["template_eff_pTonl_down"]		= new TH1D("template_eff_pTonl_down","",temp_bins,temp_bin);
+	histo_["template_eff_pTonl_up"]			= new TH1D("template_eff_pTonl_up","",temp_bins,temp_bin);
 	*/
 	int vis_bins = 80;
 	double xMax = 1700;
 //	vis_bins = temp_bins*(1 + xMin/(xMax-xMin));
 
 	histo_["template_Mbb_VIS"]				= new TH1D("template_Mbb_VIS","M_{12} of the di_jet object; di-Jet M_{12}, [GeV]",vis_bins,0.,xMax);
-	histo_["template_SFb_VIS_down"]			= new TH1D("template_SFb_VIS_down","",vis_bins,0,xMax);
-	histo_["template_SFb_VIS_up"]			= new TH1D("template_SFb_VIS_up","",vis_bins,0,xMax);
-	histo_["template_SFl_VIS_down"]			= new TH1D("template_SFl_VIS_down","",vis_bins,0,xMax);
-	histo_["template_SFl_VIS_up"]			= new TH1D("template_SFl_VIS_up","",vis_bins,0,xMax);
-	histo_["template_JES_VIS_down"]			= new TH1D("template_JES_VIS_down","",vis_bins,0,xMax);
-	histo_["template_JES_VIS_up"]			= new TH1D("template_JES_VIS_up","",vis_bins,0,xMax);
-	histo_["template_JER_VIS_down"]			= new TH1D("template_JER_VIS_down","",vis_bins,0,xMax);
-	histo_["template_JER_VIS_up"]			= new TH1D("template_JER_VIS_up","",vis_bins,0,xMax);
+	histo_["template_eff_b_VIS_down"]			= new TH1D("template_eff_b_VIS_down","",vis_bins,0,xMax);
+	histo_["template_eff_b_VIS_up"]			= new TH1D("template_eff_b_VIS_up","",vis_bins,0,xMax);
+	histo_["template_eff_l_VIS_down"]			= new TH1D("template_eff_l_VIS_down","",vis_bins,0,xMax);
+	histo_["template_eff_l_VIS_up"]			= new TH1D("template_eff_l_VIS_up","",vis_bins,0,xMax);
+	histo_["template_scale_j_VIS_down"]			= new TH1D("template_scale_j_VIS_down","",vis_bins,0,xMax);
+	histo_["template_scale_j_VIS_up"]			= new TH1D("template_scale_j_VIS_up","",vis_bins,0,xMax);
+	histo_["template_res_j_VIS_down"]			= new TH1D("template_res_j_VIS_down","",vis_bins,0,xMax);
+	histo_["template_res_j_VIS_up"]			= new TH1D("template_res_j_VIS_up","",vis_bins,0,xMax);
 	histo_["template_PU_VIS_down"]			= new TH1D("template_PU_VIS_down","",vis_bins,0,xMax);
 	histo_["template_PU_VIS_up"]			= new TH1D("template_PU_VIS_up","",vis_bins,0,xMax);
-	histo_["template_PtEff_VIS_down"]		= new TH1D("template_PtEff_VIS_down","",vis_bins,0,xMax);
-	histo_["template_PtEff_VIS_up"]			= new TH1D("template_PtEff_VIS_up","",vis_bins,0,xMax);
-	histo_["template_BTagEff_VIS_down"]		= new TH1D("template_BTagEff_VIS_down","",vis_bins,0,xMax);
-	histo_["template_BTagEff_VIS_up"]		= new TH1D("template_BTagEff_VIS_up","",vis_bins,0,xMax);
+	histo_["template_eff_pTonl_VIS_down"]		= new TH1D("template_eff_pTonl_VIS_down","",vis_bins,0,xMax);
+	histo_["template_eff_pTonl_VIS_up"]			= new TH1D("template_eff_pTonl_VIS_up","",vis_bins,0,xMax);
+	histo_["template_eff_bonl_VIS_down"]		= new TH1D("template_eff_bonl_VIS_down","",vis_bins,0,xMax);
+	histo_["template_eff_bonl_VIS_up"]		= new TH1D("template_eff_bonl_VIS_up","",vis_bins,0,xMax);
 
 //	syst_["Pileup"]
 
@@ -534,7 +534,7 @@ void Histograms::DeclareDataMCHistograms(const int &size){
 
 
 	//Systematic list:
-	std::vector<std::string> Syst = {"_PtEff_","_PU_","_SFb_","_SFl_","_JES_","_JER_","_OnlBTag_"};
+	std::vector<std::string> Syst = {"_eff_pTonl_","_PU_","_SFb_","_eff_l_","_scale_j_","_res_j_","_eff_bonl_"};
 	//Variation list:
 	std::vector<std::string> Variation = {"up","down"};
 
@@ -595,7 +595,7 @@ std::map<std::string, TH2*>& Histograms::getHisto2D() {
 
 void Histograms::MakeM12Templates(const std::size_t& nbins, const double& xmin, const double& xmax){
 
-	std::array<std::string,15> syst = {{"Mbb","SFb_down","SFb_up","SFl_down","SFl_up","JES_down","JES_up","JER_down","JER_up","PU_down","PU_up","PtEff_down","PtEff_up","BTagEff_up","BTagEff_down"}};
+	std::array<std::string,15> syst = {{"Mbb","eff_b_down","eff_b_up","eff_l_down","eff_l_up","scale_j_down","scale_j_up","res_j_down","res_j_up","PU_down","PU_up","eff_pTonl_down","eff_pTonl_up","eff_bonl_up","eff_bonl_down"}};
 	for(const auto& h: syst){
 		std::string name = "template_" + h;
 		if(histo_[name] != nullptr) throw std::invalid_argument("Histogram: " + name + " already exists. Check spelling");

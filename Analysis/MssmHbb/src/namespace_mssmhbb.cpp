@@ -41,4 +41,14 @@ namespace mssmhbb{
 	// path to mssm_xs_tool root file
 	static const std::string path_mssm_xsections = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root";
 
+	//path to bg fits
+	static const std::string path_bg_sr1 = cmsswBase + "/src/Analysis/BackgroundModel/test/extnovoeffprod_200to650_10GeV_G4/workspace/FitContainer_workspace.root";
+	static const std::string path_bg_sr2 = cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_350to1190_20GeV_G4/workspace/FitContainer_workspace.root";
+	static const std::string path_bg_sr3 = cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_500to1700_25GeV_G4/workspace/FitContainer_workspace.root";
+	static const std::map<int,std::string> path_bg_fits {
+		{1,path_bg_sr1}, //sub-range 1
+		{2,path_bg_sr2}, //sub-range 2
+		{3,path_bg_sr3}, //sub-range 2
+	};
+
 };
