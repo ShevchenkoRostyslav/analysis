@@ -854,21 +854,29 @@ const double JetAnalysisBase::mHat(){
 
 const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analysis::tools::PDF& partons) {
 
+	// define PDF set to be used
 	const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
 	const size_t nmem = set.size()-1;
+	// get the PDF vector from LHAPDF
   const std::vector<LHAPDF::PDF*> pdfs = set.mkPDFs();
 
+	// loop over PDF variations and store values
   std::vector<double> pdf1Vec, pdf2Vec;
   for (size_t imem = 0; imem <= nmem; imem++) {
     pdf1Vec.push_back(pdfs[imem]->xfxQ(partons.id.first, partons.x.first, genScale));
     pdf2Vec.push_back(pdfs[imem]->xfxQ(partons.id.second, partons.x.second, genScale));
   }
-	std::cout << pdf1Vec[0] << " - " << pdf2Vec[0] << std::endl;
+
+	// need to calculate the mean cross section value
+	// first just add up all values
 	double meanValXsec = 0;
 	for (size_t imem = 0; imem <= nmem; imem++) {
 		meanValXsec += pdf1Vec[imem]*pdf2Vec[imem];
 	}
+	// then divide by number of variations
 	meanValXsec /= nmem;
+
+	// calculate standard deviation
 	double stdDeviation = 0;
 	for (size_t imem = 0; imem <= nmem; imem++) {
 		double diff = (pdf1Vec[imem]*pdf2Vec[imem] - meanValXsec);
@@ -876,5 +884,9 @@ const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analy
 	}
 	stdDeviation = std::sqrt(stdDeviation/(nmem-1));
 
+	// fill weights
+	weight_["PDF_central"] = 1;
+	weight_["PDF_down"] = 1 - stdDeviation;
+	weight_["PDF_up"] = 1 + stdDeviation;
 
 }
