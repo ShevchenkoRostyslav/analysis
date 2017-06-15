@@ -24,6 +24,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "TSystem.h"
+// PDF uncertainties
+#include "LHAPDF/LHAPDF.h"
 //
 // user include files
 
@@ -162,6 +164,8 @@ namespace analysis{
         const double mHat();
         //Setup xsections
         void setupXSections();
+				// PDF uncertainties
+				std::vector<LHAPDF::PDF*> pdfs;
 
 
 

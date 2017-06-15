@@ -8,9 +8,6 @@
 #include <chrono>
 #include "Analysis/MssmHbb/interface/JetAnalysisBase.h"
 
-// LHAPDF
-#include "LHAPDF/LHAPDF.h"
-
 
 using namespace analysis;
 using namespace analysis::tools;
@@ -125,7 +122,13 @@ JetAnalysisBase::JetAnalysisBase(const std::string & inputFilelist, const bool &
 		//Define MC type
 		if(findStrings(inputFilelist,"susy")) signalMC_ = true;
 		else signalMC_ = false;
-		if(signalMC_) this->setupXSections();
+		if(signalMC_) {
+			this->setupXSections();
+			// define PDF set to be used
+			const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
+			// get the PDF vector from LHAPDF
+			pdfs = set.mkPDFs();
+		}
 
 		//Add specific to MC trees
 		this->addTree<GenParticle>("GenParticles","MssmHbb/Events/prunedGenParticles");
@@ -854,15 +857,10 @@ const double JetAnalysisBase::mHat(){
 
 const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analysis::tools::PDF& partons) {
 
-	// define PDF set to be used
-	const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
-	const size_t nmem = set.size()-1;
-	// get the PDF vector from LHAPDF
-  const std::vector<LHAPDF::PDF*> pdfs = set.mkPDFs();
-
+	const size_t nmem = pdfs.size();
 	// loop over PDF variations and store values
   std::vector<double> pdf1Vec, pdf2Vec;
-  for (size_t imem = 0; imem <= nmem; imem++) {
+  for (size_t imem = 0; imem < nmem; imem++) {
     pdf1Vec.push_back(pdfs[imem]->xfxQ(partons.id.first, partons.x.first, genScale));
     pdf2Vec.push_back(pdfs[imem]->xfxQ(partons.id.second, partons.x.second, genScale));
   }
@@ -870,7 +868,7 @@ const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analy
 	// need to calculate the mean cross section value
 	// first just add up all values
 	double meanValXsec = 0;
-	for (size_t imem = 0; imem <= nmem; imem++) {
+	for (size_t imem = 0; imem < nmem; imem++) {
 		meanValXsec += pdf1Vec[imem]*pdf2Vec[imem];
 	}
 	// then divide by number of variations
@@ -878,7 +876,7 @@ const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analy
 
 	// calculate standard deviation
 	double stdDeviation = 0;
-	for (size_t imem = 0; imem <= nmem; imem++) {
+	for (size_t imem = 0; imem < nmem; imem++) {
 		double diff = (pdf1Vec[imem]*pdf2Vec[imem] - meanValXsec);
 		stdDeviation += diff*diff;
 	}
