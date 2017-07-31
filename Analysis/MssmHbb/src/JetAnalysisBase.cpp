@@ -8,6 +8,7 @@
 #include <chrono>
 #include "Analysis/MssmHbb/interface/JetAnalysisBase.h"
 
+
 using namespace analysis;
 using namespace analysis::tools;
 using namespace analysis::mssmhbb;
@@ -42,7 +43,13 @@ JetAnalysisBase::JetAnalysisBase(const std::string & inputFilelist, const double
 		//Define MC type
 		if(findStrings(inputFilelist,"susy")) signalMC_ = true;
 		else signalMC_ = false;
-		if(signalMC_) this->setupXSections();
+		if(signalMC_) {
+			this->setupXSections();
+			// define PDF set to be used
+			const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
+			// get the PDF vector from LHAPDF
+			pdfs = set.mkPDFs();
+		}
 
 		//Add specific to MC trees
 		this->addTree<GenParticle>("GenParticles","MssmHbb/Events/prunedGenParticles");
@@ -121,7 +128,13 @@ JetAnalysisBase::JetAnalysisBase(const std::string & inputFilelist, const bool &
 		//Define MC type
 		if(findStrings(inputFilelist,"susy")) signalMC_ = true;
 		else signalMC_ = false;
-		if(signalMC_) this->setupXSections();
+		if(signalMC_) {
+			this->setupXSections();
+			// define PDF set to be used
+			const LHAPDF::PDFSet set("PDF4LHC15_nlo_mc");
+			// get the PDF vector from LHAPDF
+			pdfs = set.mkPDFs();
+		}
 
 		//Add specific to MC trees
 		this->addTree<GenParticle>("GenParticles","MssmHbb/Events/prunedGenParticles");
@@ -458,6 +471,11 @@ void JetAnalysisBase::applySelection(){
 //            	  weight_["BTag"] = pWeight_->BTagWeight(hCorrections2D_["hRelBTagEff2D"], LeadJet[0].pt(),LeadJet[0].eta())*
 //            			  	  	   pWeight_->BTagWeight(hCorrections2D_["hRelBTagEff2D"], LeadJet[1].pt(), LeadJet[1].eta());
 //        	  }
+
+				if(signalMC_) {
+					// PDF uncertainty
+					pdfUncertainties(this->genScale(), this->pdf());
+				}
 
 	    }
 //	    weight_["M12"] = pWeight_->M12Weight(*hCorrections1D_["hM12Weight_bbx"],(LeadJet[0].p4() + LeadJet[1].p4()).M());
@@ -842,3 +860,37 @@ const double JetAnalysisBase::mHat(){
 	return mHat_;
 }
 
+
+const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analysis::tools::PDF& partons) {
+
+	const size_t nmem = pdfs.size();
+	// loop over PDF variations and store values
+  std::vector<double> pdf1Vec, pdf2Vec;
+  for (size_t imem = 0; imem < nmem; imem++) {
+    pdf1Vec.push_back(pdfs[imem]->xfxQ(partons.id.first, partons.x.first, genScale));
+    pdf2Vec.push_back(pdfs[imem]->xfxQ(partons.id.second, partons.x.second, genScale));
+  }
+
+	// need to calculate the mean cross section value
+	// first just add up all values
+	double meanValXsec = 0;
+	for (size_t imem = 0; imem < nmem; imem++) {
+		meanValXsec += pdf1Vec[imem]*pdf2Vec[imem];
+	}
+	// then divide by number of variations
+	meanValXsec /= nmem;
+
+	// calculate standard deviation
+	double stdDeviation = 0;
+	for (size_t imem = 0; imem < nmem; imem++) {
+		double diff = (pdf1Vec[imem]*pdf2Vec[imem] - meanValXsec);
+		stdDeviation += diff*diff;
+	}
+	stdDeviation = std::sqrt(stdDeviation/(nmem-1));
+
+	// fill weights
+	weight_["PDF_central"] = 1;
+	weight_["PDF_down"] = 1 - stdDeviation;
+	weight_["PDF_up"] = 1 + stdDeviation;
+
+}
