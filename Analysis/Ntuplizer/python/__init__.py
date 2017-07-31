@@ -1,3 +1,3 @@
 #Automatically created by SCRAM
 import os
-__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/Analysis/Ntuplizer/',1)[0])+'/cfipython/slc6_amd64_gcc491/Analysis/Ntuplizer')
+__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/Analysis/Ntuplizer/',1)[0])+'/cfipython/slc6_amd64_gcc493/Analysis/Ntuplizer')

@@ -47,6 +47,12 @@ class mssm_xs_tools(object):
 mssm = mssm_xs_tools("mhmodp_mu200_13TeV.root", True, 0)
 mA   = 160
 tanb =   20
+print "Width test"
+for tb in [10,30,60]:
+	print "tan(beta) : ", tb
+	for m in [300,350,400,500,600,700,900,1100,1300]:
+		print "mA : ", m,"  width(H)     : ", mssm.width("H"                 , m, tb)
+
 print "m(H)         : ", mssm.mass ("H"                 , mA, tanb)
 print "width(H)     : ", mssm.width("H"                 , mA, tanb)
 print "br(H->bb): ", mssm.br   ("H->bb"         , mA, tanb)

@@ -36,5 +36,5 @@ SHAPE_BG4
 SHAPE_BG5
 SHAPE_BG6
 
-#signal group = lumi_13TeV CMS_eff_l_13TeV CMS_PU_13TeV CMS_eff_bonl_13TeV pdf_gg QCDscale CMS_scale_j_13TeV CMS_res_j_13TeV CMS_eff_pTonl_13TeV CMS_eff_b_13TeV
+signal group = lumi_13TeV CMS_eff_l_13TeV CMS_PU_13TeV CMS_eff_bonl_13TeV pdf_gg QCDscale CMS_scale_j_13TeV CMS_res_j_13TeV CMS_eff_pTonl_13TeV CMS_eff_b_13TeV
 #background group = CMS_bkgd_qcd_13TeV

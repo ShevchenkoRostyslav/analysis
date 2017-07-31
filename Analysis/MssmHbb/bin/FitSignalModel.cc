@@ -34,6 +34,7 @@
 #include "Analysis/BackgroundModel/interface/Tools.h"
 #include "Analysis/BackgroundModel/interface/ProbabilityDensityFunctions.h"
 #include "Analysis/BackgroundModel/interface/RooQuadGausExp.h"
+#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
 
 //style file
 #include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
@@ -53,30 +54,22 @@ using namespace std;
 
 void drawSystFits(const int & mass,const std::string &syst, const std::string &output);
 void plotShapeParameters(const int & mass,const vector<string> &syst, const std::string &folder, const vector<string>& parameters);
-void fixParameters(const string& name, RooWorkspace& w, const RooWorkspace& central);
-void fixParameters(const string& name, RooWorkspace& w, const double& val);
-void fixShiftParameter(RooWorkspace& w, const RooWorkspace& central);
+void fixParameters(const string& model, const std::string& shape_unc, RooWorkspace& w, const RooWorkspace& central);
+void fixParameter(const string& name, RooWorkspace& w, const RooWorkspace& central);
+void fixParameter(const string& name, RooWorkspace& w, const double& val);
+void fixShiftParameter(const std::string& par_main, const std::string& par2, RooWorkspace& w, const RooWorkspace& central, const bool& constant_shift = true);
 void setParameters(RooWorkspace& w, const RooWorkspace& central);
+double GetChi2CalcLowEdge(TH1D& h,const double& part = 0.1);
+double GetChi2CalcHighEdge(TH1D& h, const double& part = 0.1);
+double GetErrorOfChi2Integration(TH1D& h, const double& low, const double& high);
 
 int main(int argc, char* argv[]) {
-  const auto cmsswBase = static_cast<std::string>(gSystem->Getenv("CMSSW_BASE"));
   style.set(PRELIMINARY);
   gStyle->SetTitleXOffset(1.3);
   gStyle->SetTitleYOffset(1.15);
   gStyle->SetTitleSize(0.04,"XYZ");
 
-	std::map<int,std::string> signal;
-	string selection = "";//"ReReco_36615fb_SFb";//
-	string mssm_normTanB = "";//"_NormToTanB30";
-	signal[300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[350] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-350_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[400] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-400_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[500] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-500_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[600] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-600_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[700] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-700_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[900] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-900_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[1100] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1100_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
-	signal[1300] = "/src/Analysis/MssmHbb/output/MssmHbbSignal" + selection + "_lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-1300_TuneCUETP8M1_13TeV-pythia8" + mssm_normTanB + ".root";
+  string mssm_normTanB = "";//"_NormToTanB30";
 /**/
   int rebin = 1;
   const int verbosity = 1;
@@ -92,34 +85,39 @@ int main(int argc, char* argv[]) {
   std::string CMS = "CMS";
   std::string energy = "13TeV";
   std::array<std::string,2> sign = { {"Up","Down"} };
-  std::string model = "doublegausexp";
+  std::string model = "";
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-  for(const auto & mass : signal){
-
+  for(const auto & mass : mssmhbb::signal_templates){
+	  if(mass.first != 1100) continue;
+	  //Particular mass point
 	  std::cout<<"***************************************"<<std::endl;
 	  std::cout<<"*************** M = "<<mass.first<<"***************"<<std::endl;
 	  std::cout<<"***************************************"<<std::endl;
-	  TFile f((cmsswBase + mass.second).c_str(),"read");
-	  std::string name = cmsswBase + "/src/Analysis/MssmHbb/output/" + "ReReco_signal_M-" + std::to_string(mass.first) + mssm_normTanB;
+	  TFile f((mass.second).c_str(),"read");
+	  std::string name = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/output/" + "ReReco_signal_M-" + std::to_string(mass.first) + mssm_normTanB;// + "_SR2";
 	  boost::filesystem::remove_all(name); // clean dir
 	  std::string hname =  histo_name_240; //histo_name;//
 	  //Central value
 	  TH1D* hSignal = (TH1D*) f.Get(hname.c_str());
 	  if(hSignal == nullptr) throw std::logic_error("Wrong histo name: " + hname + " has been provided");
-	  if(mass.first == 200 || mass.first > 500){
-		  model = "bukin";
-	  }
-	  else model =  "doublegausexp";//"doublegausexp";//
+	  model = mssmhbb::getModelForTheMass(mass.first);
 	  hSignal->Rebin(rebin);
 	  ab::FitContainer fitter(hSignal,name,"signal");
 	  min = hSignal->GetXaxis()->GetXmin();
 	  max = hSignal->GetXaxis()->GetXmax();
 	  fitter.fitRangeMin(min);
 	  fitter.fitRangeMax(max);
+	  double chi2_lowEdge = GetChi2CalcLowEdge(*hSignal);
+	  double chi2_highEdge = GetChi2CalcHighEdge(*hSignal);
+	  double integral_error = GetErrorOfChi2Integration(*hSignal,chi2_lowEdge,chi2_highEdge);
+	  std::cout<<"Error of integration: "<<integral_error<<std::endl;
+//	  fitter.SetChi2CalcLowEdge(chi2_lowEdge);
+//	  fitter.SetChi2CalcHighEdge(chi2_highEdge);
 	  fitter.verbosity(verbosity - 1);
 	  fitter.setModel(ab::FitContainer::Type::signal,model);
 	  RooWorkspace& wC = fitter.getWorkspace();
-	  std::unique_ptr<RooFitResult> Signalfit = fitter.FitSignal(model);
+	  std::unique_ptr<RooFitResult> Signalfit = fitter.FitSignal(model + "_" + std::to_string(mass.first));
+	  std::cout<<"MAIN parametrisation for M_{A} = "<<mass.first<<std::endl;
 	  TH1D* hSignal_240 = (TH1D*) f.Get(histo_name_240.c_str());
 	  RooRealVar signal_norm("signal_norm","signal_norm",hSignal_240->Integral());
 	  signal_norm.setConstant(true);
@@ -144,60 +142,16 @@ int main(int argc, char* argv[]) {
 			  ab::FitContainer fit_syst(hSignal_syst,name + "/" + syst + "_" + s,"signal");
 			  fit_syst.fitRangeMin(min);
 			  fit_syst.fitRangeMax(max);
+			  chi2_lowEdge = GetChi2CalcLowEdge(*hSignal_syst);
+			  chi2_highEdge = GetChi2CalcHighEdge(*hSignal_syst);
+//			  fit_syst.SetChi2CalcLowEdge(chi2_lowEdge);
+//			  fit_syst.SetChi2CalcHighEdge(chi2_highEdge);
 			  fit_syst.verbosity(verbosity - 1);
 			  fit_syst.setModel(ab::FitContainer::Type::signal,model);
 			  RooWorkspace& w = fit_syst.getWorkspace();
 			  setParameters(w,wC);
-          	  if(syst == "CMS_res_j_13TeV") {
-          		  if(model == "bukin"){
-          			  fixParameters("Xp",w,wC);
-          			  fixParameters("rho1",w,wC);
-          			  fixParameters("rho2",w,wC);
-          			  fixParameters("xi",w,wC);
-          		  }
-          		  else {
-          			fixParameters("tail_sigma",w,wC);
-          			fixParameters("mean",w,wC);
-          			fixParameters("tail_shift",w,wC);
-          		  }
-          	  }
-          	  else if (syst == "CMS_scale_j_13TeV"){
-          		  if(model == "bukin"){
-          			  fixParameters("sigp",w,wC);
-          			  fixParameters("rho1",w,wC);
-          			  fixParameters("rho2",w,wC);
-          			  fixParameters("xi",w,wC);
-          		  }
-          		  else {
-          			fixParameters("tail_sigma",w,wC);
-          			  fixParameters("sigmaL",w,wC);
-          			  fixParameters("sigmaR",w,wC);
-          			  fixShiftParameter(w,wC);
-          		  }
-          	  }
-          	  else if (syst == "CMS_eff_pTonl_13TeV"){
-          		  if(model == "bukin"){
-          			fixParameters("sigp",w,wC);
-          			fixParameters("Xp",w,wC);
-          			fixParameters("rho2",w,wC);
-          		  }
-          		  else {
-          			fixParameters("tail_sigma",w,wC);
-          			fixParameters("mean",w,wC);
-          			fixParameters("tail_shift",w,wC);
-          		  }
-          	  }
-          	  else if (syst == "CMS_eff_b_13TeV"){
-          		  if(model == "bukin"){
-          			  fixParameters("Xp",w,wC);
-          			fixParameters("sigp",w,wC);
-          		  }
-          		  else{
-          			fixParameters("tail_shift",w,wC);
-          			fixParameters("mean",w,wC);
-          		  }
-          	  }
-               	std::unique_ptr<RooFitResult> Signalfit_syst = fit_syst.FitSignal(model);
+			  fixParameters(model,syst,w,wC);
+			  std::unique_ptr<RooFitResult> Signalfit_syst = fit_syst.FitSignal(model);
 
                	//Write signal normalisation
                	TH1D* hSignal_240_syst = (TH1D*) f.Get((hname).c_str());
@@ -211,7 +165,8 @@ int main(int argc, char* argv[]) {
 	  }
 	  //Plot shape parameters
 	  if(model == "bukin") plotShapeParameters(mass.first,shape_unc,name,{"Xp","sigp","xi","rho1","rho2"});
-	  else plotShapeParameters(mass.first,shape_unc,name,{"mean","sigmaL","sigmaR","tail_shift","tail_sigma"});
+	  else if( model == "doublegausexp") plotShapeParameters(mass.first,shape_unc,name,{"mean","sigmaL","sigmaR","tail_shift","tail_sigma"});
+	  else if (model == "quadgausexp") plotShapeParameters(mass.first,shape_unc,name,{"mean","sigmaL1","sigmaL2","sigmaR1","sigmaR2","norm_g1","norm_g2","tail_shift","tail_sigma"});
 
 /**/
   }
@@ -256,7 +211,7 @@ void drawSystFits(const int & mass,const std::string &syst, const std::string &o
 //	pad1.Draw();
 //	pad1.cd();
 	double xmin = 0.6,ymin = 0.6,xmax = 0.9,ymax = 0.85;
-	if(mass > 900 || mass == 500) {
+	if(mass > 900){// || mass == 500) {
 		xmin = 0.25; ymin = 0.6 ; xmax = 0.45 ; ymax = 0.85;
 	}
 	TLegend leg(xmin,ymin,xmax,ymax);
@@ -344,13 +299,101 @@ void plotShapeParameters(const int & mass,const vector<string> &syst, const std:
 
 }
 
-void fixParameters(const string& name, RooWorkspace& w, const RooWorkspace& central){
+void fixParameters(const string& model,const std::string& syst, RooWorkspace& w, const RooWorkspace& wC){
+	if(syst == "CMS_res_j_13TeV") {
+		if(model == "bukin"){
+			fixParameter("Xp",w,wC);
+			fixParameter("rho1",w,wC);
+			fixParameter("rho2",w,wC);
+			fixParameter("xi",w,wC);
+		}
+		else if (model == "doublegausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+		}
+		else if (model == "quadgausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+			fixShiftParameter("sigmaL1","sigmaL2",w,wC);
+			fixShiftParameter("sigmaR1","sigmaR2",w,wC);
+			fixParameter("norm_g1",w,wC);
+			fixParameter("norm_g2",w,wC);
+		}
+	}
+	else if (syst == "CMS_scale_j_13TeV"){
+		if(model == "bukin"){
+			fixParameter("sigp",w,wC);
+			fixParameter("rho1",w,wC);
+			fixParameter("rho2",w,wC);
+			fixParameter("xi",w,wC);
+		}
+		else if (model == "doublegausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("sigmaL",w,wC);
+			fixParameter("sigmaR",w,wC);
+			fixShiftParameter("mean","tail_shift",w,wC);
+		}
+		else if (model == "quadgausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixShiftParameter("mean","tail_shift",w,wC);
+			fixParameter("sigmaL1",w,wC);
+			fixParameter("sigmaL2",w,wC);
+			fixParameter("sigmaR1",w,wC);
+			fixParameter("sigmaR2",w,wC);
+			fixParameter("norm_g1",w,wC);
+			fixParameter("norm_g2",w,wC);
+		}
+	}
+	else if (syst == "CMS_eff_pTonl_13TeV"){
+		if(model == "bukin"){
+			fixParameter("sigp",w,wC);
+			fixParameter("Xp",w,wC);
+			fixParameter("rho2",w,wC);
+		}
+		else if (model == "doublegausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+		}
+		else if (model == "quadgausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+			fixShiftParameter("sigmaL1","sigmaL2",w,wC);
+			fixShiftParameter("sigmaR1","sigmaR2",w,wC);
+			fixParameter("norm_g1",w,wC);
+			fixParameter("norm_g2",w,wC);
+		}
+	}
+	else if (syst == "CMS_eff_b_13TeV"){
+		if(model == "bukin"){
+			fixParameter("Xp",w,wC);
+			fixParameter("sigp",w,wC);
+		}
+		else if (model == "doublegausexp"){
+			fixParameter("tail_shift",w,wC);
+			fixParameter("mean",w,wC);
+		}
+		else if (model == "quadgausexp"){
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+			fixShiftParameter("sigmaL1","sigmaL2",w,wC);
+			fixShiftParameter("sigmaR1","sigmaR2",w,wC);
+			fixParameter("norm_g1",w,wC);
+			fixParameter("norm_g2",w,wC);
+		}
+	}
+}
+
+void fixParameter(const string& name, RooWorkspace& w, const RooWorkspace& central){
 	double val = central.var(name.c_str())->getValV();
 	w.var(name.c_str())->setVal(val);
 	w.var(name.c_str())->setConstant();
 }
 
-void fixParameters(const string& name, RooWorkspace& w, const double& val){
+void fixParameter(const string& name, RooWorkspace& w, const double& val){
 	w.var(name.c_str())->setVal(val);
 	w.var(name.c_str())->setConstant();
 }
@@ -366,14 +409,54 @@ void setParameters(RooWorkspace& w, const RooWorkspace& central){
 	}
 }
 
-void fixShiftParameter(RooWorkspace& w, const RooWorkspace& central){
-	RooRealVar& muC = *(RooRealVar*) central.var("mean");
-	RooRealVar& shiftC = *(RooRealVar*) central.var("tail_shift");
+void fixShiftParameter(const std::string& par_main, const std::string& par2, RooWorkspace& w, const RooWorkspace& central, const bool& constant_shift){
+	RooRealVar& muC = *(RooRealVar*) central.var(par_main.c_str());
+	RooRealVar& shiftC = *(RooRealVar*) central.var(par2.c_str());
 	const double d = shiftC.getValV() - muC.getValV();
-	w.removeSet("tail_shift");
-	RooRealVar& mu = *(RooRealVar*) w.var("mean");
+	w.removeSet(par2.c_str());
+	RooRealVar& mu = *(RooRealVar*) w.var(par_main.c_str());
 	RooRealVar delta("delta","delta",d,"GeV");
-	delta.setConstant();
-	RooFormulaVar tail_shift("tail_shift","tail_shift","@0 + @1",RooArgSet(mu,delta));
+	if(constant_shift) delta.setConstant();
+	RooFormulaVar tail_shift(par2.c_str(),par2.c_str(),"@0 + @1",RooArgSet(mu,delta));
 	w.import(tail_shift);
 }
+
+double GetChi2CalcLowEdge(TH1D& h, const double& part){
+	int histo_maxbin = h.GetMaximumBin();
+	double max = h.GetBinContent(histo_maxbin);
+	double part_max = max * part;
+	int histo_low_edge = h.FindFirstBinAbove(part_max);
+	if(histo_low_edge == -1 || histo_low_edge > histo_maxbin){
+		//take the first bin
+		histo_low_edge = 1;
+	}
+	std::cout<<"Low edge = "<<h.GetBinContent(histo_low_edge)<<" bin = "<<histo_low_edge<<std::endl;
+	return h.GetBinCenter(histo_low_edge);
+//	return h.GetBinContent(histo_low_edge);
+}
+
+double GetChi2CalcHighEdge(TH1D& h, const double& part){
+	int histo_maxbin = h.GetMaximumBin();
+	double max = h.GetBinContent(histo_maxbin);
+	double part_max = max * part;
+	int histo_high_edge = h.FindLastBinAbove(part_max);
+	if(histo_high_edge == -1 || histo_high_edge < histo_maxbin){
+		//take the first bin
+		histo_high_edge = h.GetNbinsX();
+	}
+	std::cout<<"High edge = "<<h.GetBinContent(histo_high_edge)<<" bin = "<<histo_high_edge<<std::endl;
+	return h.GetBinCenter(histo_high_edge);
+//	return h.GetBinContent(histo_high_edge);
+}
+
+double GetErrorOfChi2Integration(TH1D& h, const double& low, const double& high){
+	//find bin with content
+	int bin_low = h.FindBin(low);
+	int bin_high = h.FindBin(high);
+
+	double err = 0;
+	h.IntegralAndError(bin_low,bin_high,err);
+	return err;
+}
+
+

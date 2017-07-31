@@ -28,7 +28,11 @@
 
 #include "Analysis/BackgroundModel/src/classes.h"
 #include "Analysis/BackgroundModel/interface/RooDoubleGausExp.h"
+#include "Analysis/BackgroundModel/interface/RooQuadGausExp.h"
+
+#include "Analysis/Tools/interface/RooFitUtils.h"
 #include "Analysis/MssmHbb/interface/utilLib.h"
+#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
 
 namespace
 {
@@ -40,6 +44,7 @@ namespace
 } // namespace
 
 using namespace std;
+using namespace analysis;
 using namespace boost::program_options;
 
 //defin >> stream operator to be used in boost::po
@@ -73,35 +78,29 @@ void setMbb(RooRealVar& var, const string& path);
 int main(int argc, char ** argv){
 	try {
 		//Additional suffix for the ouptut signal workspace name
-		string name_suffix = "_1100SR2";
+		string name_suffix = "";
 
 		//list of the inputs:
-		const string cmsswBase = getenv("CMSSW_BASE");
 		vector<string> input_signal = {
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1100",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300",
+//				mssmhbb::signal_folders.at(300),
+//				mssmhbb::signal_folders.at(350),
+//				mssmhbb::signal_folders.at(400),
+//				mssmhbb::signal_folders.at(500),
+//				mssmhbb::signal_folders.at(600),
+//				mssmhbb::signal_folders.at(700),
+//				mssmhbb::signal_folders.at(900),
+				mssmhbb::signal_folders.at(1100),
+//				mssmhbb::signal_folders.at(1300)
 								};
 		vector<string> input_background = {
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/FitContainer_workspace_SR2.root",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr3/FitContainer_workspace_SR3.root",
+				mssmhbb::path_bg_sr1,
+				mssmhbb::path_bg_sr2,
+				mssmhbb::path_bg_sr3,
 		};
 		vector<string> data_obs = {
-				// Binned data
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/QCD_Templates_SR1.root",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/QCD_Templates_SR2.root",
-				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr3/QCD_Templates_SR3.root",
-				//RooDataset
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/FitContainer_workspace_SR2.root",
-//				cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr3/FitContainer_workspace_SR3.root",
+				mssmhbb::path_data_sr1,
+				mssmhbb::path_data_sr2,
+				mssmhbb::path_data_sr3,
 		};
 		vector<string> systematics = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};
 
@@ -216,6 +215,10 @@ void setup_bg(const string& in_path,const string& out_path, const bool& generate
 	 * Trying to fix Turn-on for the first sub-range
 	 */
 	if(out_path.find("sr1") != std::string::npos){
+		RooRealVar sl("slope_novoeff","slope_novoeff",0);
+		RooRealVar tn("turnon_novoeff","turnon_novoeff",0);
+		wOut.import(sl);
+		wOut.import(tn);
 		wOut.var("slope_novoeff")->setConstant();
 		wOut.var("turnon_novoeff")->setConstant();
 		add_name += "_TurnOnFix";
@@ -232,29 +235,40 @@ void setup_bg(const string& in_path,const string& out_path, TH1& data_obs){
 	if(gSystem->AccessPathName(in_path.c_str()) ) throw invalid_argument("Error: no bg file " + in_path);
 	//Read input file
 	TFile fIn(in_path.c_str(),"read");
-	// Number of bins in daat_obs:
-	int nbins = data_obs.GetNbinsX()*100;//100000;
-	nbins = 5000;
+	// Number of bins in data_obs:
+	int nbins = data_obs.GetNbinsX();
+	if(mssmhbb::blinded) nbins = 5000;
 	//Input workspace
-	RooWorkspace& w = *( (RooWorkspace*)fIn.Get("workspace") );
+	auto& w = *GetFromTFile<RooWorkspace>(fIn, "workspace");
 	//Prepare RooDataHist for data_obs;
 	RooRealVar mbb("mbb","mbb",data_obs.GetXaxis()->GetXmin(),data_obs.GetXaxis()->GetXmax());
 	mbb.setBins(nbins);
 
-	//Prepare Bg normalisation variable WARNING - can be wrong!!!
+	//Prepare Bg normalisation variable
 	string bg_pdf_name = "background";
-	if(w.pdf(bg_pdf_name.c_str()) == nullptr) throw invalid_argument("Error: no <background> pdf has been found in bg workspace");
+	//Input pdf
+	auto &pdf = *GetFromRooWorkspace<RooAbsPdf>(w,bg_pdf_name);
 	RooRealVar bg_norm((bg_pdf_name+"_norm").c_str(),"background_norm",data_obs.Integral());
 	bg_norm.setConstant();
 
-	//Try another workspace
+	//Output workspace
 	RooWorkspace wOut("workspace");
-	wOut.import(*(RooAbsPdf*)w.pdf(bg_pdf_name.c_str()));
-	TH1& h = *w.pdf(bg_pdf_name.c_str())->createHistogram("QCD",mbb,RooFit::Binning(nbins,data_obs.GetXaxis()->GetXmin(),data_obs.GetXaxis()->GetXmax()));
-	h.Scale(data_obs.Integral() / h.Integral());
-	h.SetTitle("data_obs");
-	h.SetName("data_obs");
-	RooDataHist h_data("data_obs","data_obs",mbb,RooFit::Import(h));
+	wOut.import(pdf);
+
+	/*
+	 * Prepare data_obs to be included to the finale backgorund file
+	 * Asymov data in case of a blinded analysis and real data_obs
+	 * when analysis is unblinded
+	 */
+	TH1* h = &data_obs;
+	if(mssmhbb::blinded){
+		//Generate Toy data_obs
+		h = w.pdf(bg_pdf_name.c_str())->createHistogram("QCD",mbb,RooFit::Binning(nbins,data_obs.GetXaxis()->GetXmin(),data_obs.GetXaxis()->GetXmax()));
+		h->Scale(data_obs.Integral() / h->Integral());
+	}
+	h->SetTitle("data_obs");
+	h->SetName("data_obs");
+	RooDataHist h_data("data_obs","data_obs",mbb,RooFit::Import(*h));
 	wOut.import(h_data);
 	wOut.import(bg_norm);
 
@@ -263,8 +277,12 @@ void setup_bg(const string& in_path,const string& out_path, TH1& data_obs){
 	 */
 	std::string add_name = "";
 	if(out_path.find("sr1") != std::string::npos){
-		wOut.var("slope_novoeff")->setConstant();
-		wOut.var("turnon_novoeff")->setConstant();
+//		RooRealVar sl("slope_novoeff","slope_novoeff",0);
+//		RooRealVar tn("turnon_novoeff","turnon_novoeff",0);
+//		wOut.import(sl);
+//		wOut.import(tn);
+		GetFromRooWorkspace<RooRealVar>(wOut,"slope_novoeff")->setConstant();
+		GetFromRooWorkspace<RooRealVar>(wOut,"turnon_novoeff")->setConstant();
 		add_name = "_TurnOnFix";
 
 		/*
@@ -277,7 +295,7 @@ void setup_bg(const string& in_path,const string& out_path, TH1& data_obs){
 //		add_name += "_limitlessBG";
 	}
 	add_name += "_" + std::to_string(nbins) + "bins";
-	if(out_path.find("sr2") != std::string::npos) wOut.var("tail1")->setRange(-10,10);
+	if(out_path.find("sr2") != std::string::npos) GetFromRooWorkspace<RooRealVar>(wOut,"tail1")->setRange(-10,10);
 //	add_name += "_inBins";
 	wOut.Print("v");
 	wOut.writeToFile((out_path + "/background_workspace" + add_name + ".root").c_str());
@@ -374,6 +392,16 @@ void setup_signal(const string& in_folder, const vector<string>& syst, const str
 													(RooFormulaVar&) *w.function("sigmaR"),(RooFormulaVar&)*w.function("tail_shift"),
 													(RooFormulaVar&) *w.function("tail_sigma"));
 	}
+	else if (model == "quadgausexp"){
+		func = make_unique<analysis::backgroundmodel::RooQuadGausExp>("signal","signal",mbb,(RooFormulaVar&) *w.function("mean"),(RooFormulaVar&) *w.function("sigmaL1"),
+				(RooFormulaVar&) *w.function("sigmaL2"),
+				(RooFormulaVar&) *w.function("sigmaR1"),
+				(RooFormulaVar&) *w.function("sigmaR2"),
+				(RooFormulaVar&)*w.function("tail_shift"),
+				(RooFormulaVar&) *w.function("tail_sigma"),
+				(RooFormulaVar&) *w.function("norm_g1"),
+				(RooFormulaVar&) *w.function("norm_g2"));
+	}
 	else throw logic_error("ERROR");
 	w.import(*func.get());
 	string out_path = in_folder + "/workspace/signal_workspace" + out_suffix + ".root";
@@ -390,6 +418,7 @@ string SignalModel(const vector<string>& parameters){
 	vector<string> inserter;
 	models["bukin"] = {"signal_norm","Xp","sigp","xi","rho1","rho2"};
 	models["doublegausexp"] = {"signal_norm","mean","sigmaL","sigmaR","tail_shift","tail_sigma"};
+	models["quadgausexp"] = {"signal_norm","mean","sigmaL1","sigmaL2","sigmaR1","sigmaR2","tail_shift","tail_sigma","norm_g1","norm_g2"};
 	set<string> s1(parameters.begin(),parameters.end());
 	for(const auto& model : models){
 		inserter.clear();
@@ -412,18 +441,15 @@ void setMbb(RooRealVar& var, const string& path){
 	double max;
 	double min;
 	int mass = returnMassPoint(path);
-	vector<int> sr1 = {300,350,400,500};
-	vector<int> sr2 = {600,700,900};
-	vector<int> sr3 = {1100,1300};
-	if( find(sr3.begin(),sr3.end(),mass) != sr3.end()) {
+	if( find(mssmhbb::sr3.begin(),mssmhbb::sr3.end(),mass) != mssmhbb::sr3.end()) {
 		min = 500;
 		max = 1700;
 	}
-	else if( find(sr2.begin(),sr2.end(),mass) != sr2.end() ){
+	else if( find(mssmhbb::sr2.begin(),mssmhbb::sr2.end(),mass) != mssmhbb::sr2.end() ){
 		min = 350;
 		max = 1190;
 	}
-	else if ( find(sr1.begin(),sr1.end(),mass) != sr1.end() ) {
+	else if ( find(mssmhbb::sr1.begin(),mssmhbb::sr1.end(),mass) != mssmhbb::sr1.end() ) {
 		min = 200;
 		max = 650;
 	}

@@ -34,10 +34,11 @@ int main(){
 	style.set(PRELIMINARY);
 
 	//paths with results
-	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201706/13/asymptotic/mssm/Hbb.limits";
+	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/blinded/mssm/bias/Hbb.limits";
 	string path2016_combined = cmsswBase + "/src/Analysis/MssmHbb/datacards/201705/15/Asymptotic/mssm/No_Bias/Hbb.limits";	//If combination is performed
 	//ouptut folder
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170613/mssm/";
+	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/mssm/";
+	CheckOutputDir(output);
 	//MSSM benchmark scenario
 	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root";
 
@@ -58,7 +59,7 @@ int main(){
 	//solo 2016 13 TeV
 	vector<Limit> GxBR_13TeV = limits.ReadCombineLimits(path2016_solo);
 	vector<Limit> mssm_limits_13TeV = limits.GetMSSMLimits(GxBR_13TeV,benchmark);
-	limits.Write(mssm_limits_13TeV, cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170613/mssm/solo_13TeV_limits.txt");
+	limits.Write(mssm_limits_13TeV, output + "solo_13TeV_limits.txt");
 
 	//solo 7+8 TeV
 	vector<Limit> tanBeta2012 = {
@@ -76,5 +77,7 @@ int main(){
 	string output_mssm_tanB_limits = output + boson + "_13TeV_MSSM_tanB_brazil";
 	//if comparison is not needed - insert null_vec as thr second argument
 	vector<Limit> null_vec;
-	limits.LimitPlotter(mssm_limits_13TeV,tanBeta2012,legenda,output_mssm_tanB_limits,0,60,200,900,"24.6 vs 35.7(2016)","M_{#Phi} [GeV]","tan(#beta)",false);
+//	limits.LimitPlotter(mssm_limits_13TeV,null_vec,legenda,output_mssm_tanB_limits,0,60,200,900,"35.7(2016)","M_{A/H} [GeV]","tan(#beta)",false);
+	output_mssm_tanB_limits = output + boson + "_13TeVvs7p8TeV_MSSM_tanB_brazil";
+	limits.LimitPlotter(mssm_limits_13TeV,tanBeta2012,legenda,output_mssm_tanB_limits,0,60,200,900,"24.6 vs 35.7(2016)","M_{A/H} [GeV]","tan(#beta)",false);
 }

@@ -28,16 +28,16 @@ def checkInput(datacard_folder):
     if not os.path.exists(datacard_folder):
         raise AttributeError('Wrong input folder path: ' + datacard_folder)
 
-def runCombineTool(combine,data_card,m):
+def runCombineTool(combine,data_card,m,log_file = 'log_asymptotic'):
     '''Function to run combine for paticular mass.
     
     '''
-    proc = Popen(combine + ' -m ' + m + ' ' + data_card + ' > log_asymptotic_' + m + '.o',shell=True)
+    proc = Popen(combine + ' -m ' + m + ' ' + data_card + ' > ' + log_file + '_' + m + '.o',shell=True)
 
 if __name__ == '__main__':
 
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/independent/no_bias/1100_SR2/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mssm/bias/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #if combination of 7+8+13 is performed:
@@ -46,6 +46,7 @@ if __name__ == '__main__':
     if os.path.exists("Hbb.limits"): os.remove("Hbb.limits")
     #list of mass points
     mass = ['300','350','400','500','600','700','900','1100','1300']
+#     mass = ['1100']
     #combine preferences to be added
     combine_add = ''
     #values of rMin and rMax to be used

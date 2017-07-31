@@ -49,23 +49,28 @@ void AtlasMeasurementsStyle(TGraph &gr);
 using namespace std;
 using namespace analysis::mssmhbb;
 
-int main(){
+int main(int argc, const char** argv){
 
 	HbbLimits limits(true,true);
 	style.set(PRELIMINARY);
 	//paths with results of the combine tool
-	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/18/Asymptotic/mssm/Hbb.limits";
+	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mssm/bias/Hbb.limits";
 	//Details of the 2HDM produciton
 	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION";
 	// type of the 2hdm: type2 or type3
-	string thdm_type = "type2";
+	string thdm_type = "type";
+	if(argc == 1)thdm_type = "type2";
+	else {
+		thdm_type += string(argv[1]);
+	}
 	string thdm_scans = "/nfs/dust/cms/user/shevchen/SusHiScaner/output/" + thdm_production + "/rootFiles/Histograms3D_" + thdm_type + "_mA_mH.root";
 	//value of cos(beta-alpha)
 	double cB_A = 0.1;
 
 	//higgs boson: H/A/both
 	string boson = "both";
-	string output_dir = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170518/2hdm/";
+	string output_dir = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/2hdm/";
+	CheckOutputDir(output_dir);
 
 	vector<Limit> GBR2016 = limits.ReadCombineLimits(path2016);
 	vector<Limit> TanB_2HDM_Limits;

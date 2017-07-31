@@ -47,7 +47,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.4)},
 			{350, Measurement(1.06)},
 			{400, Measurement(-0.86)},
-			{500, Measurement(0.21)}
+//			{500, Measurement(0.21)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr1_r1 =
@@ -55,7 +55,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.4)},
 			{350, Measurement(1.08)},
 			{400, Measurement(-0.87)},
-			{500, Measurement(0.23)}
+//			{500, Measurement(0.23)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr1_r2 =
@@ -63,7 +63,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.4)},
 			{350, Measurement(1.04)},
 			{400, Measurement(-0.83)},
-			{500, Measurement(0.23)}
+//			{500, Measurement(0.23)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr1_r4 =
@@ -71,7 +71,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.39)},
 			{350, Measurement(1.04)},
 			{400, Measurement(-0.85)},
-			{500, Measurement(0.21)}
+//			{500, Measurement(0.21)}
 	};
 
 	map<int,Measurement> bias_novo_bernstein_sr1_r0 =
@@ -79,7 +79,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.14)},
 			{350, Measurement(0.15)},
 			{400, Measurement(-0.01)},
-			{500, Measurement(0.68)}
+//			{500, Measurement(0.68)}
 	};
 
 	map<int,Measurement> bias_novo_bernstein_sr1_r1 =
@@ -87,7 +87,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.11)},
 			{350, Measurement(0.14)},
 			{400, Measurement(0)},
-			{500, Measurement(0.7)}
+//			{500, Measurement(0.7)}
 	};
 
 	map<int,Measurement> bias_novo_bernstein_sr1_r2 =
@@ -95,7 +95,7 @@ int DrawBiasVsM(){
 			{300, Measurement(0.12)},
 			{350, Measurement(0.16)},
 			{400, Measurement(0.02)},
-			{500, Measurement(0.64)}
+//			{500, Measurement(0.64)}
 	};
 
 	map<int,Measurement> bias_novo_bernstein_sr1_r4 =
@@ -103,34 +103,38 @@ int DrawBiasVsM(){
 			{300, Measurement(0.1)},
 			{350, Measurement(0.13)},
 			{400, Measurement(0)},
-			{500, Measurement(0.67)}
+//			{500, Measurement(0.67)}
 	};
 
 	//SR2
 	map<int,Measurement> bias_novo_dijet_sr2_r0 =
 	{
-			{600, Measurement(0.21)},
+			{500, Measurement(0.14)},
+			{600, Measurement(0.18)},
 			{700, Measurement(-0.12)},
 			{900, Measurement(-0.17)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr2_r1 =
 	{
-			{600, Measurement(0.24)},
+			{500, Measurement(0.14)},
+			{600, Measurement(0.18)},
 			{700, Measurement(-0.15)},
 			{900, Measurement(-0.21)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr2_r2 =
 	{
-			{600, Measurement(0.21)},
+			{500, Measurement(0.15)},
+			{600, Measurement(0.16)},
 			{700, Measurement(-0.09)},
 			{900, Measurement(-0.2)}
 	};
 
 	map<int,Measurement> bias_novo_dijet_sr2_r4 =
 	{
-			{600, Measurement(0.24)},
+			{500, Measurement(0.13)},
+			{600, Measurement(0.16)},
 			{700, Measurement(-0.11)},
 			{900, Measurement(-0.18)}
 	};
@@ -184,7 +188,7 @@ int DrawBiasVsM(){
 	TLegend leg = *style.legend("right,top",10);
 	leg.SetX1(0.2);
 	leg.SetTextSize(gStyle->GetTextSize()*0.7);
-	TH2D frame_sr1("h","h",2,250,600,2,-1.5,5.0);
+	TH2D frame_sr1("h","h",2,250,450,2,-1.5,5.0);
 	frame_sr1.SetTitle("Bias=f(M_{H/A}); M_{H/A} [GeV]; a.u.");
 	frame_sr1.SetStats(0);
 
@@ -223,36 +227,36 @@ int DrawBiasVsM(){
 	gr_bias_novo_bernstein_sr1_r0.SetLineColor(6);
 	gr_bias_novo_bernstein_sr1_r0.SetMarkerStyle(25);
 //	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r0,"#mu=0, Fit: ExtendedNovosibirsk*Turn-on, Gen: Bernstein-8*Turn-on","pl");
-	leg.AddEntry(&gr_bias_novo_dijet_sr1_r0,"#mu=0, Fit: Novo, Gen: Bernstein-8","pl");
+	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r0,"#mu=0, Fit: Novo, Gen: Bernstein-8","pl");
 	gr_bias_novo_bernstein_sr1_r0.Draw("PLsame");
 
 	gr_bias_novo_bernstein_sr1_r1.SetMarkerColor(9);
 	gr_bias_novo_bernstein_sr1_r1.SetLineColor(9);
 	gr_bias_novo_bernstein_sr1_r1.SetMarkerStyle(26);
 //	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r1,"#mu=1, Fit: ExtendedNovosibirsk*Turn-on, Gen: Bernstein-8*Turn-on","pl");
-	leg.AddEntry(&gr_bias_novo_dijet_sr1_r1,"#mu=1, Fit: Novo, Gen: Bernstein-8","pl");
+	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r1,"#mu=1, Fit: Novo, Gen: Bernstein-8","pl");
 	gr_bias_novo_bernstein_sr1_r1.Draw("PLsame");
 
 	gr_bias_novo_bernstein_sr1_r2.SetMarkerColor(30);
 	gr_bias_novo_bernstein_sr1_r2.SetLineColor(30);
 	gr_bias_novo_bernstein_sr1_r2.SetMarkerStyle(28);
 //	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r2,"#mu=2, Fit: ExtendedNovosibirsk*Turn-on, Gen: Bernstein-8*Turn-on","pl");
-	leg.AddEntry(&gr_bias_novo_dijet_sr1_r2,"#mu=2, Fit: Novo, Gen: Bernstein-8","pl");
+	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r2,"#mu=2, Fit: Novo, Gen: Bernstein-8","pl");
 	gr_bias_novo_bernstein_sr1_r2.Draw("PLsame");
 
 	gr_bias_novo_bernstein_sr1_r4.SetMarkerColor(35);
 	gr_bias_novo_bernstein_sr1_r4.SetLineColor(35);
 	gr_bias_novo_bernstein_sr1_r4.SetMarkerStyle(26);
 //	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r4,"#mu=4, Fit: ExtendedNovosibirsk*Turn-on, Gen: Bernstein-8*Turn-on","pl");
-	leg.AddEntry(&gr_bias_novo_dijet_sr1_r4,"#mu=4, Fit: Novo, Gen: Bernstein-8","pl");
+	leg.AddEntry(&gr_bias_novo_bernstein_sr1_r4,"#mu=4, Fit: Novo, Gen: Bernstein-8","pl");
 	gr_bias_novo_bernstein_sr1_r4.Draw("PLsame");
 
 	leg.Draw();
 	can_sr1.Print("../pictures/Bias_test/bias_vs_m_sr1.pdf");
 	leg.Clear();
 
-	TH2D frame_sr2("h","h",2,500,1000,2,0,1);
-	frame_sr2.SetTitle("Bias=f(M); M_{H/A} [GeV]; a.u.");
+	TH2D frame_sr2("h","h",2,400,1000,2,0,1);
+	frame_sr2.SetTitle("Bias=f(M_{H/A}); M_{H/A} [GeV]; a.u.");
 	frame_sr2.GetYaxis()->SetRangeUser(-1.1,1.1);
 	frame_sr2.SetStats(0);
 
@@ -292,7 +296,7 @@ int DrawBiasVsM(){
 	leg.Clear();
 
 	TH2D frame_sr3("h","h",2,1000,1400,2,0,1);
-	frame_sr3.SetTitle("Bias=f(M); M_{H/A} [GeV]; a.u.");
+	frame_sr3.SetTitle("Bias=f(M_{H/A}); M_{H/A} [GeV]; a.u.");
 	frame_sr3.GetYaxis()->SetRangeUser(-1.1,1.1);
 	frame_sr3.SetStats(0);
 

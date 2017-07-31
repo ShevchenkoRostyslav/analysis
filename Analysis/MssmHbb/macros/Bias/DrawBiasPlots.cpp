@@ -60,10 +60,10 @@ int DrawBiasPlots(){
 	auto fix_turnon = false;
 //	int signal_strength = 4;
 	vector<int> signal_stregths {0,1,2,4};
-	string additional_file_name = "TEST_MoreFunctionFreedom";
+	string additional_file_name = "";
 
 	map<int,string> input_sanity_files = {
-			{300,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toyextnovoeffprod_G4_R1_fitextnovoeffprod_G4_R1_300GeV_r"},
+//			{300,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toyextnovoeffprod_G4_R1_fitextnovoeffprod_G4_R1_300GeV_r"},
 //			{350,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toyextnovoeffprod_G4_R1_fitextnovoeffprod_G4_R1_350GeV_r"},
 //			{400,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toyextnovoeffprod_G4_R1_fitextnovoeffprod_G4_R1_400GeV_r"},
 //			{500,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toyextnovoeffprod_G4_R1_fitextnovoeffprod_G4_R1_500GeV_r"},
@@ -129,11 +129,14 @@ int DrawBiasPlots(){
 //			{900,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toynovosibirsk_G4_R2_fitsupernovosibirsk1_G4_R2_900GeV_r"},
 //
 //			{1100,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toynovosibirsk_G4_R3_fitsupernovosibirsk1_G4_R3_1100GeV_r"},
-			{1300,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toynovosibirsk_G4_R3_fitsupernovosibirsk1_G4_R3_1300GeV_r"}
+//			{1300,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toynovosibirsk_G4_R3_fitsupernovosibirsk1_G4_R3_1300GeV_r"}
 
 			/*
 			 * Normal Bias tests
 			 */
+			{500,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toydijetexp_G4_R2_fitnovosibirsk_G4_R2_500GeV_r"},
+			{600,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toydijetexp_G4_R2_fitnovosibirsk_G4_R2_600GeV_r"},
+			{700,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toydijetexp_G4_R2_fitnovosibirsk_G4_R2_700GeV_r"},
 
 //			{300,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toysuperdijeteffprod2_R1_fitextnovoeffprod_R1_300GeV_r"},
 //			{350,mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/bin/BiasTest_toysuperdijeteffprod2_R1_fitextnovoeffprod_R1_350GeV_r"},
@@ -189,7 +192,7 @@ int DrawBiasPlots(){
 	};
 
 	map<int,string> input_bias_folder_adjusted, input_sanity_files_adjusted;
-	string output_path = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/Bias_test/30052017_preapproval_checks/";
+	string output_path = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/Bias_test/26072017_newSignalModels/";
 	if (fs::create_directory(output_path)) cout<<"Directory: "<<output_path<<" has been created."<<endl;
 
 	for(const auto& signal_strength : signal_stregths){
