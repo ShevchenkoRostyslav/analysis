@@ -35,7 +35,7 @@ namespace analysis {
       RooRealProxy tail_sigma_;
 
     private:
-      ClassDef(RooDoubleGausExp,1)
+      ClassDef(RooDoubleGausExp,1);
     };
 
   }

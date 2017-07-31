@@ -36,7 +36,7 @@ public:
 	RooFitQuality() = default;
 	virtual ~RooFitQuality() = default;
 
-	Chi2Ndf chiSquare(RooPlot& frame,const std::string& curvename, const std::string& histname,const int& nFitParam, const double& blind_lowEdge = 1e+06, const double& blind_highEdge = -1e+06);
+	Chi2Ndf chiSquare(RooPlot& frame,const std::string& curvename, const std::string& histname,const int& nFitParam, const double& blind_lowEdge = 1e+06, const double& blind_highEdge = -1e+06, const double& chi2_lowEdge = -1e+06, const double& chi2_highEdge = 1e+06);
 	void PrintParametersInfo(const RooFitResult& res);
 //	int ndf
 

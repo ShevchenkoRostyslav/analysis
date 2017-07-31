@@ -12,3 +12,6 @@
 #include "Analysis/BackgroundModel/interface/RooSuperNovosibirsk.h"
 #include "Analysis/BackgroundModel/interface/RooPolyDijet.h"
 #include "Analysis/BackgroundModel/interface/RooSuperDiJet.h"
+#include "Analysis/BackgroundModel/interface/RooBukinExp.h"
+#include "Analysis/BackgroundModel/interface/RooDoubleBukin.h"
+#include "Analysis/BackgroundModel/interface/RooTripleGausExp.h"

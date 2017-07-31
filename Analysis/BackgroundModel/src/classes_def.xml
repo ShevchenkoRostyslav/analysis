@@ -13,4 +13,7 @@
   <class name="analysis::backgroundmodel::RooSuperNovosibirsk" />
   <class name="analysis::backgroundmodel::RooPolyDijet" />
   <class name="analysis::backgroundmodel::RooSuperDiJet" />
+  <class name="analysis::backgroundmodel::RooBukinExp" />
+  <class name="analysis::backgroundmodel::RooDoubleBukin" />
+  <class name="analysis::backgroundmodel::RooTripleGausExp" />
 </lcgdict>

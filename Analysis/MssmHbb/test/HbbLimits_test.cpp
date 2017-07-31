@@ -18,6 +18,8 @@
 #include "Analysis/MssmHbb/interface/HbbLimits.h"
 #include "Analysis/MssmHbb/interface/Limit.h"
 #include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
+#include "Analysis/MssmHbb/interface/utilLib.h"
+#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
 
 using namespace std;
 using namespace analysis::mssmhbb;
@@ -27,15 +29,18 @@ HbbStyle style;
 
 int main(){
 
-	HbbLimits limits(true,true);
+	HbbLimits limits(mssmhbb::blinded,true);
 	style.set(PRELIMINARY);
 
 	//Path to the folder with Hbb.Limits - results of the combine tool.
-	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/independent/no_bias/normal/";//mssm/Hbb.limits
+	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/independent/bias/";//mssm/Hbb.limits
 	// Output name prefix
-	string modification_to_name = "1100SR2_vs_Normal_";
+	string modification_to_name = "with_bias_vs_old";
 	// Output folder WARNING:folder should exist!!!!
-	string output = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170614/" + modification_to_name;
+	string output = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/";
+	CheckOutputDir(output);
+	output += modification_to_name;
+	CheckOutputDir(output);
 
 	//Position of the TLegend
 	TLegend legenda(0.62,0.55,0.85,0.75);
@@ -52,7 +57,7 @@ int main(){
 	string output_independet_limits = output + "Hbb_Limits_2016";
 
 	//in case of comparison - GBR_to_compare should be used as a second argument to the HbbLimits::LimitPlotter method
-	string path_to_compare = path2016 + "../1100_SR2/Hbb.limits";
+	string path_to_compare = path2016 + "../../../../../201706/final/independent/Hbb.limits";
 	vector<Limit> GBR_to_compare = limits.ReadCombineLimits(path_to_compare);
 	limits.Write(GBR_to_compare,path_to_compare);
 

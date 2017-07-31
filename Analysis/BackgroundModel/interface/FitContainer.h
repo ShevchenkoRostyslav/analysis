@@ -88,6 +88,9 @@ namespace analysis {
       void Import(const RooAbsArg& inArg);
       void Write();
 
+      void SetChi2CalcLowEdge(const double & val);
+      void SetChi2CalcHighEdge(const double & val);
+
     private:
 
       //Private constructor to avoid code duplication for private members initialisation
@@ -135,6 +138,8 @@ namespace analysis {
       float fitRangeMin_;
       float fitRangeMax_;
       TTree bkgOnlyFit_;
+      double chi2_lowEdge_;
+      double chi2_highEdge_;
       float chi2BkgOnly_;
       float normChi2BkgOnly_;
       int ndfBkgOnly_;
@@ -148,6 +153,8 @@ namespace analysis {
     inline void FitContainer::Import(const RooAbsArg& inArg){ workspace_.import(inArg);}
     inline void FitContainer::Write(){ if(!written_) { workspace_.writeToFile(outRootFileName_.c_str()); written_ = true;}   }
     inline RooWorkspace& FitContainer::getWorkspace() {return workspace_;};
+    inline void FitContainer::SetChi2CalcLowEdge(const double& val){chi2_lowEdge_ = val;};
+    inline void FitContainer::SetChi2CalcHighEdge(const double& val){chi2_highEdge_ = val;};
 
   }
 }

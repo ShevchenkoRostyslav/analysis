@@ -7,6 +7,7 @@
 #include "TMath.h"
 #include "TSystem.h"
 #include "TLatex.h"
+#include "TLine.h"
 #include "RooAbsReal.h"
 #include "RooAbsPdf.h"
 #include "RooArgList.h"
@@ -57,6 +58,8 @@ FitContainer::FitContainer(const std::string& outputDir) :
 		signal_("signal_container"),
 		bkg_("background_container"),
 		bkgOnlyFit_("fit_b", "fit_b"),
+		chi2_lowEdge_(-10000),
+		chi2_highEdge_(10000),
 		chi2BkgOnly_(-10000.0),
 		normChi2BkgOnly_(-10000.0),
 		ndfBkgOnly_(-10000),
@@ -252,6 +255,7 @@ void FitContainer::initialize() {
   auto& mbb = *GetFromRooWorkspace<RooRealVar>(workspace_, mbb_);
   mbb.setRange(fullRangeId_.c_str(), mbb.getMin(), mbb.getMax());
   mbb.setRange(fitRangeId_.c_str(), fitRangeMin_, fitRangeMax_);
+  mbb.setRange("chi2_range",chi2_lowEdge_,chi2_highEdge_);
 
   // perform split range simultaneously fit to blinded data by CA
   mbb.setRange(fitRangeLowId_.c_str(), fitRangeMin_, blind_lowEdge_);  //always have to give input of --fit_min
@@ -351,6 +355,14 @@ std::unique_ptr<RooFitResult> FitContainer::FitSignal(const std::string & name, 
 		  Pdf.paramOn(frame.get(),RooFit::Layout(par_xmin,par_xmax,par_ymax));//0.98-pad1->GetRightMargin(),0.83-pad1->GetTopMargin()));
 		  frame->getAttText()->SetTextSize(0.03);
 	  }
+	  //Compare integrals of the data and fit in a chi2 deffinition range
+	  double data_integral = data.sumEntries( (std::string("mbb > " +std::to_string(chi2_lowEdge_) + " && mbb< " + std::to_string(chi2_highEdge_))).c_str() );
+	  double fit_integral  = Pdf.createIntegral(mbb,RooFit::NormSet(mbb),RooFit::Range("chi2_range"))->getVal()*data.sumEntries();
+	  std::cout<<"Data vs Fit integrals"<<std::endl;
+	  std::cout<<"Range: ["<<chi2_lowEdge_<<";"<<chi2_highEdge_<<"]"<<std::endl;
+	  std::cout<<"Data = "<<data_integral;
+	  std::cout<<" Fit = "<<fit_integral<<std::endl;
+	  std::cout<<"(Data-Fit)/Data*100% = "<<(data_integral-fit_integral)/data_integral * 100<<std::endl;
 
 	    int nPars = fitResult->floatParsFinal().getSize();
 
@@ -374,10 +386,11 @@ std::unique_ptr<RooFitResult> FitContainer::FitSignal(const std::string & name, 
 	    ////////////////////////////////////////////////////////////////////////////////
 	    ////////////////////////ChiSquare by Chayanit///////////////////////////////////
 	    ////////////////////////////////////////////////////////////////////////////////
-	    Chi2Ndf chi2ndf = fit_quality.chiSquare(*frame, "signal_curve", "data_points", nPars, blind_lowEdge_, blind_highEdge_);
+	    Chi2Ndf chi2ndf = fit_quality.chiSquare(*frame, "signal_curve", "data_points", nPars,blind_lowEdge_,blind_highEdge_,chi2_lowEdge_,chi2_highEdge_ );
 	    ndfBkgOnly_ 		= chi2ndf.ndf;
 	    chi2BkgOnly_ 		= chi2ndf.chi2;
 	    normChi2BkgOnly_ 	= chi2BkgOnly_/ndfBkgOnly_;
+	    std::cout<<"Rostyslav: Chi^2/Ndf = "<<chi2ndf.chi2<<"/"<<chi2ndf.ndf<<" = "<<chi2ndf.chi2/chi2ndf.ndf<<std::endl;
 	  	bkgOnlyFit_.Fill();
 
 	  	std::string chi2str(Form("%.1f/%d = %.1f", chi2BkgOnly_,
@@ -419,6 +432,15 @@ std::unique_ptr<RooFitResult> FitContainer::FitSignal(const std::string & name, 
 	    frame->GetYaxis()->SetLabelSize(0.033);
 	    //frame->GetYaxis()->SetRangeUser(frame->GetMinimum(), frame->GetMaximum()+200);
 	    frame->Draw();
+	    //Draw TLine shows chi2 calculation borders
+	    if(chi2_lowEdge_ != -10000 && chi2_highEdge_ != 10000){
+	    	TLine low_edge(chi2_lowEdge_,0,chi2_lowEdge_,frame->GetMaximum());
+	    	low_edge.SetLineStyle(7);
+	    	low_edge.Draw();
+	    	TLine high_edge(chi2_highEdge_,0,chi2_highEdge_,frame->GetMaximum());
+	    	high_edge.SetLineStyle(7);
+	    	high_edge.Draw();
+	    }
 	
 	    std::string lumistr(Form("%.1f", lumi_));
 
@@ -467,12 +489,16 @@ std::unique_ptr<RooFitResult> FitContainer::FitSignal(const std::string & name, 
 	    frame2->SetMaximum(+5.);
 	    frame2->Draw();
 
+	    canvas.Modified();
+	    canvas.Update();
 	    canvas.SaveAs((plotDir_+name+"_lowM_linear.pdf").c_str());
+	    canvas.SaveAs((plotDir_+name+"_lowM_linear.png").c_str());
 	    pad1->SetLogy();
 	    frame->GetYaxis()->SetRangeUser(0.001, frame->GetMaximum()*5);
 	    canvas.Modified();
 	    canvas.Update();
 	    canvas.SaveAs((plotDir_+name+"_lowM_log.pdf").c_str());
+	    canvas.SaveAs((plotDir_+name+"_lowM_log.png").c_str());
 
 	    return fitResult;
 
@@ -496,7 +522,9 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
 			RooFit::Save(),
 			RooFit::PrintLevel(verbosity_),
 			RooFit::Range(fitRangeLowId_.c_str()),
+			RooFit::SumW2Error(kTRUE),
 //			RooFit::Range(fitSplRangeId_.c_str()),
+//			RooFit::Offset(true),
 			RooFit::SplitRange()
   //RooFit::InitialHesse(kTRUE)
     ));

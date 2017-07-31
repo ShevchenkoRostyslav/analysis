@@ -22,7 +22,7 @@ void RooFitQuality::PrintParametersInfo(const RooFitResult& res){
 	  res.floatParsFinal().Print("v");
 }
 
-Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, const std::string& histname,const int& nFitParam, const double& blind_lowEdge, const double& blind_highEdge){
+Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, const std::string& histname,const int& nFitParam, const double& blind_lowEdge, const double& blind_highEdge, const double& chi2_lowEdge, const double& chi2_highEdge){
 	/*
 	 * Method to get a chi^2
 	 */
@@ -45,6 +45,8 @@ Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, co
 		if(x < curve_xstart || x > curve_xstop) continue;
 		//Check whether point is in a blinded region
 		if (x > blind_lowEdge && x < blind_highEdge) continue;
+		if (x < chi2_lowEdge || x > chi2_highEdge) continue;
+//		std::cout<<"WTF: x = "<<x<<" "<<chi2_lowEdge<<" "<<chi2_highEdge<<std::endl;
 
 		auto eyl = hist.GetEYlow()[i] ;
 		auto eyh = hist.GetEYhigh()[i] ;
@@ -57,6 +59,7 @@ Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, co
 			chi2 += pull*pull;
 			++nbins;
 		}
+//		std::cout<<i<<" y = "<<y<<" - "<<curve_yavg<<" err_l = "<<eyl<<" err_h = "<<eyh<<" chi2 = "<<chi2<<std::endl;
 	}
 	return Chi2Ndf(chi2,nbins-nFitParam);
 }
