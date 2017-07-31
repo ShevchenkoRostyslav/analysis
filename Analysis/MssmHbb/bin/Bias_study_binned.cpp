@@ -649,18 +649,15 @@ RooRealVar* AdjustMbbVariable(RooWorkspace& w, const double& mass, const std::st
 	/*
 	 * Function to adjust Mbb x-variable
 	 */
-	vector<int> sr1 = {300,350,400,500};
-	vector<int> sr2 = {600,700,900};
-	vector<int> sr3 = {1100,1300};
 	int nbins = 500;
 	auto *mbb = GetFromRooWorkspace<RooRealVar>(w,mbb_name);
-	if( find(sr3.begin(),sr3.end(),mass) != sr3.end()) {
+	if( find(mssmhbb::sr3.begin(),mssmhbb::sr3.end(),mass) != mssmhbb::sr3.end()) {
 		mbb->setRange(500,1700);
 	}
-	else if( find(sr2.begin(),sr2.end(),mass) != sr2.end() ){
+	else if( find(mssmhbb::sr2.begin(),mssmhbb::sr2.end(),mass) != mssmhbb::sr2.end() ){
 		mbb->setRange(350,1190);
 	}
-	else if ( find(sr1.begin(),sr1.end(),mass) != sr1.end() ) {
+	else if ( find(mssmhbb::sr1.begin(),mssmhbb::sr1.end(),mass) != mssmhbb::sr1.end() ) {
 		mbb->setRange(200,650);
 	}
 	else {
@@ -809,7 +806,7 @@ std::string GetPdfPath(const std::string & pdf, const Printer& p, int & npar){
 		outname = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500/workspace/FitContainer_workspace.root";
 	}
 	else if(pdf == "600" ) {
-		npar = 5;
+		npar = 9;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600/workspace/FitContainer_workspace.root";
 	}
 	else if(pdf == "700") {

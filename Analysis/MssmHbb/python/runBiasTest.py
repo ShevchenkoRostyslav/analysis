@@ -70,9 +70,9 @@ def GetSubrange(mass):
     '''Function to get subrange string accroding to the mass value.
     
     '''
-    if mass in  [300,350,400,500]:
+    if mass in  [300,350,400]:
         return 'sr1'
-    elif mass in [600,700,900]:
+    elif mass in [500,600,700,900]:
         return 'sr2'
     elif mass in [1100,1300]:
         return 'sr3'

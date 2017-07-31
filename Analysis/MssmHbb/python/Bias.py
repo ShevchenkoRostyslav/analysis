@@ -67,14 +67,14 @@ if __name__ == '__main__':
     bias = {'300' : 1.,
             '350' : 1.,
             '400' : 1.,
-            '500' : 1.,
+            '500' : 0.2,
             '600' : 0.2,
             '700' : 0.2,
             '900' : 0.2,
             '1100': 0.25,
             '1300': 0.25} 
     #folder with mll fits
-    input_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201705/15/mll_forBias/'
+    input_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mll_forBias/'
     #log filies with output of MLL
     log_files = [input_folder + 'mll_M-' + m + '/log_' + m + '.o' for m in bias]
     #loop over the mass points

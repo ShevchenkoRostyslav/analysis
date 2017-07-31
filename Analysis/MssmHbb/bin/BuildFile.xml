@@ -44,6 +44,7 @@
 <bin   name="Plot2HDM_cosBA_tanB" 		file="../macros/limits/Plot2HDM_cosBA_tanB.cpp"></bin>
 <bin   name="Plot2HDM_mA_tanB" 			file="../macros/limits/Plot2HDM_mA_tanB.cpp"></bin>
 <bin   name="Plot2HDM_2D" 				file="../macros/limits/Plot2HDM_2D.cpp"></bin>
+<bin   name="GOF"						file="../macros/pre_unblinding/draw_GOF.cpp"></bin>
 
 #data vs mc
 <bin   name="FlavourContamination"		file="../macros/FlavourContamination_2b.cpp"></bin>
@@ -54,6 +55,11 @@
 <bin   name="FitTestDraw"				file="../macros/Background/FitTest.cpp"></bin>
 <bin   name="bgFit_vs_SignalShapes"		file="../macros/Background/bgFit_vs_SignalShapes.cpp"></bin>
 <bin   name="bgShape"					file="../macros/Background/bgShape.cpp"></bin>
+<bin   name="FullMassPlot"				file="../macros/Background/FullMassPlot.cpp"></bin>
 
 #Generator MC level study
 <bin   name="mass_dependence"			file="../macros/Gen_level/mass_dependence.cpp"></bin>
+<bin   name="peak_width"			file="../macros/Gen_level/peak_width.cpp"></bin>
+
+#Signal modelling
+<bin   name="parametrisation"			file="../macros/Signal_shapes/parametrisation.cpp"></bin>

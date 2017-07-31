@@ -76,8 +76,8 @@ def AdjustSignalStrength(mass, bg_only):
     rmin = '-10'
     rmax = '10'
     if(bg_only):
-        rmin = '-10'#'-0.001'
-        rmax = '10'#'0.001'
+        rmin = '-5'#'-0.001'
+        rmax = '5'#'0.001'
     else:
         if mass == '300' or mass == '350':
             rmin = '-10'
@@ -98,12 +98,12 @@ if __name__ == '__main__':
     #bg_only fit?
     bg_only = True
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201706/14/switch_sub_ranges/mll_forBias/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mll_forBias/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #list of mass points
-    mass = ['500','600','1100']
-    #mass = ['300','350','400','500','600','700','900','1100','1300']
+    mass = ['400']
+#     mass = ['300','350','400','500','600','700','900','1100','1300']
     #combine preferences to be added
     combine_add = ''#'--saveWorkspace '#'--plots --saveShapes --saveWithUncertainties -t -1'#'--freezeNuisanceGroups signal --expectSignal=0'# --freezeNuisances CMS_bkgd_qcd_13TeV'
     for m in mass:
