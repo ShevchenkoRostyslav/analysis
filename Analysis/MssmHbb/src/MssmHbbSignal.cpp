@@ -341,12 +341,12 @@ void MssmHbbSignal::makeM12Templates(const bool& subranges){
 		double min;
 		double mass = returnMassPoint();
 		if(subranges){
-			if(mass == 300 || mass == 350 || mass == 400 || mass == 500){
+			if(mass == 300 || mass == 350 || mass == 400){
 				nbins = 45;
 				min = 200;
 				max = 650;
 			}
-			else if (mass == 600 || mass == 700 || mass == 900){
+			else if (mass == 500 || mass == 600 || mass == 700 || mass == 900){
 				nbins = 42;
 				min = 350;
 				max = 1190;

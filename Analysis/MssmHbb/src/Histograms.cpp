@@ -534,7 +534,7 @@ void Histograms::DeclareDataMCHistograms(const int &size){
 
 
 	//Systematic list:
-	std::vector<std::string> Syst = {"_eff_pTonl_","_PU_","_SFb_","_eff_l_","_scale_j_","_res_j_","_eff_bonl_"};
+	std::vector<std::string> Syst = {"_eff_pTonl_","_PU_","_eff_b_","_eff_l_","_scale_j_","_res_j_","_eff_bonl_"};
 	//Variation list:
 	std::vector<std::string> Variation = {"up","down"};
 

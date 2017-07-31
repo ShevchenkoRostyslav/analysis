@@ -101,13 +101,13 @@ void DataMcComparison::fillHistograms(const std::shared_ptr<Collection<Jet> > &o
 		histoToFill("","",weight);
 		if(isMC()){
 			//Pt Efficiency
-			syst = "_PtEff_";
+			syst = "_eff_pTonl_";
 			variation = "up";
-			syst_weight = weight/weight_["PtEff_central"] * weight_["PtEff_up"];
+			syst_weight = weight/weight_["eff_pTonl_central"] * weight_["eff_pTonl_up"];
 			histoToFill(syst,variation,syst_weight);
 
 			variation = "down";
-			syst_weight = weight/weight_["PtEff_central"] * weight_["PtEff_down"];
+			syst_weight = weight/weight_["eff_pTonl_central"] * weight_["eff_pTonl_down"];
 			histoToFill(syst,variation,syst_weight);
 
 			//PU
@@ -121,53 +121,53 @@ void DataMcComparison::fillHistograms(const std::shared_ptr<Collection<Jet> > &o
 			histoToFill(syst,variation,syst_weight);
 
 			//SFb
-			syst = "_SFb_";
+			syst = "_eff_b_";
 			variation = "up";
-			syst_weight = weight/weight_["SFb_central"] * weight_["SFb_up"];
+			syst_weight = weight/weight_["eff_b_central"] * weight_["eff_b_up"];
 			histoToFill(syst,variation,syst_weight);
 
 			variation = "down";
-			syst_weight = weight/weight_["SFb_central"] * weight_["SFb_down"];
+			syst_weight = weight/weight_["eff_b_central"] * weight_["eff_b_down"];
 			histoToFill(syst,variation,syst_weight);
 
 			//SFl
-			syst = "_SFl_";
+			syst = "_eff_l_";
 			variation = "up";
-			syst_weight = weight/weight_["SFl_central"] * weight_["SFl_up"];
+			syst_weight = weight/weight_["eff_l_central"] * weight_["eff_l_up"];
 			histoToFill(syst,variation,syst_weight);
 
 			variation = "down";
-			syst_weight = weight/weight_["SFl_central"] * weight_["SFl_down"];
+			syst_weight = weight/weight_["eff_l_central"] * weight_["eff_l_down"];
 			histoToFill(syst,variation,syst_weight);
 
 			//Online BTag
-			syst = "_OnlBTag_";
+			syst = "_eff_bonl_";
 			variation = "up";
-			syst_weight = weight/weight_["BTagEff_central"] * weight_["BTagEff_up"];
+			syst_weight = weight/weight_["eff_bonl_central"] * weight_["eff_bonl_up"];
 			histoToFill(syst,variation,syst_weight);
 
 			variation = "down";
-			syst_weight = weight/weight_["BTagEff_central"] * weight_["BTagEff_down"];
+			syst_weight = weight/weight_["eff_bonl_central"] * weight_["eff_bonl_down"];
 			histoToFill(syst,variation,syst_weight);
 		}
 	}
 	else if (JESshift_ < 0 && JERshift_ == 0){
-		syst = "_JES_";
+		syst = "_scale_j_";
 		variation = "down";
 		histoToFill(syst,variation,weight);
 	}
 	else if (JESshift_ > 0 && JERshift_ == 0){
-		syst = "_JES_";
+		syst = "_scale_j_";
 		variation = "up";
 		histoToFill(syst,variation,weight);
 	}
 	else if (JERshift_ > 0 && JESshift_ == 0){
-		syst = "_JER_";
+		syst = "_res_j_";
 		variation = "up";
 		histoToFill(syst,variation,weight);
 	}
 	else if (JERshift_ < 0 && JESshift_ == 0){
-		syst = "_JER_";
+		syst = "_res_j_";
 		variation = "down";
 		histoToFill(syst,variation,weight);
 	}
@@ -231,8 +231,8 @@ const double DataMcComparison::assignWeight(){
 	double weight = 1;
 	std::string file_name = outputFile_->GetName();
 	if(isMC()) {
-		weight = weight_["PtEff_central"] * weight_["PU_central"] * weight_["SFb_central"] * weight_["SFl_central"];
-		weight *= weight_["BTagEff_central"];
+//		weight = weight_["PtEff_central"] * weight_["PU_central"] * weight_["SFb_central"] * weight_["SFl_central"];
+//		weight *= weight_["BTagEff_central"];
 		if(file_name.find("madgraphMLM") != std::string::npos){
 //			weight = weight * weight_["Ht"];
 		}
