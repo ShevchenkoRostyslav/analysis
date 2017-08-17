@@ -22,6 +22,7 @@
 #include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
 #include "Analysis/MssmHbb/interface/utilLib.h"
 #include "Analysis/Tools/interface/RooFitUtils.h"
+#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
 
 using namespace std;
 using namespace RooFit;
@@ -41,19 +42,19 @@ int mass_fit(){
 	gSystem->Load("libHiggsAnalysisCombinedLimit");
 	style.set(PRIVATE);
 
-	string mass_point = "1100";
+	string mass_point = "1300";
 	int nbins = 50;
-	double xsec_vis = 10;
-	string output = "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170518/";
+	double xsec_vis = 2;
+	string output = "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/";
 	string output_append = "";
-	string campaign = "201705/18/mll/independent/";
+	string campaign = "201707/26/unblinded/independent/mll/";
 
 	//Files with mll fit results
 	TFile *fMLL 		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	//S+Bg mll
-	TFile *fMLL_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/test_no_bias/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	// Bg only, no-bias
+	TFile *fMLL_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	// Bg only, no-bias
 	//Files with post-fit workspaces
 	TFile *fWorkspace			= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
-	TFile *fWorkspace_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/test_no_bias/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
+	TFile *fWorkspace_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
 
 	//Get RooFitResults and workspaces
 	auto *roofitresult 			= GetFromTFile<RooFitResult>(*fMLL,"fit_s");
@@ -66,13 +67,13 @@ int mass_fit(){
 	auto *r 		= GetFromRooWorkspace<RooRealVar>(*workspace,"r");
 	auto *data_obs 	= GetFromRooWorkspace<RooDataHist>(*workspace,"data_obs");
 	//pdfs
-	auto *pdf_sgn			= GetFromRooWorkspace<RooAbsPdf>(*workspace, "shapeSig_bbH_Mbb_bbHTo4b");
+	auto *pdf_sgn			= GetFromRooWorkspace<RooAbsPdf>(*workspace, "shapeSig_bbH" + mass_point + "_bbHTo4b");
 	auto *pdf_bkg			= GetFromRooWorkspace<RooAbsPdf>(*workspace, "shapeBkg_QCD_Mbb_bbHTo4b");
 	auto *pdf_bkg_nobias	= GetFromRooWorkspace<RooAbsPdf>(*workspace_bg_nobias, "shapeBkg_QCD_Mbb_bbHTo4b");
 	//pdfs normalisations
-	auto *pdf_sgn_norm		= GetFromRooWorkspace<RooFormulaVar>(*workspace, "shapeSig_bbH_Mbb_bbHTo4b__norm");
+	auto *pdf_sgn_norm		= GetFromRooWorkspace<RooFormulaVar>(*workspace, "shapeSig_bbH" + mass_point + "_bbHTo4b__norm");
 	//finale norms
-	auto *n_sgn_fit			= GetFromRooWorkspace<RooFormulaVar>(*workspace,"n_exp_final_binbbHTo4b_proc_bbH_Mbb");
+	auto *n_sgn_fit			= GetFromRooWorkspace<RooFormulaVar>(*workspace,"n_exp_final_binbbHTo4b_proc_bbH"  + mass_point);
 	auto *n_bkg_fit			= GetFromRooWorkspace<RooFormulaVar>(*workspace,"n_exp_final_binbbHTo4b_proc_QCD_Mbb");
 	auto *bkg_sys_fit_nobias= static_cast<RooRealVar*>(roofitresult_nobias->floatParsFinal().find("CMS_bkgd_qcd_13TeV"));
 	auto *n_bkg_fit_nobias	= static_cast<RooRealVar*>(roofitresult_nobias->constPars().find("shapeBkg_QCD_Mbb_bbHTo4b__norm"));
