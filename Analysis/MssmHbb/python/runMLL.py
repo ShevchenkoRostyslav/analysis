@@ -68,7 +68,7 @@ def createCleanDir(dir_name):
         print(e)
         
 
-def AdjustSignalStrength(mass, bg_only):
+def AdjustSignalStrength(mass, bg_only,blinded):
     '''Funciton to Adjust signla strength accroding to the mass point
     and bg_only fit or not.
     
@@ -80,11 +80,19 @@ def AdjustSignalStrength(mass, bg_only):
         rmax = '5'#'0.001'
     else:
         if mass == '300' or mass == '350':
-            rmin = '-10'
-            rmax = '20'
+        	if not blinded:
+        		rmin = '-20'
+        		rmax = '20'
+        	else:
+				rmin = '-10'
+				rmax = '20'
         elif mass == '400':
-            rmin = '-10'
-            rmax = '20'
+        	if not blinded:
+        		rmin = '-50'
+        		rmax = '50'
+        	else:
+				rmin = '-10'
+				rmax = '20'
         else:
             rmin = '-20'
             rmax = '20'
@@ -96,16 +104,17 @@ def AdjustSignalStrength(mass, bg_only):
 if __name__ == '__main__':
 
     #bg_only fit?
+    blinded = False
     bg_only = True
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mll_forBias/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/unblinded/independent/mll/bg_only/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #list of mass points
-    mass = ['400']
-#     mass = ['300','350','400','500','600','700','900','1100','1300']
+#    mass = ['400']
+    mass = ['300','350','400','500','600','700','900','1100','1300']
     #combine preferences to be added
-    combine_add = ''#'--saveWorkspace '#'--plots --saveShapes --saveWithUncertainties -t -1'#'--freezeNuisanceGroups signal --expectSignal=0'# --freezeNuisances CMS_bkgd_qcd_13TeV'
+    combine_add = '--saveWorkspace '#''#'--plots --saveShapes --saveWithUncertainties -t -1'#'--freezeNuisanceGroups signal --expectSignal=0'# --freezeNuisances CMS_bkgd_qcd_13TeV'
     for m in mass:
         dir_path =  datacard_folder + '/mll_M-' + m
         data_card = 'hbb_mbb' + m + '_mssm-13TeV.txt'
@@ -114,7 +123,7 @@ if __name__ == '__main__':
         #copy data card to the corresponded dir:
         copyDatacardToDir(data_card,dir_path)
         #adjust combine command
-        if m == '300' or m == '350':# or m == '500':
+        if m == '300' or m == '350' or m == '400':
             combine = 'combine -M MaxLikelihoodFit --robustFit 1 --minimizerAlgoForMinos Minuit2,Migrad --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v 5'
         else:
             combine = 'combine -M MaxLikelihoodFit --robustFit 1 -v 5'
@@ -122,7 +131,7 @@ if __name__ == '__main__':
         #special emulation for the background only fit
         if(bg_only): combine +=  ' --freezeNuisanceGroups signal'
         #add r-limits
-        r_string = AdjustSignalStrength(m,bg_only)
+        r_string = AdjustSignalStrength(m,bg_only,blinded)
         combine += ' ' + r_string
         #run combination tool
         print (combine)

@@ -10,7 +10,7 @@
 
 namespace mssmhbb{
 	//blinded analysis or not
-	const bool blinded = true;
+	const bool blinded = false;
 	// current CMSSW release base dir
 	static const std::string cmsswBase = getenv("CMSSW_BASE");
 	// current signal selection

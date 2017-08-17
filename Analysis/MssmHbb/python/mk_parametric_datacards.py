@@ -4,7 +4,7 @@ import os
 import exceptions
 
 cmsswBase = os.environ['CMSSW_BASE']
-blinded = True
+blinded = False
 
 def SetupDics(mass, model):
     """Function that returns dictionary for current mass.
@@ -291,8 +291,8 @@ if __name__ == '__main__':
     add_path ='/src/Analysis/MssmHbb/datacards/'
     
     #Switch between mssm and independent
-    model = 'mssm'
-    selection = '201707/26/blinded/mssm/bias/'
+    model = 'independent'
+    selection = '201707/26/unblinded/' + model + '/mll/bg_only/'
     path_to_dir = ( CMSSW_BASE + add_path + selection )
     # Make dir if it doesn't exist
     MakeDir(path_to_dir)

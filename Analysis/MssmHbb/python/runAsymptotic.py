@@ -37,7 +37,7 @@ def runCombineTool(combine,data_card,m,log_file = 'log_asymptotic'):
 if __name__ == '__main__':
 
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/mssm/bias/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/unblinded/mssm/bias/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #if combination of 7+8+13 is performed:
@@ -46,7 +46,8 @@ if __name__ == '__main__':
     if os.path.exists("Hbb.limits"): os.remove("Hbb.limits")
     #list of mass points
     mass = ['300','350','400','500','600','700','900','1100','1300']
-#     mass = ['1100']
+    blinded = False
+#    mass = ['300']
     #combine preferences to be added
     combine_add = ''
     #values of rMin and rMax to be used
@@ -68,11 +69,19 @@ if __name__ == '__main__':
                 rMin = '-30'
                 rMax = '30'
             if m == '300':
-                rMin = '-10'
-                rMax = '10'
+            	if not blinded:
+                	rMin = '-15'
+                	rMax = '15'
+                else: 
+                	rMin = '-10'
+                	rMax = '10'
             if m == '350':
-                rMax = '20'
-                rMin = '-10'
+            	if not blinded:
+                	rMin = '-10'
+                	rMax = '10'
+                else:
+                	rMax = '20'
+	                rMin = '-10'
             combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' --minimizerStrategy 0 --cminFallbackAlgo "Minuit2,Minimize,0:0.1" --cminOldRobustMinimize 0 -v5'# -t -1 --expectSignal=0' 
         else:
             combine = 'combine -M Asymptotic -n Hbb --rMin=' + rMin + ' --rMax=' + rMax + ' -v 5'# -t -1 --expectSignal=0'
