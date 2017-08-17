@@ -30,17 +30,17 @@ using namespace mssmhbb;
 
 int main(){
 
-	HbbLimits limits(true,true);
+	HbbLimits limits(mssmhbb::blinded,true);
 	style.set(PRELIMINARY);
 
 	//paths with results
-	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/blinded/mssm/bias/Hbb.limits";
+	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/unblinded/mssm/bias/Hbb.limits";
 	string path2016_combined = cmsswBase + "/src/Analysis/MssmHbb/datacards/201705/15/Asymptotic/mssm/No_Bias/Hbb.limits";	//If combination is performed
 	//ouptut folder
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/mssm/";
+	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/mssm/unblinded_mssm/";
 	CheckOutputDir(output);
 	//MSSM benchmark scenario
-	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root";
+	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/hMSSM_13TeV.root";//mhmodp_mu200_13TeV.root
 
 	string boson = "both";
 	limits.SetHiggsBoson(boson);
@@ -78,6 +78,7 @@ int main(){
 	//if comparison is not needed - insert null_vec as thr second argument
 	vector<Limit> null_vec;
 //	limits.LimitPlotter(mssm_limits_13TeV,null_vec,legenda,output_mssm_tanB_limits,0,60,200,900,"35.7(2016)","M_{A/H} [GeV]","tan(#beta)",false);
-	output_mssm_tanB_limits = output + boson + "_13TeVvs7p8TeV_MSSM_tanB_brazil";
-	limits.LimitPlotter(mssm_limits_13TeV,tanBeta2012,legenda,output_mssm_tanB_limits,0,60,200,900,"24.6 vs 35.7(2016)","M_{A/H} [GeV]","tan(#beta)",false);
+// 	output_mssm_tanB_limits = output + boson + "_13TeVvs7p8TeV_MSSM_tanB_brazil";
+	output_mssm_tanB_limits = output + boson + "_13TeV_hMSSM_tanB_brazil";
+	limits.LimitPlotter(mssm_limits_13TeV,null_vec,legenda,output_mssm_tanB_limits,0,60,200,900,"24.6 vs 35.7(2016)","M_{A/H} [GeV]","tan(#beta)",false);
 }

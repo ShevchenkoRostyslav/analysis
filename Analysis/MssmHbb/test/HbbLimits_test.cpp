@@ -33,9 +33,9 @@ int main(){
 	style.set(PRELIMINARY);
 
 	//Path to the folder with Hbb.Limits - results of the combine tool.
-	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/blinded/independent/bias/";//mssm/Hbb.limits
+	string path2016 = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/unblinded/independent/bias/";//mssm/Hbb.limits
 	// Output name prefix
-	string modification_to_name = "with_bias_vs_old";
+	string modification_to_name = "unblinded";
 	// Output folder WARNING:folder should exist!!!!
 	string output = "/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/";
 	CheckOutputDir(output);
@@ -63,7 +63,7 @@ int main(){
 
 	//if comparison is not needed - insert null_vec as thr second argument
 	vector<Limit> null_vec;
-	limits.LimitPlotter(GBR2016,GBR_to_compare,legenda,output_independet_limits,0.1,30,200,1300,"35.7(2016)","M_{#Phi} [GeV]","95%C.L. limit on #sigma x BR [pb]",true);
+	limits.LimitPlotter(GBR2016,null_vec,legenda,output_independet_limits,0.1,30,200,1300,"35.7(2016)","M_{#Phi} [GeV]","95%C.L. limit on #sigma x BR [pb]",true);
 
 	/*
 	 * MSSM limits
