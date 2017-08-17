@@ -32,11 +32,11 @@ int main(){
 	TFile f("data/2016DataRereco_05_01_2017/TripleBTagReverseSelectionBtoH2016_prescale_13TeV_G4.root","READ");
 	TTree& t = *GetFromTFile<TTree>(f,"MssmHbb_13TeV");
 	//PDF family to be studied
-	string pdf = "supernovosibirsk";//"supernovoeffprod";//"superdijetlinearprod";//"supernovoeffprod";//"superdijeteffprod";//"berneffprod";//
+	string pdf = "exppolynom";//"supernovosibirsk";//"supernovoeffprod";//"superdijetlinearprod";//"supernovoeffprod";//"superdijeteffprod";//"berneffprod";//
 	//Sub-range
 //	sub_range sr(200,650,45,pdf);
-//	sub_range sr(350,1190,42,pdf);
-	sub_range sr(500,1700,48,pdf);
+	sub_range sr(350,1190,42,pdf);
+//	sub_range sr(500,1700,48,pdf);
 	RooRealVar x("mbb","mbb",sr.xmin,sr.xmax,"GeV");
 	x.setBins(sr.nbins);
 	RooDataSet data("data","data",RooArgSet(x),RooFit::Import(t));
@@ -46,7 +46,7 @@ int main(){
 	FTest test(data,x,pdf);
 	string dir_path = "test/FTest/" + test.DefineSubrange() + "/" + pdf;
 	CheckOutputDir(dir_path);
-	test.PerformFTest(4,dir_path);
+	test.PerformFTest(9,dir_path);
 
 	return 0;
 }

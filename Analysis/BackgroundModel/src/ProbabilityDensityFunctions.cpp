@@ -113,6 +113,7 @@ void ProbabilityDensityFunctions::setPdf(const std::string& function, const std:
 	else if (function_name == "superdijet") getSuperDiJet(name, numCoeffs);
 	else if (function_name == "superdijeteffprod") getSuperDiJetEffProd(name, numCoeffs);
 	else if (function_name == "superdijetlinearprod") getSuperDiJetLinearProd(name, numCoeffs);
+	else if (function_name == "exppolynom") getExpPolynom(name, numCoeffs);
 	else {
 		std::stringstream msg;
 		msg << "Model '" << function
@@ -229,6 +230,27 @@ void ProbabilityDensityFunctions::getSuperDiJet(const std::string& name, const i
 	RooRealVar par1 = RooRealVar( par1_name.c_str(), "para", 2.0, 0.0, 50.0);
 	RooRealVar par2 = RooRealVar( par2_name.c_str(), "parb",  0.001, 0.001, 1.0);
 	RooSuperDiJet pdf(name.c_str(),name.c_str(),var,mean,par1,par2,arg_list);
+
+	workspace_->import(pdf);
+}
+
+void ProbabilityDensityFunctions::getExpPolynom(const std::string& name, const int& degree){
+	RooRealVar& var = *workspace_->var(var_.c_str());
+	RooArgList arg_list;
+	int npars = 0;
+	for(int i =0;i < degree; ++i) {
+		std::string var_name = "par" + std::to_string(i) + "_exppolynom";
+		if(modify_par_names_) var_name += "_" + name;
+		RooRealVar v(var_name.c_str(),var_name.c_str(),std::pow(0.1,i),-5000,5000); v.setConstant(false);
+		workspace_->import(v);
+		arg_list.add(*workspace_->var(var_name.c_str()));
+		++npars;
+	}
+
+	RooRealVar para = RooRealVar( "para", "para", 2.0, 0.0, 50.0);
+	RooExpPolynom pdf(name.c_str(),name.c_str(),var,para,arg_list);
+//	RooRealVar mean = RooRealVar( "mean", "mean", 130.0, 0., 800.0, "GeV"); //170
+//	RooExpPolynom pdf(name.c_str(),name.c_str(),var,mean,arg_list);
 
 	workspace_->import(pdf);
 }
@@ -1067,4 +1089,5 @@ const std::vector<std::string> ProbabilityDensityFunctions::availableModels_ =
    "supernovoeffprod",
    "superdijet",
    "superdijeteffprod",
-   "superdijetlinearprod"};
+   "superdijetlinearprod",
+   "exppolynom"};

@@ -173,6 +173,7 @@ Chi2Ndf FTest::PlotFitResult(RooWorkspace & w, RooFitResult& roofitresult, const
 
 	//Draw data points and PDF
 	data.plotOn(&frame_up,RooFit::MarkerSize(0.8),RooFit::Name("data"));
+//	pdf.plotOn(&frame_up,RooFit::LineColor(kRed),RooFit::Name(pdf_name.c_str()), RooFit::LineWidth(0.01));
 	pdf.plotOn(&frame_up,RooFit::LineColor(kWhite),RooFit::Name(pdf_name.c_str()), RooFit::LineWidth(0.01));
 	pdf.plotOn(&frame_up,
 			RooFit::VisualizeError(roofitresult, 2, true),
@@ -280,7 +281,9 @@ const std::vector<std::string> FTest::availablePDFs_ = {
 		"supernovoeffprod",
 		"superdijeteffprod",
 		"superdijetlinearprod",
-		"berneffprod"
+		"berneffprod",
+		"bernstein",
+		"exppolynom"
 };
 
 std::string FTest::DefineSubrange(){
@@ -328,6 +331,23 @@ void FTest::AdjustPDFVars(RooWorkspace & w, const int& relative_index){
 			if(relative_index == 2){
 				w.var("par1")->setVal(0);
 			}
+		}
+		else if (pdf_family_ == "exppolynom"){
+			if(relative_index == 3){
+//					w.var("para")->setVal(0);
+//					w.var("par0_exppolynom")->setVal(-630);
+//					w.var("par1_exppolynom")->setVal(117);
+//					w.var("par2_exppolynom")->setVal(-392);
+				}
+		else if(relative_index == 4){
+				w.var("para")->setVal(0);
+//				w.var("para")->setConstant();
+//				w.var("par0_exppolynom")->setVal(-50);
+//				w.var("par1_exppolynom")->setVal(216);
+//				w.var("par2_exppolynom")->setVal(-1472);
+//				w.var("par3_exppolynom")->setVal(5000);
+			}
+
 		}
 	}
 	else if(DefineSubrange() == "sr1"){

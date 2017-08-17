@@ -45,6 +45,7 @@
 #include "Analysis/BackgroundModel/interface/RooDoubleGausExp.h"
 #include "Analysis/BackgroundModel/interface/RooPolyDijet.h"
 #include "Analysis/BackgroundModel/interface/RooSuperDiJet.h"
+#include "Analysis/BackgroundModel/interface/RooExpPolynom.h"
 
 //#include "Analysis/BackgroundModel/interface/FitContainer.h"
 #include "Analysis/BackgroundModel/interface/Tools.h"
@@ -113,6 +114,7 @@ namespace analysis {
   	void getRelBreitWigner(const std::string& name);
   	void getRooQuadGausExp(const std::string& name);
   	void getSuperDiJet(const std::string& name, const int& degree);
+  	void getExpPolynom(const std::string& name, const int& degree);
   	void getSuperDiJetEffProd(const std::string& name, const int& degree);
   	void getSuperDiJetLinearProd(const std::string& name, const int& degree);
 

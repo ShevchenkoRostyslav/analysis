@@ -15,3 +15,4 @@
 #include "Analysis/BackgroundModel/interface/RooBukinExp.h"
 #include "Analysis/BackgroundModel/interface/RooDoubleBukin.h"
 #include "Analysis/BackgroundModel/interface/RooTripleGausExp.h"
+#include "Analysis/BackgroundModel/interface/RooExpPolynom.h"

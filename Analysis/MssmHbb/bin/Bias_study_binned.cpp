@@ -520,7 +520,10 @@ const boost::program_options::variables_map ParseUserInput(const int& argc, cons
 			" \tsupernovosibirsk2_G4_R3;\n"
 			" \tdijetexp_G4_R3;\n"
 		 	" \tnovosibirsk_G7_R3;\n"
-			" \tdijetexp_G7_R3;\n")
+			" \tdijetexp_G7_R3;\n"
+			" \texppolynom_G4_R2;\n"
+			" \texppolynom4_G4_R2;\n"
+			" \texppolynom_linear_G4_R2;\n")
 			("generator,g",value<std::string>()->required(),"Select alternative PDF to produce toys data: \n"
 			" \textnovoeffprod_G4_R1;\n"
 			" \tsupernovoeffprod2_G4_R1;\n"
@@ -538,7 +541,9 @@ const boost::program_options::variables_map ParseUserInput(const int& argc, cons
 			" \tnovosibirsk_G4_R3;\n"
 			" \tdijetexp_G4_R3;\n"
 			" \tnovosibirsk_G7_R3;\n"
-			" \tdijetexp_G7_R3;\n")
+			" \tdijetexp_G7_R3;\n"
+			" \texppolynom_G4_R2;\n"
+			" \texppolynom_linear_G4_R2;\n")
 			("output_file,o", value<std::string>()->default_value(""), "Output file name, if not specified will be created automatically")
 			("plots,p", bool_switch()->default_value(false),"if specified - no plots will be stored")
 			("bg_only",bool_switch()->default_value(false),"if specified - background only fit would be performed")//value<bool>()->default_value(0),"if ");
@@ -756,6 +761,18 @@ std::string GetPdfPath(const std::string & pdf, const Printer& p, int & npar){
 		npar = 3;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/dijetv2_350to1190_20GeV_G4/workspace/FitContainer_workspace.root";
         }
+	else if(findStrings(pdf,"exppolynom_G4_R2")) {
+		npar = 4;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr2/exppolynom/pdf4/workspace/FitContainer.root";
+        }
+	else if (findStrings(pdf,"exppolynom4_G4_R2")){
+		npar = 5;
+		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr2/exppolynom/pdf4/workspace/FitContainer.root";
+	}
+//	else if (findStrings(pdf,"exppolynom_linear_G4_R2")){
+//		npar = 5;
+//		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/FTest/sr2/exppolynom/pdf4/workspace/FitContainer.root";
+//	}
 	else if(findStrings(pdf,"novosibirsk_G7_R2")) {
 		npar = 3;
 		outname = mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_350to1190_20GeV_G7/workspace/FitContainer_workspace.root";

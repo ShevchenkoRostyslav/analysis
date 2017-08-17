@@ -16,4 +16,5 @@
   <class name="analysis::backgroundmodel::RooBukinExp" />
   <class name="analysis::backgroundmodel::RooDoubleBukin" />
   <class name="analysis::backgroundmodel::RooTripleGausExp" />
+  <class name="analysis::backgroundmodel::RooExpPolynom" />
 </lcgdict>
