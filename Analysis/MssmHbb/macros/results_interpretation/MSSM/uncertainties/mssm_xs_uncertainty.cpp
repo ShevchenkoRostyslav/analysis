@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,7 @@ Uncertainty evaluate(HbbLimits& limits, const std::vector<Limit>& GxBR, const st
 void DrawUncertainty(const Uncertainty&, const std::string& output);
 void fillTGraph(TGraph& gr, const std::vector<Limit>& limits);
 void divideTGraphs(TGraph& finale, TGraph& up, TGraph& down);
-void estimateAverageUnc(TGraph& up, TGraph& down);
+void estimateAverageUnc(TGraph& up, TGraph& down, ofstream & file);
 
 int main(int argc, char **argv) {
 	/*
@@ -41,9 +42,10 @@ int main(int argc, char **argv) {
 	HbbStylesNew style;
 	style.SetStyle();
 	HbbLimits limits(true,false);
-	string path_to_limits = cmsswBase + "/src/Analysis/MssmHbb/datacards/201702/13/1xBins/Hbb.limits";
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/MSSM/";
-	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/mhmodp_mu200_13TeV.root";
+	string path_to_limits = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/blinded/independent/bias/Hbb.limits";
+	string interpretation = "tauphobic_13TeV";
+	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/TheoryUncertainty/" + interpretation + "_";
+	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/" + interpretation + ".root";
 
 	//Read output of the combine tool:
 	vector<Limit> GBR2016 			= limits.ReadCombineLimits(path_to_limits);
@@ -162,7 +164,12 @@ void DrawUncertainty(const Uncertainty& unc, const std::string& output){
     rat_c_up.Draw("lsame");
     rat_d_c.Draw("lsame");
     cout<<"Average for "<<unc.name<<endl;
-    estimateAverageUnc(rat_c_up,rat_d_c);
+    //output .txt file with uncertainties
+    ofstream file;
+    file.open( output + unc.name + ".txt");
+    file<<"Average for "<<unc.name<<"\n";
+    estimateAverageUnc(rat_c_up,rat_d_c,file);
+    file.close();
 
 	can.Print( (output + unc.name + ".pdf").c_str() );
 }
@@ -188,11 +195,12 @@ void divideTGraphs(TGraph& finale, TGraph& gr1, TGraph& gr2){
 
 }
 
-void estimateAverageUnc(TGraph& up, TGraph& down){
+void estimateAverageUnc(TGraph& up, TGraph& down, ofstream & file){
 	/*
 	 * Method to estimate the avarage lnN for each mass point
 	 */
 	for(int i = 0; i < up.GetN(); ++i){
 		cout<<"x = "<<up.GetX()[i]<<" lnN: "<<1. + (1. - up.GetY()[i] + down.GetY()[i] - 1.) / 2.<<endl;
+		file<<"x = "<<up.GetX()[i]<<" lnN: "<<1. + (1. - up.GetY()[i] + down.GetY()[i] - 1.) / 2.<<"\n";
 	}
 }
