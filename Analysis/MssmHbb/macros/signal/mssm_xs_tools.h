@@ -443,7 +443,7 @@ mssm_xs_tools::bbHSantander_h(double mA, double tanb){
   return (1./(1.+t))*(fourflav+t*fiveflav);
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_A_scale(double mA, double tanb, const bool kUP){
   double t=log(mA/4.92)-2.;
   double unc4F=this->bbH4F_A_scale(mA, tanb, kUP);
@@ -451,7 +451,7 @@ mssm_xs_tools::bbHSantander_A_scale(double mA, double tanb, const bool kUP){
   return 1./(1+t)*(unc4F+(t*unc5F));
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_H_scale(double mA, double tanb, const bool kUP){
   double t=log(this->mH(mA, tanb)/4.92)-2.;
   double unc4F=this->bbH4F_H_scale(mA, tanb, kUP);
@@ -459,7 +459,7 @@ mssm_xs_tools::bbHSantander_H_scale(double mA, double tanb, const bool kUP){
   return 1./(1+t)*(unc4F+(t*unc5F));
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_h_scale(double mA, double tanb, const bool kUP){
   double t=log(this->mh(mA, tanb)/4.92)-2.;
   double unc4F=this->bbH4F_h_scale(mA, tanb, kUP);
@@ -467,17 +467,17 @@ mssm_xs_tools::bbHSantander_h_scale(double mA, double tanb, const bool kUP){
   return 1./(1+t)*(unc4F+(t*unc5F));
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_A_pdfas(double mA, double tanb, const bool kUP){
   return bbH5F_A_pdfas(mA, tanb, kUP)/bbH5F_A(mA, tanb) * bbHSantander_A(mA, tanb);
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_H_pdfas(double mA, double tanb, const bool kUP){
   return bbH5F_H_pdfas(mA, tanb, kUP)/bbH5F_H(mA, tanb) * bbHSantander_H(mA, tanb);
 }
 
-double
+inline double
 mssm_xs_tools::bbHSantander_h_pdfas(double mA, double tanb, const bool kUP){
   return bbH5F_h_pdfas(mA, tanb, kUP)/bbH5F_h(mA, tanb) * bbHSantander_h(mA, tanb);
 }

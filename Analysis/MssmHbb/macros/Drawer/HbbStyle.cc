@@ -198,6 +198,7 @@ private:
 
   static TLegend* legend(const int nEntries, const double relWidth, const bool left, const bool top);
   static TPaveText* label(const int nEntries, const double relWidth, const bool leftt, const bool top);
+
 };
 
 PublicationStatus HbbStyle::publicationStatus_ = INTERNAL;
@@ -206,37 +207,36 @@ double HbbStyle::margin_ = 0.04;
 //double HbbStyle::textSize_ = 0.035;
 double HbbStyle::textSize_ = 0.05;
 
-
 // --------------------------------------------------------------
-void HbbStyle::setXCoordinatesL(const double relWidth, double& x0, double& x1) {
+inline void HbbStyle::setXCoordinatesL(const double relWidth, double& x0, double& x1) {
   x0 = gStyle->GetPadLeftMargin()+margin_;
   x1 = x0 + relWidth*(1.-gStyle->GetPadLeftMargin()-gStyle->GetPadRightMargin()-2.*margin_);
 }
 
 
 // --------------------------------------------------------------
-void HbbStyle::setXCoordinatesR(const double relWidth, double& x0, double& x1) {
+inline void HbbStyle::setXCoordinatesR(const double relWidth, double& x0, double& x1) {
   x0 = 1.-gStyle->GetPadRightMargin()-margin_-relWidth*(1.-gStyle->GetPadLeftMargin()-gStyle->GetPadRightMargin()-2.*margin_);
   x1 = 1.-gStyle->GetPadRightMargin()-margin_;
 }
 
 
 // --------------------------------------------------------------
-void HbbStyle::setYCoordinatesT(const int nEntries, double& y0, double& y1) {
+inline void HbbStyle::setYCoordinatesT(const int nEntries, double& y0, double& y1) {
   y1 = 1.-gStyle->GetPadTopMargin()-margin_;
   y0 = y1-nEntries*lineHeight_;
 }
 
 
 // --------------------------------------------------------------
-void HbbStyle::setYCoordinatesB(const int nEntries, double& y0, double& y1) {
+inline void HbbStyle::setYCoordinatesB(const int nEntries, double& y0, double& y1) {
   y1 = gStyle->GetPadBottomMargin()+margin_;
   y0 = y1+nEntries*lineHeight_;
 }
 
 
 // --------------------------------------------------------------
-TLegend* HbbStyle::legend(const int nEntries, const double relWidth, const bool left, const bool top) {
+inline TLegend* HbbStyle::legend(const int nEntries, const double relWidth, const bool left, const bool top) {
   double x0 = 0.;
   double x1 = 0.;
   double y0 = 0.;
@@ -258,7 +258,7 @@ TLegend* HbbStyle::legend(const int nEntries, const double relWidth, const bool 
 
 
 // --------------------------------------------------------------
-TPaveText* HbbStyle::label(const int nEntries, const double relWidth, const bool left, const bool top) {
+inline TPaveText* HbbStyle::label(const int nEntries, const double relWidth, const bool left, const bool top) {
   double x0 = 0.;
   double x1 = 0.;
   double y0 = 0.;
@@ -282,7 +282,7 @@ TPaveText* HbbStyle::label(const int nEntries, const double relWidth, const bool
 
 
 // --------------------------------------------------------------
-TPaveText* HbbStyle::title(const TString& txt) {
+inline TPaveText* HbbStyle::title(const TString& txt) {
   double x0 = gStyle->GetPadLeftMargin()*1.2;
   double x1 = 1.-gStyle->GetPadRightMargin();
   double y0 = 1.-gStyle->GetPadTopMargin()+0.005;
@@ -296,13 +296,13 @@ TPaveText* HbbStyle::title(const TString& txt) {
   theTitle->SetTextSize(textSize_);
   theTitle->SetMargin(0.);
   theTitle->AddText(txt);
-  
+
   return theTitle;
 }
 
 
 // --------------------------------------------------------------
-TString HbbStyle::header(const PublicationStatus status) {
+inline TString HbbStyle::header(const PublicationStatus status) {
   TString txt = "35.7 fb^{-1} (13 TeV)";
   if( status == INTERNAL_SIMULATION ) {
     txt = "Simulation (8 TeV)";
@@ -323,7 +323,7 @@ TString HbbStyle::header(const PublicationStatus status) {
 
 
 // --------------------------------------------------------------
-TString HbbStyle::bkgTemplDisplayName(const BkgTemplateType type) {
+inline TString HbbStyle::bkgTemplDisplayName(const BkgTemplateType type) {
     TString name = "(B2+B1+C2,b)b";
     if(      type == C1bb     ) name = "(C1,b)b";
     else if( type == Qbb      ) name = "(Q,b)b";
@@ -335,7 +335,7 @@ TString HbbStyle::bkgTemplDisplayName(const BkgTemplateType type) {
 
 
 // --------------------------------------------------------------
-void HbbStyle::set(const PublicationStatus status) {
+inline void HbbStyle::set(const PublicationStatus status) {
   // Store the PublicationStatus for later usage, e.g. in the title
   publicationStatus_ = status;
 
@@ -352,7 +352,7 @@ void HbbStyle::set(const PublicationStatus status) {
   gStyle->SetCanvasDefW(800); //Width of canvas
   gStyle->SetCanvasDefX(0);   //Position on screen
   gStyle->SetCanvasDefY(0);
-  
+
   //  For the frame
   gStyle->SetFrameBorderMode(0);
   gStyle->SetFrameBorderSize(10);
@@ -362,7 +362,7 @@ void HbbStyle::set(const PublicationStatus status) {
   gStyle->SetFrameLineStyle(0);
   gStyle->SetFrameLineWidth(1);
   gStyle->SetLineWidth((Width_t) 1.);
-    
+
   //  For the Pad
   gStyle->SetPadBorderMode(0);
   gStyle->SetPadColor(kWhite);
@@ -371,7 +371,7 @@ void HbbStyle::set(const PublicationStatus status) {
   gStyle->SetGridColor(0);
   gStyle->SetGridStyle(3);
   gStyle->SetGridWidth(1);
-  
+
   //  Margins
   gStyle->SetPadTopMargin(0.08);
   gStyle->SetPadBottomMargin(0.15);
@@ -389,7 +389,7 @@ void HbbStyle::set(const PublicationStatus status) {
 
   //  For the statistics box:
   gStyle->SetOptStat(0);
-  
+
   //  For the axis
   gStyle->SetAxisColor(1,"XYZ");
   gStyle->SetTickLength(0.03,"XYZ");
@@ -397,7 +397,7 @@ void HbbStyle::set(const PublicationStatus status) {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
   gStyle->SetStripDecimals(kFALSE);
-  
+
     //  For the axis labels and titles
   gStyle->SetTitleColor(1,"XYZ");
   gStyle->SetLabelColor(1,"XYZ");
