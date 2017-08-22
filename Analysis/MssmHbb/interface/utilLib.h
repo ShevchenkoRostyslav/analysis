@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <string>
@@ -15,7 +16,6 @@
 
 #include "RooFit.h"
 #include "RooWorkspace.h"
-
 
 //include boost
 #include <boost/filesystem.hpp>
@@ -77,5 +77,7 @@ template <typename T> T* GetFromTFile(const std::string& file_name, const std::s
 	auto *obj =  static_cast<T*>(GetFromTFile<T>(f,obj_name));
 	return obj;
 }
+
+bool is_empty(std::ifstream& pFile);
 
 #endif

@@ -1,5 +1,13 @@
 #include "Analysis/MssmHbb/interface/utilLib.h"
 
+bool is_empty(std::ifstream& pFile)
+{
+	/*
+	 * Check whether file is empty or not
+	 */
+    return pFile.peek() == std::ifstream::traits_type::eof();
+}
+
 bool findStrings(const std::string & input, const std::string & needful)
 {
 	std::string input1 = input;
