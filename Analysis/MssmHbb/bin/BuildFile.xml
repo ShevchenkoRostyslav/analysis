@@ -27,11 +27,9 @@
 <bin   name="A_GxBR" file="../macros/2HDM/types_comparison/A_GxBR.cpp" />
 <bin   name="A_BR" file="../macros/2HDM/types_comparison/A_BR.cpp" />
 #<bin   name="signalEfficiencyStudy" file="signalEfficiencyStudy.cpp" />
-<bin   name="HbbLimits_test" file="../test/HbbLimits_test.cpp" />
 #<bin   name="PlotLimit" file="PlotLimit.C" />
 <bin   name="mssm_2hdm_xsection" file="../macros/2HDM/mssm_2hdm_xsection.cpp" />
 <bin   name="SFb_comparison"  file = "../macros/BTag_performance/SFb_comparison.cpp" />
-<bin   name="mssm_xs_uncertainty" file="../macros/results_interpretation/MSSM/uncertainties/mssm_xs_uncertainty.cpp" />
 <bin   name="fitbbnb" file="../test/FitBBnB.cpp" />
 <bin   name="Bias_study_binned" file="../macros/test_chayanit/Bias_study_binned.C" ></bin>
 <bin   name="addSignalBias" file="addSignalBias.cpp" > </bin>
@@ -40,11 +38,15 @@
 <bin   name="normPDFsToTanB30"  file="../macros/signal/normPDFsToTanB30.cpp"></bin>
 
 #Limits
+#<bin   name="HbbLimits_test" file="../test/HbbLimits_test.cpp" />
 <bin   name="plotTanBetaLimits" 		file="../macros/limits/plotTanBetaLimits.cpp"></bin>
+<bin   name="plotGxBRLimits"			file="../macros/limits/plotGxBRLimits.cpp"></bin>
 <bin   name="Plot2HDM_cosBA_tanB" 		file="../macros/limits/Plot2HDM_cosBA_tanB.cpp"></bin>
 <bin   name="Plot2HDM_mA_tanB" 			file="../macros/limits/Plot2HDM_mA_tanB.cpp"></bin>
-<bin   name="Plot2HDM_2D" 				file="../macros/limits/Plot2HDM_2D.cpp"></bin>
 <bin   name="GOF"						file="../macros/pre_unblinding/draw_GOF.cpp"></bin>
+<bin   name="FullMass_postfit"          file="../macros/limits/FullMass_postfit.cpp"></bin>
+#<bin   name="mssm_xs_uncertainty" file="../macros/results_interpretation/MSSM/uncertainties/mssm_xs_uncertainty.cpp" />
+#<bin   name="Plot2HDM_2D" 				file="../macros/limits/Plot2HDM_2D.cpp"></bin>
 
 #data vs mc
 <bin   name="FlavourContamination"		file="../macros/FlavourContamination_2b.cpp"></bin>
