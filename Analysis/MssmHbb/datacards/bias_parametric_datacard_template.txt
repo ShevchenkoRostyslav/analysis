@@ -30,6 +30,7 @@ CMS_scale_j_13TeV            param 0.0 1.0
 CMS_res_j_13TeV            param 0.0 1.0
 CMS_eff_pTonl_13TeV          param 0.0 1.0
 CMS_eff_b_13TeV            param 0.0 1.0
+pdf_Higgs_gg               param 0.0 1.0
 -------------------------------------------------
 #bg shape nuisance uncert.
 SHAPE_BG1
@@ -44,5 +45,6 @@ bias           param 0.0 BIAS_ERR
 -------------------------------------------------
 -------------------------------------------------
 -------------------------------------------------
-signal group = lumi_13TeV CMS_eff_l_13TeV CMS_PU_13TeV CMS_eff_bonl_13TeV pdf_gg QCDscale CMS_scale_j_13TeV CMS_res_j_13TeV CMS_eff_pTonl_13TeV CMS_eff_b_13TeV bias
+SIGNAL_GROUP
+#signal group = lumi_13TeV CMS_eff_l_13TeV CMS_PU_13TeV CMS_eff_bonl_13TeV pdf_gg QCDscale CMS_scale_j_13TeV CMS_res_j_13TeV CMS_eff_pTonl_13TeV CMS_eff_b_13TeV bias
 #background group = CMS_bkgd_qcd_13TeV
