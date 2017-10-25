@@ -19,7 +19,7 @@
 #include "Analysis/MssmHbb/interface/MssmHbb.h"
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 
 int main(int argc, char **argv) {

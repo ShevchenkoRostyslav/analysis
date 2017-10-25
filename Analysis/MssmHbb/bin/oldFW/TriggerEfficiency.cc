@@ -22,7 +22,7 @@ double BTagWeight(TH2F*region1,TH2F* region2,TH2F* region3, const double &pt, co
 double twoDPtWeight(TH2F *, const double &, const double &);
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 
 

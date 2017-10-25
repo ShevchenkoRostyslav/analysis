@@ -20,7 +20,7 @@ double ptRewComb(const float &, const bool &);
 double ptRewRef(const float &, const bool &);
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 
 

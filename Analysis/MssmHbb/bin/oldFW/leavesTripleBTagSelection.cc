@@ -16,7 +16,7 @@
 #include "Analysis/MssmHbb/interface/Weights.h"
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 
 // =============================================================================================

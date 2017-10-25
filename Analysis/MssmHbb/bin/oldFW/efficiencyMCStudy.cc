@@ -14,7 +14,7 @@
 #include "Analysis/MssmHbb/interface/json.h"
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 
 double weight(const float &,const float &);
