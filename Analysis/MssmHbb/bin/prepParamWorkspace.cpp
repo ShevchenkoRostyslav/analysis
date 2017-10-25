@@ -82,15 +82,15 @@ int main(int argc, char ** argv){
 
 		//list of the inputs:
 		vector<string> input_signal = {
-//				mssmhbb::signal_folders.at(300),
-//				mssmhbb::signal_folders.at(350),
-//				mssmhbb::signal_folders.at(400),
-//				mssmhbb::signal_folders.at(500),
-//				mssmhbb::signal_folders.at(600),
-//				mssmhbb::signal_folders.at(700),
-//				mssmhbb::signal_folders.at(900),
-//				mssmhbb::signal_folders.at(1100),
-//				mssmhbb::signal_folders.at(1300)
+				mssmhbb::signal_folders.at(300),
+				mssmhbb::signal_folders.at(350),
+				mssmhbb::signal_folders.at(400),
+				mssmhbb::signal_folders.at(500),
+				mssmhbb::signal_folders.at(600),
+				mssmhbb::signal_folders.at(700),
+				mssmhbb::signal_folders.at(900),
+				mssmhbb::signal_folders.at(1100),
+				mssmhbb::signal_folders.at(1300)
 								};
 		vector<string> input_background = {
 				mssmhbb::path_bg_sr1,
@@ -102,7 +102,6 @@ int main(int argc, char ** argv){
 				mssmhbb::path_data_sr2,
 				mssmhbb::path_data_sr3,
 		};
-		vector<string> systematics = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};
 
 		options_description desc("Options");
 		desc.add_options()
@@ -110,7 +109,6 @@ int main(int argc, char ** argv){
 				("background,b" , value<vector<string> >(&input_background)	->multitoken(), "Input background workspaces")
 				("signal,s"     , value<vector<string> >(&input_signal)    	->multitoken(),"Input std::vector<signal folder>" )
 				("data_obs,d"   , value<vector<string> >(&data_obs)			->multitoken(),"Input file with observed data")
-				("syst_errors,e", value<vector<string> >(&systematics)		->multitoken(),"std::vector<systematic error>" )
 				;
 
 		//Boost container for input arguments.
@@ -157,7 +155,7 @@ int main(int argc, char ** argv){
 		//Create signal workspace
 		for(const auto& in : input_signal){
 			try {
-				setup_signal(in /* + "_NormToTanB30" */,systematics,name_suffix);
+				setup_signal(in /* + "_NormToTanB30" */,mssmhbb::signal_shape_unc,name_suffix);
 			} catch (exception& e) {
 				cerr<<e.what()<<endl;
 				return ERROR_SIGNAL_WORKSPACE;

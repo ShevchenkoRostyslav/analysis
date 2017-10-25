@@ -97,10 +97,11 @@ def submit(cshFile,submitter):
         command_to_submit = "csh -f"
         command_for_stdout = ' >> ' + os.path.splitext(cshFile)[0] + '.o'
         command_to_run = command_to_submit + ' ' + cshFile + ' ' + command_for_stdout
-    
+
+    print command_to_run   
 #     call(command_to_submit + ' ' + command_for_stdout + ' ' + command_for_stderr + ' ' + cshFile,shell=True)
 #     print command_to_submit + ' ' + cshFile + ' ' + command_for_stdout + ' ' + command_for_stderr
-    proc = Popen(command_to_run,shell=True)
+#    proc = Popen(command_to_run,shell=True)
 #     call(command_to_submit +  ' ' + cshFile,shell=True)
     
 if __name__ == '__main__':
