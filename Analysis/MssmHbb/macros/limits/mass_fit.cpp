@@ -10,6 +10,7 @@
 
 #include <TFile.h>
 #include <TH1F.h>
+#include <TSystem.h>
 
 #include <RooFit.h>
 #include <RooHist.h>
@@ -18,54 +19,71 @@
 #include <RooFitResult.h>
 #include <RooAbsPdf.h>
 #include <RooFormulaVar.h>
+#include <RooAddPdf.h>
+#include <RooDataHist.h>
 
-#include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 #include "Analysis/MssmHbb/interface/utilLib.h"
 #include "Analysis/Tools/interface/RooFitUtils.h"
-#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 using namespace std;
 using namespace RooFit;
 using namespace analysis;
 
 HbbStyle  style;
-const string cmsswBase = gSystem->Getenv("CMSSW_BASE");//"/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1";//
 
 TH1* getDataHist(RooWorkspace& w, TH1& binning);
 void draw(TH1F* data, TH1F *total, TH1F *signal, TH1F *bg);
+int getBackgorundFitNBins(const int& mass_point);
+int getMultiplicativeCrossection(const int& mass_point);
+TH1 * getHackedDataObsTFile(const int& mass_point);
+int getBackgroundFitUpEdge(const int& mass_point);
+int getBackgroundFitLowEdge(const int& mass_point);
 
-//int main(int argc, char **argv) {
-int mass_fit(){
+int main(int argc, char **argv) {
 	/*
 	 * Macro to plot post-fit M_{12} fit
 	 */
 	gSystem->Load("libHiggsAnalysisCombinedLimit");
-	style.set(PRIVATE);
+	style.setTDRstyle(PRELIMINARY);
+	gStyle->SetErrorX(0);
 
-	string mass_point = "1300";
-	int nbins = 50;
-	double xsec_vis = 2;
-	string output = "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170726/";
+	string mass_point = argv[1];
+	int mass = stoi(mass_point);
+	int nbins = getBackgorundFitNBins(mass);
+	double xsec_vis = getMultiplicativeCrossection(mass);
+	if(mass < 500) gStyle->SetPadRightMargin(gStyle->GetPadRightMargin()*1.22);
+	string output = "/src/Analysis/MssmHbb/macros/pictures/";
 	string output_append = "";
-	string campaign = "201707/26/unblinded/independent/mll/";
+	string campaign = "201708/23/unblinded/independent/mll/";
 
 	//Files with mll fit results
-	TFile *fMLL 		= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	//S+Bg mll
-	TFile *fMLL_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	// Bg only, no-bias
+//	TFile *fMLL 		= new TFile((mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	//S+Bg mll
+	TFile *fMLL_bg_nobias 	= new TFile((mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	// Bg only, no-bias
 	//Files with post-fit workspaces
-	TFile *fWorkspace			= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
-	TFile *fWorkspace_bg_nobias 	= new TFile((cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
+	TFile *fWorkspace			= new TFile((mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
+	TFile *fWorkspace_bg_nobias 	= new TFile((mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "bg_only/mll_M-" + mass_point + "/MaxLikelihoodFitResult.root").c_str(),"READ");
 
 	//Get RooFitResults and workspaces
-	auto *roofitresult 			= GetFromTFile<RooFitResult>(*fMLL,"fit_s");
+//	auto *roofitresult 			= GetFromTFile<RooFitResult>(*fMLL,"fit_s");
 	auto *roofitresult_nobias 	= GetFromTFile<RooFitResult>(*fMLL_bg_nobias,"fit_b");
 	auto *workspace				= GetFromTFile<RooWorkspace>(*fWorkspace,"MaxLikelihoodFitResult");
 	auto *workspace_bg_nobias	= GetFromTFile<RooWorkspace>(*fWorkspace_bg_nobias,"MaxLikelihoodFitResult");
 
 	//Get data, pdfs, vars etc
 	auto *x 		= GetFromRooWorkspace<RooRealVar>(*workspace,"mbb");
-	auto *r 		= GetFromRooWorkspace<RooRealVar>(*workspace,"r");
-	auto *data_obs 	= GetFromRooWorkspace<RooDataHist>(*workspace,"data_obs");
+//	auto *r 		= GetFromRooWorkspace<RooRealVar>(*workspace,"r");
+	auto hacked_data_obs_p = getHackedDataObsTFile(stoi(mass_point));
+//	auto *data_obs 	= GetFromRooWorkspace<RooDataHist>(*workspace,"data_obs");
+//	auto *data_to_check = static_cast<TH1D*>(data_obs->createHistogram("mbb",5000));
+//	cout<<"CHECK of the DATA content: "<<endl;
+//	double sum = 0;
+//	for(int i = 1; i<data_to_check->GetNbinsX();++i){
+//		sum += data_to_check->GetBinContent(i);
+//		std::cout<<"Bin "<<i<<" ["<<data_to_check->GetBinLowEdge(i)<<","<<data_to_check->GetBinLowEdge(i) + data_to_check->GetBinWidth(i)<<"] : "<<
+//				"data = "<<data_to_check->GetBinContent(i)<<" sum: "<<sum<<endl;
+//	}
 	//pdfs
 	auto *pdf_sgn			= GetFromRooWorkspace<RooAbsPdf>(*workspace, "shapeSig_bbH" + mass_point + "_bbHTo4b");
 	auto *pdf_bkg			= GetFromRooWorkspace<RooAbsPdf>(*workspace, "shapeBkg_QCD_Mbb_bbHTo4b");
@@ -84,40 +102,46 @@ int mass_fit(){
 	auto *n_bkg_nobias 	= new RooRealVar("n_bkg_nobias","",n_bkg_fit_nobias->getVal() * bkg_sys_fit_nobias->getVal());
 
 	auto *pdf_comb_ext = new RooAddPdf("pdf_comb_ext","",RooArgList(*pdf_sgn,*pdf_bkg),RooArgList(*n_sgn,*n_bkg));
-	auto *h_rebinned = data_obs->createHistogram("h_data_obs_rebinned", *x, RooFit::Binning( nbins , x->getMin(), x->getMax()) );
+	auto *h_rebinned = static_cast<TH1D*>(hacked_data_obs_p->Clone("h_data_obs_rebinned"));
+//	auto *h_rebinned = GetRooObjectFromTFile<RooDataSet>(*hacked_data_obs_p,"data_obs")->createHistogram("h_data_obs_rebinned", *x_hacked );
+//	auto *h_rebinned = data_rebinned->createHistogram("h_data_obs_rebinned",*x,nbins);
+//	auto *h_rebinned = data_obs->createHistogram("h_data_obs_rebinned", *x, RooFit::Binning( nbins , x->getMin(), x->getMax()) );
 	auto *data_rebinned = new RooDataHist("data_obs_rebinned","", RooArgList(*x), h_rebinned, 1.0);
+//	auto *data_rebinned = GetRooObjectFromTFile<RooDataSet>(hacked_data_obs_p,"data_obs")->;
+cout<<nbins<<endl;
+	cout<<"CHECK of the DATA REBINNED content: "<<endl;
+	double sum = 0;
+	for(int i = 1; i<h_rebinned->GetNbinsX();++i){
+		sum += h_rebinned->GetBinContent(i);
+		std::cout<<"Bin "<<i<<" ["<<h_rebinned->GetBinLowEdge(i)<<","<<h_rebinned->GetBinLowEdge(i) + h_rebinned->GetBinWidth(i)<<"] : "<<
+				"data = "<<h_rebinned->GetBinContent(i)<<" sum: "<<sum<<endl;
+	}
 
 	//TCanvas
-	auto *c1 = new TCanvas("c1", "canvas", 600, 600);
+	auto c1 = new TCanvas();
+	double canva_pixel_h = c1->YtoPixel(c1->GetY1());
 	//TPad
 	c1->cd();
-    auto *pad1 = new TPad("pad1", "pad1", 0.02, 0.30, 1, 1.0);
-    pad1->SetBottomMargin(0.02);
-    pad1->SetLeftMargin(0.13);
+	auto pad1 = HbbStyle::getRatioTopPad(0.7);
     pad1->Draw();
     pad1->cd();
+	double topPad_pixel_h = pad1->YtoPixel(pad1->GetY1());
 
 	//Frame
-    auto *frame1 = x->frame(Name("frame1"));
+    auto *frame1 = static_cast<RooPlot*>(x->frame(Name("frame1")));
     frame1->SetTitle("");
-    frame1->GetYaxis()->SetTitle(( ("Events / " + to_string_with_precision(h_rebinned->GetBinWidth(1),1) + " GeV").c_str() ));
-    frame1->GetYaxis()->SetTitleSize(24);
-    frame1->GetYaxis()->SetTitleFont(43);
-    frame1->GetYaxis()->SetTitleOffset(1.18);
-    frame1->GetYaxis()->SetLabelFont(43);
-    frame1->GetYaxis()->SetLabelSize(20);
-    frame1->GetXaxis()->SetTitleSize(0);
-    frame1->GetXaxis()->SetTitleFont(43);
-    frame1->GetXaxis()->SetLabelFont(43);
-    frame1->GetXaxis()->SetLabelSize(0);
+    frame1->GetYaxis()->SetTitle(( ("Events / ( " + std::to_string(int(h_rebinned->GetBinWidth(1))) + " GeV )").c_str() ));
+    HbbStyle::setRatioTopFrame(frame1->GetXaxis(), frame1->GetYaxis(), canva_pixel_h);
 
     auto *hdummy = new TH1F("hdummy", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
 
     auto *hbkg = new TH1F("hbkg", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
-    hbkg->SetFillColor(kAzure+1);
-    hbkg->SetLineColor(kAzure+1);
-    hbkg->SetLineWidth(0);
-    hbkg->SetFillStyle(3001);
+    hbkg->SetMarkerStyle(gStyle->GetMarkerStyle());
+    hbkg->SetMarkerSize(gStyle->GetMarkerSize());
+//    hbkg->SetFillColor(kAzure+1);
+//    hbkg->SetLineColor(kAzure+1);
+//    hbkg->SetLineWidth(0);
+//    hbkg->SetFillStyle(3001);
 
     auto *h1sigmaU = new TH1F("h1sigmaU", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     h1sigmaU->SetFillColor(kGreen+1);
@@ -135,8 +159,10 @@ int mass_fit(){
     h2sigmaD->SetFillColor(kOrange);
     h2sigmaD->SetFillStyle(1001);
 
-    auto *leg = new TLegend(0.55,0.48,0.88,0.88,"","brNDC");
-    leg->SetHeader( ("m_{#phi} = " + mass_point + " GeV").c_str() );
+//    auto *leg = HbbStyle::legend("top,right",8,0.3);
+//    double x0 = gPad->GetLeftMargin() + gStyle->GetTickLength("Y")*1.1 ; //TODO finish this!!!
+    auto *leg = new TLegend(0.63,0.5,0.85,0.88,"","brNDC");
+    leg->SetHeader( ("m_{A/H} = " + mass_point + " GeV").c_str() );
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->SetTextSize(0.05);
@@ -192,11 +218,12 @@ int mass_fit(){
 //    ndof = (data_rebinned.numEntries()-(2 if bkg_pdf=='dijet' else 3))
 //    print ROOT.TMath.Prob(chi2_b*ndof, ndof)
     leg->AddEntry(frame1->findObject("data_obs"), "Data", "PE");
-    leg->AddEntry(frame1->getCurve(pdf_bkg_nobias->GetName()),  ("Bkg."), "L");
+    leg->AddEntry(frame1->getCurve(pdf_bkg_nobias->GetName()),  ("Background"), "L");
     leg->AddEntry(h1sigmaU, "#pm1 std. deviation", "F");
     leg->AddEntry(h2sigmaU, "#pm2 std. deviation", "F");
     leg->AddEntry(frame1->getCurve(pdf_comb_ext->GetName()), ("Bkg. + signal"), "L");
-    leg->AddEntry(frame1->getCurve(pdf_sgn->GetName()), ("Signal, #sigma= " + to_string_with_precision(xsec_vis,2) + " pb" ).c_str(), "L");
+    leg->AddEntry(frame1->getCurve(pdf_sgn->GetName()), (std::to_string(int(xsec_vis)) + " x bbA/H").c_str(), "L");
+//    leg->AddEntry(frame1->getCurve(pdf_sgn->GetName()), ("m_{A/H} = " + mass_point + "GeV, #sigma = " + std::to_string(int(xsec_vis)) + " pb" ).c_str(), "L");
     frame1->SetMaximum( h_rebinned->GetMaximum()*2.0 );
     frame1->SetMinimum( h_rebinned->GetMinimum()*0.8 );
     pad1->SetLogy();
@@ -206,34 +233,15 @@ int mass_fit(){
     c1->Modified();
 
     c1->cd();
-    auto *pad2 = new TPad("pad2", "pad2", 0.02, 0.02, 1, 0.28);
-    pad2->SetTopMargin(0.02);
-    pad2->SetLeftMargin(0.13);
-    pad2->SetBottomMargin(0.35);
-    pad2->SetGridx();
-    pad2->SetGridy();
+    auto pad2 = HbbStyle::getRatioBottomPad(0.3);
     pad2->Draw();
     pad2->cd();
 
-    auto *frame2 = x->frame(Name("frame2"));
+    auto *frame2 = static_cast<RooPlot*>(x->frame(Name("frame2")));
     frame2->SetTitle("");
     frame2->GetYaxis()->SetTitle("#frac{Data-Bkg.}{#sqrt{Bkg.}}");
     frame2->GetYaxis()->CenterTitle();
-    frame2->GetYaxis()->SetNdivisions(505);
-    frame2->GetYaxis()->SetTitleSize(24);
-    frame2->GetYaxis()->SetTitleFont(43);
-    frame2->GetYaxis()->SetTitleOffset(1.18);
-    frame2->GetYaxis()->SetLabelFont(43);
-    frame2->GetYaxis()->SetLabelSize(20);
-    frame2->GetXaxis()->SetTitle("m_{b#bar{b}} (GeV)");
-    frame2->GetXaxis()->SetTitleSize(25);
-    frame2->GetXaxis()->SetTitleFont(43);
-    frame2->GetXaxis()->SetTitleOffset(3.5);
-    frame2->GetXaxis()->SetLabelFont(43);
-    frame2->GetXaxis()->SetLabelSize(20);
-
-    auto *hresid = frame1->pullHist("data_obs", pdf_bkg_nobias->GetName());
-    hresid->GetYaxis()->SetRangeUser(-4,4);
+    HbbStyle::setRatioBottomFrame(frame2->GetXaxis(), frame2->GetYaxis(), canva_pixel_h, topPad_pixel_h);
 
     auto *sigma2 = frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_2sigma").c_str());
     auto *sigma1 = frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_1sigma").c_str());
@@ -252,32 +260,40 @@ int mass_fit(){
         auto n_2down_i = n2sigmaY[i];
         auto bin_i = h1sigmaU->FindBin( x_i );
         if(bin_i <= 0 || bin_i > h1sigmaU->GetNbinsX()) continue;
-        auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
-        auto n_data_i = h_rebinned->GetBinContent( bin_i );
+//        auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
+//        auto n_data_i = h_rebinned->GetBinContent( bin_i );
         h1sigmaU->SetBinContent( bin_i, (-n_i+n_1up_i));
         h1sigmaD->SetBinContent( bin_i, (-n_i+n_1down_i));
         h2sigmaU->SetBinContent( bin_i, (-n_i+n_2up_i));
         h2sigmaD->SetBinContent( bin_i, (-n_i+n_2down_i));
-        if(x_i < 600) cout<<"bin"<<i<<" x = "<<x_i<<" y = "<<n_i<<" +-1 = "<<n_1up_i<<" +-2 = "<<n_2up_i<<endl;
+        //cout<<"bin"<<i<<" x = "<<x_i<<" y = "<<n_i<<" +-1 = "<<n_1up_i<<" +-2 = "<<n_2up_i<<endl;
     }
 
     //redefine pulls here:
     auto bkg_int = pdf_bkg_nobias->createIntegral(RooArgSet(*x))->getVal();
+    cout<<"BG NORMALISATION: "<<n_bkg_nobias->getVal()<<endl;
+    bool divide_by_sqrt_bg = true;
     for(int bin_i = 1; bin_i < h_rebinned->GetNbinsX()+1; ++bin_i){
         auto n_data_i = h_rebinned->GetBinContent( bin_i );
+        auto e_data_i = h_rebinned->GetBinError( bin_i );
         auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
         x->setRange( ("Bin" + to_string(bin_i)).c_str(), h_rebinned->GetBinLowEdge(bin_i), h_rebinned->GetBinLowEdge(bin_i)+bin_width_i);
         auto bkg_int_i = pdf_bkg_nobias->createIntegral(RooArgSet(*x), ("Bin" + to_string(bin_i)).c_str())->getVal() / bkg_int * n_bkg_nobias->getVal();
-        auto pull_i = (n_data_i-bkg_int_i)/sqrt(bkg_int_i);
+        auto pull_i = (n_data_i-bkg_int_i);
         cout<<"Data: "<<n_data_i<<" ---- Bkg: "<<bkg_int_i<<endl;
-        hbkg->SetBinContent( bin_i, pull_i);
+	cout<<"bin"<<bin_i<<" pull = "<<n_data_i-bkg_int_i<<" /sqrt(bg) = "<<pull_i/sqrt(bkg_int_i)<<std::endl;
         hbkg->SetBinError( bin_i, 0.);
         hdummy->SetBinContent( bin_i, 0.);
         hdummy->SetBinError( bin_i, 0.);
-        h1sigmaU->SetBinContent( bin_i, h1sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        h1sigmaD->SetBinContent( bin_i, h1sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        h2sigmaU->SetBinContent( bin_i, h2sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        h2sigmaD->SetBinContent( bin_i, h2sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
+	if(divide_by_sqrt_bg){
+		pull_i /= sqrt(bkg_int_i);
+        	h1sigmaU->SetBinContent( bin_i, h1sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
+        	h1sigmaD->SetBinContent( bin_i, h1sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
+        	h2sigmaU->SetBinContent( bin_i, h2sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
+        	h2sigmaD->SetBinContent( bin_i, h2sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
+        	hbkg->SetBinError( bin_i, e_data_i/sqrt(bkg_int_i));
+	}
+	hbkg->SetBinContent( bin_i, pull_i);
     }
 
 
@@ -285,14 +301,16 @@ int mass_fit(){
     frame2->addTH1(h2sigmaD, "HIST");
     frame2->addTH1(h1sigmaU, "HIST");
     frame2->addTH1(h1sigmaD, "HIST");
-	frame2->addTH1(hbkg, "HIST");
+	frame2->addTH1(hbkg, "E1");
 	frame2->addTH1(hdummy, "HIST");
 	frame2->Draw();
-	frame2->GetYaxis()->SetRangeUser(-4,4);
+    frame2->SetMinimum(-3.9999);
+    frame2->SetMaximum(+3.9999);
 	c1->cd();
+	HbbStyle::drawStandardTitle("out");
 	c1->Draw();
 
-	c1->Print( (cmsswBase + output + "Post_fit_m_" + mass_point + output_append + ".pdf").c_str());
+	c1->Print( (mssmhbb::cmsswBase + output + "Post_fit_m_" + mass_point + output_append + ".pdf").c_str());
 
 //	TH1F *bg 		= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_background");	// post-fit BG
 //	TH1F *signal 	= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_signal"); 	// post-fit Signal
@@ -446,7 +464,7 @@ void draw(TH1F* data, TH1F *total, TH1F *signal, TH1F *bg){
     ratio_sg->SetFillColor(0);
     ratio_sg->Draw("hsame");
 
-    can->Print( (cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/post_fit_500GeV.pdf").c_str() );
+    can->Print( (mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/post_fit_500GeV.pdf").c_str() );
 }
 
 
@@ -455,4 +473,57 @@ TH1* getDataHist(RooWorkspace& w, TH1& binning){
 	auto &mbb			= *analysis::GetFromRooWorkspace<RooRealVar>(w,"mbb");
 	auto *data 			=  static_cast<TH1F*>(dataHist.createHistogram("data_obs",mbb,RooFit::Binning(binning.GetNbinsX(), binning.GetXaxis()->GetXmin(), binning.GetXaxis()->GetXmax())));
 	return data;
+}
+
+int getBackgorundFitNBins(const int& mass_point){
+	/*
+	 * Get the sub-range number from the signal mass point
+	 */
+	if(mass_point < 500) return 45;
+	else if (mass_point < 1100) return 42;
+	else return 48;
+}
+
+int getMultiplicativeCrossection(const int& mass_point){
+	/*
+	 * Get the cross-section
+	 */
+	if(mass_point < 500) return 50;
+	else if (mass_point < 1100) return 4;
+	else return 2;
+}
+
+int getBackgroundFitLowEdge(const int& mass_point){
+	if(mass_point < 500) return 200;
+	else if (mass_point < 1100) return 350;
+	else return 500;
+}
+
+int getBackgroundFitUpEdge(const int& mass_point){
+	if(mass_point < 500) return 650;
+	else if (mass_point < 1100) return 1190;
+	else return 1700;
+}
+
+TH1 * getHackedDataObsTFile(const int& mass_point){
+	/*
+	 * Get the data obs with 45 bins, as it's in the PAS
+	 */
+	TFile *f = nullptr;
+	f = new TFile( (mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/data/2016DataRereco_05_01_2017/TripleBTagSelectionBtoH2016_13TeV.root").c_str());
+//	if(mass_point < 500) {
+//		f = new TFile( (mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/finale_files/SR/extnovoefffixprod_200to650_10GeV_SR/workspace/FitContainer_workspace.root").c_str() );
+//	}
+//	else if (mass_point < 1100){
+//		f = new TFile( (mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/finale_files/SR/novosibirsk_350to1190/workspace/FitContainer_workspace.root").c_str() );
+//	}
+//	else {
+//		f = new TFile( (mssmhbb::cmsswBase + "/src/Analysis/BackgroundModel/test/finale_files/SR/novosibirsk_500to1700/workspace/FitContainer_workspace.root").c_str() );
+//	}
+
+	TTree *t;// = GetFromTFile<TTree>(*f,"MssmHbb_13TeV");
+	f->GetObject("MssmHbb_13TeV",t);
+	TH1D *h = new TH1D("histo","histo",getBackgorundFitNBins(mass_point),getBackgroundFitLowEdge(mass_point),getBackgroundFitUpEdge(mass_point));
+	t->Draw("mbb>>histo");
+	return h;
 }

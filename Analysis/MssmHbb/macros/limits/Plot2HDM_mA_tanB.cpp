@@ -34,11 +34,13 @@ using namespace mssmhbb;
 
 int main(int argc, const char** argv){
 
-	style.set(PRELIMINARY);
+	style.setTDRstyle(PRELIMINARY);
 	//Prefix to the output
 	string output_prefix = "13TeV_limits";
+	//ATLAS results
+	string ATLAS_results = "ATLAS-CONF-2017-055";//"1502.04478";//
 	//paths with results of the combine tool
-	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/unblinded/mssm/bias/Hbb.limits";
+	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/mhmodp_200/bias/Hbb.limits";
 	//value of cos(beta-alpha)
 	double cB_A = 0.1;
 	//Details of the 2HDM produciton
@@ -56,7 +58,7 @@ int main(int argc, const char** argv){
 
 	//higgs boson: H/A/both
 	string boson = "both";
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170818/";
+	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170823/";
 	if(!mssmhbb::blinded) output += "unblinded/";
 	output += "2hdm/" + thdm_type + "/";
 	CheckOutputDir(output);
@@ -66,19 +68,17 @@ int main(int argc, const char** argv){
 	limits.SetHiggsBoson(boson);
 	limits.ReadCombineLimits(path2016);
 	limits.Get2HDM_1D_Limits(thdm_scans,cB_A,"z");
-	limits.compareWithPrevious(true);
+	limits.compareWithPrevious(ATLAS_results);
 
 	// 2HDM tanBeta vs mA limits for cos(beta-alpha) = cB_A
-	TLegend leg_2HDM_tB(0.55,0.17,0.93,0.5);
-	leg_2HDM_tB.SetFillColor(0);
-	leg_2HDM_tB.SetTextSize(0.035);
-	leg_2HDM_tB.SetBorderSize(0);
-	output += boson + "_bosons_tanB_cB_A_" + output_prefix;
-	limits.LimitPlotter(leg_2HDM_tB,output,"35.7 fb^{-1}","M_{#Phi} [GeV]","tan(#beta)",true);
+//	TLegend leg_2HDM_tB(0.65,0.17,0.92,0.44);
+	TLegend leg_2HDM_tB(0.35,0.74,0.93,0.87);
+	output += thdm_type + "_" + boson + "_bosons_tanB_cB_A_" + output_prefix;
+	limits.LimitPlotter(leg_2HDM_tB,output,"35.7 fb^{-1}",string(HbbStyle::axisTitleMAH().Data()),"tan#beta",true);
+	output += "vs_ATLAS_" + ATLAS_results;
 	output += "_zoomed";
 	leg_2HDM_tB.Clear();
 	limits.setXMin(300);
-	std::cout<<"WTF"<<std::endl;
-	limits.LimitPlotter(leg_2HDM_tB,output,"35.7 fb^{-1}","M_{#Phi} [GeV]","tan(#beta)",true);
+	limits.LimitPlotter(leg_2HDM_tB,output,"35.7 fb^{-1}",string(HbbStyle::axisTitleMAH().Data()),"tan#beta",true);
 
 }
