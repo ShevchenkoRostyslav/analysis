@@ -39,7 +39,7 @@
 namespace fs = boost::filesystem;
 
 using namespace std;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 using namespace analysis::tools;
 using namespace boost::program_options;
 

@@ -41,15 +41,19 @@
 #<bin   name="HbbLimits_test" file="../test/HbbLimits_test.cpp" />
 <bin   name="plotTanBetaLimits" 		file="../macros/limits/plotTanBetaLimits.cpp"></bin>
 <bin   name="plotGxBRLimits"			file="../macros/limits/plotGxBRLimits.cpp"></bin>
+<bin   name="plotStepsGxBR"                    file="../macros/limits/plotStepsGxBR.cpp"></bin>
 <bin   name="Plot2HDM_cosBA_tanB" 		file="../macros/limits/Plot2HDM_cosBA_tanB.cpp"></bin>
 <bin   name="Plot2HDM_mA_tanB" 			file="../macros/limits/Plot2HDM_mA_tanB.cpp"></bin>
 <bin   name="GOF"						file="../macros/pre_unblinding/draw_GOF.cpp"></bin>
 <bin   name="FullMass_postfit"          file="../macros/limits/FullMass_postfit.cpp"></bin>
-#<bin   name="mssm_xs_uncertainty" file="../macros/results_interpretation/MSSM/uncertainties/mssm_xs_uncertainty.cpp" />
+<bin   name="BG_FullMass"                       file="../macros/limits/BG_FullMass.cpp"></bin>
+<bin   name="mssm_xs_uncertainty" file="../macros/results_interpretation/MSSM/uncertainties/mssm_xs_uncertainty.cpp" />
 #<bin   name="Plot2HDM_2D" 				file="../macros/limits/Plot2HDM_2D.cpp"></bin>
+<bin   name="mass_fit"                          file="../macros/limits/mass_fit.cpp"></bin>
 
 #data vs mc
 <bin   name="FlavourContamination"		file="../macros/FlavourContamination_2b.cpp"></bin>
+<bin   name="massShape_bbb_vs_bbnb"             file="../macros/PAS/massShape_bbb_vs_bbnb.cpp"></bin>
 
 #Background and Bias
 <bin   name="Bias_study_binned"         file="Bias_study_binned.cpp"></bin>
@@ -65,3 +69,9 @@
 
 #Signal modelling
 <bin   name="parametrisation"			file="../macros/Signal_shapes/parametrisation.cpp"></bin>
+<bin   name="templates"				file="../macros/templates.C"></bin>
+<bin   name="signal_efficiency"                 file="../macros/PAS/signal_efficinecy.cpp"></bin>
+<bin   name="signal_shapes"			file="../macros/PAS/signal_shapes.cpp"></bin>
+
+#tests
+<bin  name="pdfuncert_test"			file="../test/pdfuncert_test.cpp"></bin>

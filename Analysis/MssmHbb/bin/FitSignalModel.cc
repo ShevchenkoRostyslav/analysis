@@ -34,10 +34,10 @@
 #include "Analysis/BackgroundModel/interface/Tools.h"
 #include "Analysis/BackgroundModel/interface/ProbabilityDensityFunctions.h"
 #include "Analysis/BackgroundModel/interface/RooQuadGausExp.h"
-#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 //style file
-#include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 HbbStyle style;
 
 #include "Analysis/MssmHbb/interface/utilLib.h"
@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
   gStyle->SetTitleSize(0.04,"XYZ");
 
   string mssm_normTanB = "";//"_NormToTanB30";
+  bool adjoint_subranges = false;
 /**/
   int rebin = 1;
   const int verbosity = 1;
@@ -78,7 +79,7 @@ int main(int argc, char* argv[]) {
   std::string histo_name = "templates/bbH_Mbb_VIS";
   std::string histo_name_240 = "bbH_Mbb";
   //List of shape uncertainties
-  std::vector<std::string> shape_unc = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};//{};//
+//  std::vector<std::string> mssmhbb::signal_shape_unc = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV","CMS_PDF_13TeV"};//{};//
   map<string,int> colors;
   colors["Up"] = 4;
   colors["Down"] = 2;
@@ -88,13 +89,17 @@ int main(int argc, char* argv[]) {
   std::string model = "";
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   for(const auto & mass : mssmhbb::signal_templates){
-	  if(mass.first != 1100) continue;
+//	  if(mass.first != 500 && mass.first != 1100) continue;
 	  //Particular mass point
 	  std::cout<<"***************************************"<<std::endl;
 	  std::cout<<"*************** M = "<<mass.first<<"***************"<<std::endl;
 	  std::cout<<"***************************************"<<std::endl;
 	  TFile f((mass.second).c_str(),"read");
-	  std::string name = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/output/" + "ReReco_signal_M-" + std::to_string(mass.first) + mssm_normTanB;// + "_SR2";
+	  std::string name = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/output/" + "test_ReReco_signal_M-" + std::to_string(mass.first) + mssm_normTanB;
+	  if(adjoint_subranges){
+	  	if(mass.first == 500) name += "_SR1";
+		else if (mass.first == 1100) name += "_SR2";
+	  } 
 	  boost::filesystem::remove_all(name); // clean dir
 	  std::string hname =  histo_name_240; //histo_name;//
 	  //Central value
@@ -124,7 +129,7 @@ int main(int argc, char* argv[]) {
 	  fitter.Import(signal_norm);
 	  fitter.Write();
 	  //Syst variation
-	  for(const auto & syst : shape_unc){
+	  for(const auto & syst : mssmhbb::signal_shape_unc){
 		  std::cout<<"***************************************"<<std::endl;
 		  std::cout<<"***************"<<syst<<"***************"<<std::endl;
 		  std::cout<<"***************************************"<<std::endl;
@@ -138,6 +143,8 @@ int main(int argc, char* argv[]) {
 //			  hname = "templates/" + histo_name_240 + "_" + CMS + "_" + syst + "_VIS_" + energy + s;
 			  TH1D* hSignal_syst = (TH1D*) f.Get(hname.c_str());
 			  if(hSignal_syst == nullptr) throw std::logic_error("Wrong histo name: " + hname + " has been provided");
+			  //renormalise PDF uncertainty to the central template
+			  if(syst == "CMS_PDF_13TeV") hSignal_syst->Scale(hSignal->Integral()/hSignal_syst->Integral());
 			  hSignal_syst->Rebin(rebin);
 			  ab::FitContainer fit_syst(hSignal_syst,name + "/" + syst + "_" + s,"signal");
 			  fit_syst.fitRangeMin(min);
@@ -154,8 +161,7 @@ int main(int argc, char* argv[]) {
 			  std::unique_ptr<RooFitResult> Signalfit_syst = fit_syst.FitSignal(model);
 
                	//Write signal normalisation
-               	TH1D* hSignal_240_syst = (TH1D*) f.Get((hname).c_str());
-               	RooRealVar signal_norm("signal_norm","signal_norm",hSignal_240_syst->Integral());
+               	RooRealVar signal_norm("signal_norm","signal_norm",hSignal_syst->Integral());
                	signal_norm.setConstant(true);
                	fit_syst.Import(signal_norm);
                	fit_syst.Write();
@@ -164,9 +170,9 @@ int main(int argc, char* argv[]) {
 		drawSystFits(mass.first,syst,name);
 	  }
 	  //Plot shape parameters
-	  if(model == "bukin") plotShapeParameters(mass.first,shape_unc,name,{"Xp","sigp","xi","rho1","rho2"});
-	  else if( model == "doublegausexp") plotShapeParameters(mass.first,shape_unc,name,{"mean","sigmaL","sigmaR","tail_shift","tail_sigma"});
-	  else if (model == "quadgausexp") plotShapeParameters(mass.first,shape_unc,name,{"mean","sigmaL1","sigmaL2","sigmaR1","sigmaR2","norm_g1","norm_g2","tail_shift","tail_sigma"});
+	  if(model == "bukin") plotShapeParameters(mass.first,mssmhbb::signal_shape_unc,name,{"Xp","sigp","xi","rho1","rho2"});
+	  else if( model == "doublegausexp") plotShapeParameters(mass.first,mssmhbb::signal_shape_unc,name,{"mean","sigmaL","sigmaR","tail_shift","tail_sigma"});
+	  else if (model == "quadgausexp") plotShapeParameters(mass.first,mssmhbb::signal_shape_unc,name,{"mean","sigmaL1","sigmaL2","sigmaR1","sigmaR2","norm_g1","norm_g2","tail_shift","tail_sigma"});
 
 /**/
   }
@@ -377,6 +383,28 @@ void fixParameters(const string& model,const std::string& syst, RooWorkspace& w,
 			fixParameter("mean",w,wC);
 		}
 		else if (model == "quadgausexp"){
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+			fixShiftParameter("sigmaL1","sigmaL2",w,wC);
+			fixShiftParameter("sigmaR1","sigmaR2",w,wC);
+			fixParameter("norm_g1",w,wC);
+			fixParameter("norm_g2",w,wC);
+		}
+	}
+	else if (syst == "CMS_PDF_13TeV"){
+		if(model == "bukin"){
+			fixParameter("Xp",w,wC);
+			fixParameter("rho1",w,wC);
+			fixParameter("rho2",w,wC);
+			fixParameter("xi",w,wC);
+		}
+		else if (model == "doublegausexp"){
+			fixParameter("tail_sigma",w,wC);
+			fixParameter("mean",w,wC);
+			fixParameter("tail_shift",w,wC);
+		}
+		else if (model == "quadgausexp"){
+			fixParameter("tail_sigma",w,wC);
 			fixParameter("mean",w,wC);
 			fixParameter("tail_shift",w,wC);
 			fixShiftParameter("sigmaL1","sigmaL2",w,wC);
