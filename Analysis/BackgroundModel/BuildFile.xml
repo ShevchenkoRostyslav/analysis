@@ -8,6 +8,7 @@
 <use name="boost" />
 <use name="roofit" />
 <use name="Analysis/Tools"/>
+<use name="Analysis/MssmHbb"/>
 <use name="boost_program_options" />
 <export>
   <lib name="1"/>

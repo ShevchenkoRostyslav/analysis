@@ -125,11 +125,15 @@ void ProbabilityDensityFunctions::setPdf(const std::string& function, const std:
 
 void ProbabilityDensityFunctions::getNovosibirsk(const std::string& name){
 	RooRealVar& var = *workspace_->var(var_.c_str());
-	//RooRealVar peak = RooRealVar("peak1", "peak", getPeakStart(), 50.0, 500.0, "GeV");
-	RooRealVar peak = RooRealVar("peak1", "peak", getPeakStart(), 50.0, 1000.0, "GeV");	//only for subrange 3 
+//	RooRealVar peak = RooRealVar("peak1", "peak", getPeakStart(), 50.0, 500.0, "GeV");
+	//	RooRealVar tail = RooRealVar("tail1", "tail", -0.1, -1.0, 1.0);
+	RooRealVar peak = RooRealVar("peak1", "peak", getPeakStart(), 50.0, 1000.0, "GeV");	//only for subrange 3
 	RooRealVar width = RooRealVar("width1", "width", 50.0, 5.0, var.getMax()/2.0, "GeV");
-	//RooRealVar tail = RooRealVar("tail1", "tail", -0.1, -1.0, 1.0);			
-        RooRealVar tail("tail", "tail", -0.1, -10.0, 10.0); 					//only for subrange 3	
+	RooRealVar tail("tail", "tail", -0.1, -10.0, 10.0); 					//only for subrange 3
+
+//	RooRealVar peak = RooRealVar("peak1", "peak", 461.819, 50.0, 1000.0, "GeV");	//only for subrange 3
+//	RooRealVar width = RooRealVar("width1", "width", 58.3072, 5.0, var.getMax()/2.0, "GeV");
+//	RooRealVar tail("tail", "tail", -0.93615, -10.0, 10.0); 					//only for subrange 3
 	RooNovosibirsk novo(name.c_str(),(name + "_novosibirsk").c_str(),var,peak,width,tail);
 
 	workspace_->import(novo);

@@ -59,7 +59,6 @@ Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, co
 			chi2 += pull*pull;
 			++nbins;
 		}
-//		std::cout<<i<<" y = "<<y<<" - "<<curve_yavg<<" err_l = "<<eyl<<" err_h = "<<eyh<<" chi2 = "<<chi2<<std::endl;
 	}
 	return Chi2Ndf(chi2,nbins-nFitParam);
 }

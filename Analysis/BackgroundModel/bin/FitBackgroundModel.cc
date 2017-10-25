@@ -13,6 +13,7 @@
 #include "Analysis/BackgroundModel/interface/ParamModifier.h"
 #include "Analysis/BackgroundModel/interface/Tools.h"
 #include "Analysis/BackgroundModel/interface/ProbabilityDensityFunctions.h"
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 
 
 namespace po = boost::program_options;
@@ -23,6 +24,8 @@ int backgroundOnlyFit(ab::FitContainer&, po::variables_map&);
 
 int main(int argc, char* argv[]) {
   const auto cmsswBase = static_cast<std::string>(gSystem->Getenv("CMSSW_BASE"));
+  HbbStyle style;
+  style.setTDRstyle(PRELIMINARY);
 
 
   // general command line options
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]) {
     ("fit_min", po::value<float>(), "Lower bound of the fit range.")
     ("fit_max", po::value<float>(), "Upper bound of the fit range.")
     ("nbins", po::value<int>(), "Number of bins in the fit range.")
+	("control_region", po::value<bool>()->default_value(true), "Number of bins in the fit range.")
     ("modify_param,m", po::value<std::vector<std::string> >()->composing()
      ->default_value(std::vector<std::string>(), ""),
      "Modify parameters as follows: "
@@ -156,7 +160,7 @@ int backgroundOnlyFit(ab::FitContainer& fitter, po::variables_map& vm) {
   }
 
   int returnValue = 0;
-  std::unique_ptr<RooFitResult> bkgOnlyFit = fitter.backgroundOnlyFit(vm["background_model"].as<std::string>());
+  std::unique_ptr<RooFitResult> bkgOnlyFit = fitter.backgroundOnlyFit(vm["background_model"].as<std::string>(),0,vm["control_region"].as<bool>());
   if (bkgOnlyFit) {
     std::cout << "\nCorrelation matrix of background-only fit:" << std::endl;
     if (&(bkgOnlyFit->correlationMatrix()) != nullptr) {

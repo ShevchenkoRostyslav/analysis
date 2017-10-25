@@ -39,7 +39,6 @@
 #include "Analysis/BackgroundModel/interface/RooFitQuality.h"
 #include "Analysis/Tools/interface/RooFitUtils.h"
 
-
 namespace analysis {
   namespace backgroundmodel {
 
@@ -80,7 +79,7 @@ namespace analysis {
       void setModel(const Type& type, const std::string& model);
       void setModel(const Type& type, const std::string& model,
                     const std::vector<ParamModifier>& modifiers);
-      std::unique_ptr<RooFitResult> backgroundOnlyFit(const std::string& model, const bool& plot_params = 0);
+      std::unique_ptr<RooFitResult> backgroundOnlyFit(const std::string& model, const bool& plot_params = 0, const bool& control_region = true);
       std::unique_ptr<RooFitResult> FitSignal(const std::string & model, const bool& plot_params = 0);
 
       void profileModel(const Type& type);
@@ -90,6 +89,9 @@ namespace analysis {
 
       void SetChi2CalcLowEdge(const double & val);
       void SetChi2CalcHighEdge(const double & val);
+
+      void SetupTopFrame(RooPlot *frame1, const double& pad_w, const double& pad_h);
+      void SetupBottomFrame(RooPlot *frame1, const double& pad_w, const double& pad_h);
 
     private:
 

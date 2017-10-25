@@ -30,7 +30,7 @@
 #include "Analysis/BackgroundModel/interface/RooPhaseSpacePol4.h"
 #include "Analysis/BackgroundModel/interface/FitContainer.h"
 #include "Analysis/BackgroundModel/interface/Tools.h"
-
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 
 using namespace analysis::backgroundmodel;
 
@@ -65,7 +65,7 @@ FitContainer::FitContainer(const std::string& outputDir) :
 		ndfBkgOnly_(-10000),
 		nbins_(73), //73
 		lumi_(35.7), //2.69,12.9,36.62
-		obs_(259399.) //SR1-259399, SR2-105053, SR3-26760
+		obs_(26760.) //SR1-259399, SR2-105053, SR3-26760
 {}
 
 //FitContainer::FitContainer(const FitContainer& cont){
@@ -505,13 +505,14 @@ std::unique_ptr<RooFitResult> FitContainer::FitSignal(const std::string & name, 
 }
 
 
-std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string& name, const bool& plot_params) {
+std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string& name, const bool& plot_params, const bool& control_region) {
   if (!initialized_) initialize();
 
 	auto &Pdf 		= *GetFromRooWorkspace<RooAbsPdf>(workspace_,toString(Type::background));
 	auto &data	 	= *GetFromRooWorkspace<RooAbsData>(workspace_,data_);
 	auto &mbb		= *GetFromRooWorkspace<RooRealVar>(workspace_, mbb_);
-	RooFit::SumW2Error(kTRUE);
+	gStyle->SetPadRightMargin(0.025);
+//	RooFit::SumW2Error(kTRUE);
 
 	//class-helper
 	RooFitQuality fit_quality;
@@ -521,12 +522,10 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
     fitResult(Pdf.fitTo(data,
 			RooFit::Save(),
 			RooFit::PrintLevel(verbosity_),
-			RooFit::Range(fitRangeLowId_.c_str()),
-			RooFit::SumW2Error(kTRUE),
-//			RooFit::Range(fitSplRangeId_.c_str()),
-//			RooFit::Offset(true),
+//			RooFit::Range(fitRangeLowId_.c_str()),
+			RooFit::Range(fitSplRangeId_.c_str()),
+//			RooFit::SumW2Error(kTRUE),
 			RooFit::SplitRange()
-  //RooFit::InitialHesse(kTRUE)
     ));
 
   fit_quality.PrintParametersInfo(*fitResult);
@@ -534,21 +533,20 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   // Top frame
   std::unique_ptr<RooPlot> frame(mbb.frame());
   data.plotOn(frame.get(),
-	     RooFit::MarkerSize(0.8),	//0.8 for lowM
+//	     RooFit::MarkerSize(0.8),	//0.8 for lowM
 	     //RooFit::DataError(RooAbsData::Auto), 
 	     RooFit::Name("data_curve"));
   Pdf.plotOn(frame.get(),
-	     //RooFit::VisualizeError(*fitResult,1,kFALSE),
+//	     RooFit::VisualizeError(*fitResult,1,kFALSE),
+//		 RooFit::VisualizeError(*fitResult,2,kFALSE),
              //RooFit::DrawOption("L"),
              RooFit::LineColor(kRed),
-             //RooFit::LineWidth(2),
-	     //RooFit::LineStyle(kDashed),
-	     //RooFit::FillColor(kOrange),
              RooFit::Name("background_curve"),
              RooFit::NormRange(fullRangeId_.c_str()),
              RooFit::Range(fitRangeId_.c_str()),
              RooFit::Normalization(data.sumEntries("1", fitRangeId_.c_str()),
                                    RooAbsReal::NumEvent));
+//  frame->GetYaxis()->SetTitle( ("Events / " + std::to_string( int((mbb.getMax() - mbb.getMin())/nbins_) )  + " GeV").c_str());
 
   if(plot_params){
 	  double par_xmin = 0.65, par_xmax = 0.9, par_ymax = 0.6;
@@ -559,14 +557,14 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
 
   int nPars = fitResult->floatParsFinal().getSize();
 
-  //TODO: Remove this part!!!!!!! This is a Fitter and not a generator. -> 
-  //-> this class takes care about the fitting procedure but not about the 
+  //TODO: Remove this part!!!!!!! This is a Fitter and not a generator. ->
+  //-> this class takes care about the fitting procedure but not about the
   //generation of the new data! Please don't mix different purposes in a single class.
   //
   // Creat Asimov data for combine tool
-  RooDataSet* asimov = Pdf.generate(mbb, obs_);
-  asimov->SetName("data_obs");
-  workspace_.import(*asimov); 
+//  RooDataSet* asimov = Pdf.generate(mbb, obs_);
+//  asimov->SetName("data_obs");
+//  workspace_.import(*asimov);
  
   // Get Covariance Matrix for diagonalisation 
   TMatrixDSymEigen CM = fitResult->covarianceMatrix();
@@ -588,18 +586,6 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////ChiSquare by Gregor/////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  //double myChi2 = chiSquare_(data,
-  //                           *(frame->getCurve("background_curve")),
-  //				blind_lowEdge_, blind_highEdge_, nPars);
-  //std::string myChi2str(Form("%.1f/%d = %.1f", myChi2, ndfBkgOnly_,
-  //			     myChi2/ndfBkgOnly_));
-  //std::cout << "\nMy normalized chi^2: " << myChi2str << std::endl;
-  //latex.DrawLatexNDC(0.98-canvas.GetRightMargin(), 0.93-canvas.GetTopMargin(),
-  //                   (std::string("#chi^{2}/ndf = ")+myChi2str).c_str());
-
-  ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////ChiSquare by Chayanit///////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   else {
@@ -616,85 +602,85 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   // TMath::Prob p-value by CA
   double prob = TMath::Prob(chi2BkgOnly_,ndfBkgOnly_);
   std::string probstr(Form("%.2f", prob));
-  std::cout << "\nTMath::Prob(#chi^{2}_{RooFit},ndf) : " << probstr << std::endl;
+  std::cout << "\nTMath::Prob(#chi^{2},nof) : " << probstr << std::endl;
  
   // Bottom frame
   RooHist* hpull;
   hpull = frame->pullHist();
-  hpull->SetMarkerSize(0.8);	//0.8 for lowM
+//  hpull->SetMarkerSize(0.8);	//0.8 for lowM
   std::unique_ptr<RooPlot> frame2(mbb.frame());
   frame2->addPlotable(hpull,"P");
-  //frame2->addObject(frame->pullHist()); 
-  frame2->SetMinimum(-5.); 
-  frame2->SetMaximum(+5.); 
 
-  //TCanvas canvas("canvas", "", 600, 600);
   TCanvas canvas;
-  canvas.SetCanvasSize(500,500);
   canvas.cd();
-  //prepareCanvas_(canvas);
   prepareFrame_(*frame);
   prepareFrame_(*frame2);
 
-  TPad* pad1;
-  pad1 = new TPad("pad1","",0,0.1,1,1);
-  pad1->SetBottomMargin(0.2);
-  pad1->SetRightMargin(0.05); 
-  pad1->SetLeftMargin(0.16); 
+  //Size of the canva in pixels:
+  double pad_hPixel = canvas.YtoPixel(canvas.GetY1());
+
+  double pad1_ymin = 0.3;
+//  auto pad1 = new TPad("pad1","",0,pad1_ymin,1,1);
+  auto pad1 = HbbStyle::getRatioTopPad(1 - pad1_ymin);
   pad1->Draw();
   pad1->cd();
-  frame->GetXaxis()->SetTitleOffset(999); //Effectively turn off x axis title on main plot
-  frame->GetXaxis()->SetLabelOffset(999); //Effectively turn off x axis label on main plot
-  frame->GetYaxis()->SetTitleSize(0.038);
-  frame->GetYaxis()->SetTitleOffset(1.6);
-  frame->GetYaxis()->SetLabelSize(0.033);
-  //frame->GetYaxis()->SetRangeUser(frame->GetMinimum(), frame->GetMaximum()+200);
+  //Size of the pad1 pad in pixels:
+  double pad1_hPixel = pad1->YtoPixel(pad1->GetY1());
+  HbbStyle::setRatioTopFrame(frame->GetXaxis(),frame->GetYaxis(),pad_hPixel);
   frame->Draw();
 
   std::string lumistr(Form("%.1f", lumi_));
 
   TLatex latex;
   latex.SetTextFont(43);
-  latex.SetTextSize(17);
-  latex.SetTextAlign(11);
-  latex.DrawLatexNDC(0.31-pad1->GetRightMargin(), 1.02-canvas.GetTopMargin(),
-                    (std::string("CMS Preliminary #sqrt{s} = 13 TeV, L = ")+lumistr+std::string(" fb^{-1}")).c_str());
-  latex.SetTextSize(15);
+
+  latex.SetTextSize(19);
   latex.SetTextAlign(33);
   latex.SetTextColor(kBlue+2);
-  latex.DrawLatexNDC(0.98-pad1->GetRightMargin(), 0.98-pad1->GetTopMargin(),
-                     (std::string("#chi^{2}_{RooFit}/ndf = ")+chi2str).c_str());
+  latex.DrawLatexNDC(0.96-pad1->GetRightMargin(), 0.96-pad1->GetTopMargin(),
+                     (std::string("#chi^{2}/dof = ")+chi2str).c_str());
   latex.SetTextColor(kGreen+2);
-  latex.DrawLatexNDC(0.98-pad1->GetRightMargin(), 0.93-pad1->GetTopMargin(),
+  latex.DrawLatexNDC(0.96-pad1->GetRightMargin(), 0.91-pad1->GetTopMargin(),
   		       (std::string("p-value = ")+probstr).c_str());
   latex.SetTextColor(kOrange+2);
   std::string minstr(Form("%.0f", fitRangeMin_));
   std::string maxstr(Form("%.0f", fitRangeMax_));
-  latex.DrawLatexNDC(0.98-pad1->GetRightMargin(), 0.88-pad1->GetTopMargin(), 
+  latex.DrawLatexNDC(0.96-pad1->GetRightMargin(), 0.86-pad1->GetTopMargin(),
   		       (minstr+std::string(" < M_{12} < ")+maxstr).c_str());
 
+  //Draw TLegend
+  float legendx1, legendx2, legendy1, legendy2;
+  legendx1 = 0.6; legendx2 = 0.96 - pad1->GetRightMargin();
+  legendy1 = 0.6; legendy2 = 0.81 - pad1->GetTopMargin();
+  TLegend leg(legendx1,legendy1,legendx2,legendy2);
+  leg.SetBorderSize(0);
+  leg.SetFillColor(0);
+  leg.SetTextFont(43);
+//  leg.SetTextAlign(33);
+  leg.SetTextSize(latex.GetTextSize());
+  std::string which_data = "";
+  if (control_region) which_data += " control region";
+  else which_data += " signal region";
+  leg.AddEntry(frame->findObject("data_curve"),("Data" + which_data).c_str(),"p");
+  leg.AddEntry(frame->getCurve("background_curve"),"Fit","l");
+  leg.Draw();
+
   canvas.cd();
-  TPad *pad2 = new TPad("pad2","",0,0.0,1,0.265);
-  pad2->SetTopMargin(1);
-  pad2->SetBottomMargin(0.33);
-  pad2->SetLeftMargin(pad1->GetLeftMargin());
-  pad2->SetRightMargin(pad1->GetRightMargin());
-  pad2->SetGridy();
+//  TPad *pad2 = new TPad("pad2","",0,0.0,1,pad1_ymin);
+  auto pad2 = HbbStyle::getRatioBottomPad(pad1_ymin);
   pad2->Draw();
   pad2->cd();
-  frame2->SetTitle("");
-  frame2->GetXaxis()->SetTitleSize(0.15);
-  frame2->GetXaxis()->SetTitleOffset(0.9);
-  frame2->GetXaxis()->SetLabelSize(0.115);
-  frame2->GetXaxis()->SetLabelOffset(0.010);
-  frame2->SetYTitle("Pulls");
-  frame2->GetYaxis()->CenterTitle(kTRUE);
-  frame2->GetYaxis()->SetTitleSize(0.14);
-  frame2->GetYaxis()->SetTitleOffset(0.4);
-  frame2->GetYaxis()->SetNdivisions(3,5,0);
-  frame2->GetYaxis()->SetLabelSize(0.115);
-  frame2->GetYaxis()->SetLabelOffset(0.011);
+
+  frame2->SetYTitle("#frac{Data-Fit}{#sqrt{Data}}");
+  HbbStyle::setRatioBottomFrame(frame2->GetXaxis(),frame2->GetYaxis(),pad_hPixel,pad1_hPixel);
+  frame2->GetYaxis()->SetRangeUser(-3.9999, 3.9999);
   frame2->Draw();
+  //Draw TLine for 0 pulls
+  TLine line(frame2->GetXaxis()->GetXmin(),0,frame2->GetXaxis()->GetXmax(),0);
+  line.SetLineStyle(2);
+  line.Draw();
+  canvas.cd();
+  HbbStyle::drawStandardTitle("out");
 
   canvas.SaveAs((plotDir_+name+"_lowM_linear.pdf").c_str());
   pad1->SetLogy();
@@ -828,7 +814,7 @@ void FitContainer::prepareCanvas_(TCanvas& raw) {
 
 
 void FitContainer::prepareFrame_(RooPlot& raw) {
-  raw.GetYaxis()->SetTitleOffset(2);
+//  raw.GetYaxis()->SetTitleOffset(2);
   raw.SetTitle("");
 }
 
@@ -945,6 +931,53 @@ void FitContainer::makeLog_(const RooFitResult& fitResult){
 	fitResult.floatParsFinal().printMultiline(f,1111,1);
 	f<<"\n cov.matrix: I HAVE NO IDEA HOW TO WRITE IT!!!!!!\n";
 	fb.close();
+}
+
+void FitContainer::SetupTopFrame(RooPlot *frame1, const double& pad_w, const double& pad_h){
+
+//	//Pixel sizes of the current pad
+	double pad_wPixel = gPad->XtoPixel(gPad->GetX2());
+	double pad_hPixel = gPad->YtoPixel(gPad->GetY1());
+
+	//Use relative values
+	frame1->GetYaxis()->SetTickLength(gStyle->GetTickLength("Y") * pad_w / pad_wPixel);
+	frame1->GetYaxis()->SetTitleOffset(gStyle->GetTitleOffset("Y"));
+	frame1->GetYaxis()->SetRangeUser(frame1->GetMinimum(), frame1->GetMaximum()+200);
+
+	frame1->GetXaxis()->SetTickLength(gStyle->GetTickLength("X") * pad_h / pad_hPixel);
+    frame1->GetXaxis()->SetTitleSize(0);
+    frame1->GetXaxis()->SetLabelSize(0);
+	frame1->GetXaxis()->SetTitleOffset(999); //Effectively turn off x axis title on main plot
+	frame1->GetXaxis()->SetLabelOffset(999); //Effectively turn off x axis label on main plot
+}
+
+void FitContainer::SetupBottomFrame(RooPlot *frame2, const double& pad_w, const double& pad_h){
+
+	double pad_wPixel = gPad->XtoPixel(gPad->GetX2());
+	double pad_hPixel = gPad->YtoPixel(gPad->GetY1());
+
+	//Y-axis options
+	frame2->GetYaxis()->SetTitleFont(43);			// This gives the sizes in pixels!!!!
+	frame2->GetYaxis()->SetLabelFont(43);			// This gives the sizes in pixels!!!!
+	frame2->GetYaxis()->SetTickLength(gStyle->GetTickLength("Y") * pad_w / pad_wPixel);
+	frame2->GetYaxis()->SetLabelOffset(gStyle->GetLabelOffset("Y") * pad_w / pad_wPixel );
+	frame2->GetYaxis()->SetTitleOffset(gStyle->GetTitleOffset("Y") * 1.15);
+	frame2->GetYaxis()->SetLabelSize(gStyle->GetLabelSize("Y") * pad_h);
+	frame2->GetYaxis()->SetTitleSize(gStyle->GetTitleSize("Y") * pad_h);
+    frame2->GetYaxis()->CenterTitle();
+    frame2->GetYaxis()->SetNdivisions(105);
+    frame2->SetMinimum(-3.9999);
+    frame2->SetMaximum(+3.9999);
+
+    //X-axis options
+	frame2->GetXaxis()->SetTitleFont(43);			// This gives the sizes in pixels!!!!
+	frame2->GetXaxis()->SetLabelFont(43);			// This gives the sizes in pixels!!!!
+    frame2->GetXaxis()->SetTitle(HbbStyle::axisTitleMass());
+    frame2->GetXaxis()->SetTickLength(gStyle->GetTickLength("X") * pad_h / pad_hPixel);
+    frame2->GetXaxis()->SetLabelSize(gStyle->GetLabelSize("X") * pad_h);
+    frame2->GetXaxis()->SetTitleSize(gStyle->GetTitleSize("X") * pad_h);
+    	frame2->GetXaxis()->SetTitleOffset(3.5);
+    	frame2->GetXaxis()->SetLabelOffset(gStyle->GetLabelOffset("X") * pad_h / pad_hPixel );
 }
 
 const std::string FitContainer::defaultOutputDir_ =

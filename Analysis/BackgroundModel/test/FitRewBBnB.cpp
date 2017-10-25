@@ -8,7 +8,7 @@
 #include "RooFit.h"
 
 #include "Analysis/BackgroundModel/interface/FitContainer.h"
-#include "Analysis/MssmHbb/macros/Drawer/HbbStyle.cc"
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 #include "Analysis/MssmHbb/interface/utilLib.h"
 
 using namespace std;
@@ -22,7 +22,7 @@ int main() {
 	 * Script to fit bbnb data (weighted and not)
 	 */
 	HbbStyle style;
-	style.set(PRIVATE);
+	style.setTDRstyle(PRIVATE);
 
 	const string cmsswBase = gSystem->Getenv("CMSSW_BASE");
 	const string selection = "TripleBTagReverseSelectionBtoH2016_prescale_13TeV_G4.root";
