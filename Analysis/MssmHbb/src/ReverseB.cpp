@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 ReverseB::ReverseB(const std::string & inputFilelist, const bool & lowM, const bool & test) :
 					selectionDoubleB(inputFilelist,lowM,test)

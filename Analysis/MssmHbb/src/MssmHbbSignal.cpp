@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 std::string constructTemplateName(const std::string & name);
 
@@ -173,7 +173,12 @@ void MssmHbbSignal::writeHistograms(){
 	outputFile_->mkdir("templates","templates with a full range");
 	for(const auto & h: (histo_.getHisto())){
 		if(h.second->GetEntries() == 0) continue; 			//skip empty histograms
-		if(isMC()) h.second->Scale(weight_["Lumi"]);
+//		if(isMC()) h.second->Scale(weight_["Lumi"]);
+		if(isMC()){
+			if(h.first.find("PDF_up")    != std::string::npos || h.first.find("PDF_VIS_up")    != std::string::npos) 		h.second->Scale(weight_["Lumi_PDFup"]);
+			else if(h.first.find("PDF_down")  != std::string::npos || h.first.find("PDF_VIS_down")  != std::string::npos) 	h.second->Scale(weight_["Lumi_PDFdown"]);
+			else h.second->Scale(weight_["Lumi"]);
+		}
 		if(h.first.find("template") != std::string::npos){
 			full_name = constructTemplateName(h.first);
 			if(h.first.find("VIS") != std::string::npos) outputFile_->cd("templates");
@@ -347,12 +352,12 @@ void MssmHbbSignal::makeM12Templates(const bool& subranges){
 		double min;
 		double mass = returnMassPoint();
 		if(subranges){
-			if(mass == 300 || mass == 350 || mass == 400){
+			if(std::find(mssmhbb::sr1.begin(),mssmhbb::sr1.end(),mass) != mssmhbb::sr1.end()){
 				nbins = 45;
 				min = 200;
 				max = 650;
 			}
-			else if (mass == 500 || mass == 600 || mass == 700 || mass == 900){
+			else if (std::find(mssmhbb::sr2.begin(),mssmhbb::sr2.end(),mass) != mssmhbb::sr2.end()){
 				nbins = 42;
 				min = 350;
 				max = 1190;

@@ -12,7 +12,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 //using namespace std::chrono;
 
 double signal_shape(const double & M12_gen){
@@ -221,6 +221,8 @@ void JetAnalysisBase::applySelection(){
 	int TotalNumberOfGenEvents = 0;						// Total number of generated events
 	int NumberOfGenEvents_afterMHat = 0;				// Total number of generated events after Mhat cut
 	double NumberOfGenEvents_afterMHat_rewPU = 0;		// Total number of generated events after Mhat cut and PU reweighting
+	double NumberOfGenEvents_afterMHat_rewPU_PDFup = 0; // Total number of generated events after Mhat cut and PU rew + Up variation of the pdf scale
+	double NumberOfGenEvents_afterMHat_rewPU_PDFdown = 0; // Total number of generated events after Mhat cut and PU rew + Down variation of the pdf scale
 	int NumberOfEventsAfterSelection = 0;				// Total number of the events that pass selection
 	double NumberOfEventsAfterSelection_weighted = 0;	// Weighted number of the events that pass selection
 
@@ -265,6 +267,12 @@ void JetAnalysisBase::applySelection(){
 		if(isMC()) {
 			weight_["PU_central"] 	= pWeight_->PileUpWeight(*hCorrections1D_["hPileUpData_central"],*hCorrections1D_["hPileUpMC"],this->nTruePileup());
 			NumberOfGenEvents_afterMHat_rewPU += weight_["PU_central"];
+			if(signalMC_) {
+				// PDF uncertainty
+				pdfUncertainties(this->genScale(), this->pdf());
+				NumberOfGenEvents_afterMHat_rewPU_PDFup += weight_["PU_central"] * weight_["PDF_up"];
+				NumberOfGenEvents_afterMHat_rewPU_PDFdown += weight_["PU_central"] * weight_["PDF_down"];
+			}
 //			NumberOfGenEvents_afterMHat_rewPU = NumberOfGenEvents_afterMHat;
 			(histo_.getHisto())["nTruePileup"]->Fill(this->nTruePileup());
 		}
@@ -473,11 +481,6 @@ void JetAnalysisBase::applySelection(){
 //            			  	  	   pWeight_->BTagWeight(hCorrections2D_["hRelBTagEff2D"], LeadJet[1].pt(), LeadJet[1].eta());
 //        	  }
 
-				if(signalMC_) {
-					// PDF uncertainty
-					pdfUncertainties(this->genScale(), this->pdf());
-				}
-
 	    }
 //	    weight_["M12"] = pWeight_->M12Weight(*hCorrections1D_["hM12Weight_bbx"],(LeadJet[0].p4() + LeadJet[1].p4()).M());
 
@@ -499,12 +502,15 @@ void JetAnalysisBase::applySelection(){
 		else {
 			xsection = xsection_[returnMassPoint()];
 		}
-		weight_["Lumi"] 			=pWeight_->LumiWeight(dataLumi_,NumberOfGenEvents_afterMHat_rewPU / xsection);
+		weight_["Lumi"] 			= pWeight_->LumiWeight(dataLumi_,NumberOfGenEvents_afterMHat_rewPU / xsection);
+		weight_["Lumi_PDFup"]		= pWeight_->LumiWeight(dataLumi_,NumberOfGenEvents_afterMHat_rewPU_PDFup / xsection);
+		weight_["Lumi_PDFdown"]		= pWeight_->LumiWeight(dataLumi_,NumberOfGenEvents_afterMHat_rewPU_PDFdown / xsection);
+		std::cout<<"LUMI: "<<weight_["Lumi"]<<" "<<weight_["Lumi_PDFup"]<<" "<<weight_["Lumi_PDFdown"]<<std::endl;
+
 //		if(file_name.find("bEnriched") != std::string::npos || file_name.find("BGenFilter") != std::string::npos || file_name.find("QCD") != std::string::npos){
 //			weight_["Lumi"] 			=pWeight_->LumiWeight(dataLumi_,1. / xsection); // To be able to Scale histograms after!!!
 //		}
 	}
-//	std::cout<<"WTF: "<<weight_["Lumi"]<<std::endl;
 	(histo_.getHisto())["xsection"]->Fill(xsection);
 	(histo_.getHisto())["lumi_weight"]->Fill(weight_["Lumi"]);
 	(histo_.getHisto())["TotalNumberOfGenEvents"]->Fill(TotalNumberOfGenEvents) ;
@@ -891,7 +897,7 @@ const void JetAnalysisBase::pdfUncertainties(const double& genScale, const analy
 
 	// fill weights
 	weight_["PDF_central"] = 1;
-	weight_["PDF_down"] = 1 - stdDeviation;
-	weight_["PDF_up"] = 1 + stdDeviation;
+	weight_["PDF_down"] = 1 - 2.*stdDeviation;	//To make it 2 sigma deviation
+	weight_["PDF_up"] = 1 + 2.*stdDeviation;	//To make it 2 sigma deviation
 
 }

@@ -22,8 +22,8 @@
 
 
 namespace analysis{
-	namespace mssmhbb{
-		class DataMcComparison : public analysis::mssmhbb::selectionDoubleB {
+	namespace selection{
+		class DataMcComparison : public analysis::selection::selectionDoubleB {
 //			friend class MssmHbbSignal;
 //			friend class ReverseB;
 		public:

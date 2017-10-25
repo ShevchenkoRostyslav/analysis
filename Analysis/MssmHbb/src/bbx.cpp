@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 bbx::bbx(const std::string & inputFilelist,const double & dataLumi, const bool & lowM, const bool & test) :
 		DataMcComparison(inputFilelist,dataLumi,lowM,3,test)

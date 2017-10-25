@@ -15,6 +15,7 @@
 #include "TGraph.h"
 #include "TStyle.h"
 #include "TMath.h"
+#include <boost/algorithm/string/join.hpp>
 
 #include "Analysis/MssmHbb/interface/utilLib.h"
 
@@ -36,15 +37,23 @@ class Scenario{
 	* Abstract interface for a general scenarious
 	*/
 public:
+	 Scenario() = default;
 	virtual std::string getLabel() const = 0;
-	virtual TGraph getPreviousResults() const = 0;
-	virtual std::vector<TGraph> getAtlasResults(const std::string& var) const = 0;
-	virtual TText getPreviousResultsLabel() const = 0;
+	virtual TGraph getPreviousResults(const std::string& PAS) const = 0;
+	virtual std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const = 0;
+	virtual TText getPreviousResultsLabel(const std::string& PAS) const = 0;
 	virtual double getXMax() const = 0;
 	virtual bool previousExists() const = 0;
+	void checkResultsToCompareWith(const std::string& pas);
 	
 	static std::unique_ptr<Scenario> Create(AvailableScenarios scenario);
 	
+protected:
+	/*
+	 * Available results are encoded in terms of PAS/CONFNOTES/PAPERS/ARXIVs etc
+	 */
+	std::vector<std::string> availableResults_ = {""};
+
 }; 
 
 class LHCXSGScenario : public Scenario {
@@ -52,10 +61,11 @@ class LHCXSGScenario : public Scenario {
 	* Abstract interface class to specific LHCXSG scenarios
 	*/
 public:
+	LHCXSGScenario() = default;
 	virtual std::string getLabel() const = 0;
-	virtual TGraph getPreviousResults() const = 0;
-	virtual TText getPreviousResultsLabel() const = 0;
-	virtual std::vector<TGraph> getAtlasResults(const std::string& var) const = 0;
+	virtual TGraph getPreviousResults(const std::string& PAS) const = 0;
+	virtual TText getPreviousResultsLabel(const std::string& PAS) const = 0;
+	virtual std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const = 0;
 	virtual double getXMax() const = 0;
 	virtual bool previousExists() const = 0;
 };
@@ -64,80 +74,88 @@ public:
 
 class mhmodp_200 : public LHCXSGScenario{
 public:
-	std::string getLabel() const {return "m_{h}^{mod+} scenario,  #mu = +200";}
-	TGraph getPreviousResults() const;
-	TText getPreviousResultsLabel() const;
-	std::vector<TGraph> getAtlasResults(const std::string& var) const {std::vector<TGraph> gr; return gr;}
+	mhmodp_200();
+	std::string getLabel() const {return "m_{h}^{mod+} scenario,  #mu = +200 GeV";}
+	TGraph getPreviousResults(const std::string& PAS) const;
+	TText getPreviousResultsLabel(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
 	bool previousExists() const {return true;}
 };
 
 class light_stop : public LHCXSGScenario{
 public:
+	light_stop();
 	std::string getLabel() const {return "Light-#tilde{t} scenario";}	
-	TGraph getPreviousResults() const;
-	TText getPreviousResultsLabel() const;
-	std::vector<TGraph> getAtlasResults(const std::string& var) const {std::vector<TGraph> gr; return gr;}
+	TGraph getPreviousResults(const std::string& PAS) const;
+	TText getPreviousResultsLabel(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
 	bool previousExists() const {return true;}
 };
 
 class light_stau : public LHCXSGScenario{
 public:
+	light_stau();
 	std::string getLabel() const {return "Light-#tilde{#tau} scenario";}
-	TGraph getPreviousResults() const;
-	TText getPreviousResultsLabel() const;
-	std::vector<TGraph> getAtlasResults(const std::string& var) const {std::vector<TGraph> gr; return gr;}
+	TGraph getPreviousResults(const std::string& PAS) const;
+	TText getPreviousResultsLabel(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
 	bool previousExists() const {return true;}
 };
 
 class hMSSM : public LHCXSGScenario{
 public:
+	hMSSM();
 	std::string getLabel() const {return "hMSSM scenario";}
-	TGraph getPreviousResults() const;
-	TText getPreviousResultsLabel() const;
-	std::vector<TGraph> getAtlasResults(const std::string& var) const {std::vector<TGraph> gr; return gr;}
+	TGraph getPreviousResults(const std::string& PAS) const;
+	TText getPreviousResultsLabel(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
 	bool previousExists() const {return false;}
 };
 
 class tau_phobic : public LHCXSGScenario{
 public:
+	tau_phobic();
 	std::string getLabel() const {return "#tau-phobic scenario";}
-	TGraph getPreviousResults() const;
-	TText getPreviousResultsLabel() const;
-	std::vector<TGraph> getAtlasResults(const std::string& var) const {std::vector<TGraph> gr; return gr;}
+	TGraph getPreviousResults(const std::string& PAS) const;
+	TText getPreviousResultsLabel(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
 	bool previousExists() const {return false;} //exists but too small mH/A
 };
 
 class type1 : public Scenario{
 public:
-	std::string getLabel() const {return "2HDM Type-I scenario";}
-	TGraph getPreviousResults() const {TGraph gr; return gr;}
-	TText getPreviousResultsLabel() const {TText tx; return tx;}
-	std::vector<TGraph> getAtlasResults(const std::string& var) const;
+	type1();
+	std::string getLabel() const {return "2HDM type-I scenario";}
+	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}
 	bool previousExists() const {return false;} //exists but too small mH/A
 };
 
 class type2 : public Scenario{
 public:
-	std::string getLabel() const {return "2HDM Type-II scenario";}
-	TGraph getPreviousResults() const {TGraph gr; return gr;}
-	TText getPreviousResultsLabel() const {TText tx; return tx;}
-	std::vector<TGraph> getAtlasResults(const std::string& var) const;
+	type2();
+	std::string getLabel() const {return "2HDM type-II scenario";}
+	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}
 	bool previousExists() const {return false;} //exists but too small mH/A
 };
 
 class flipped : public Scenario{
 public:
-	std::string getLabel() const {return "2HDM Flipped scenario";}
-	TGraph getPreviousResults() const {TGraph gr; return gr;}
-	TText getPreviousResultsLabel() const {TText tx; return tx;}
-	std::vector<TGraph> getAtlasResults(const std::string& var) const;
+	flipped();
+	std::string getLabel() const {return "2HDM flipped scenario";}
+	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}
 	bool previousExists() const {return false;} //exists but too small mH/A
 };

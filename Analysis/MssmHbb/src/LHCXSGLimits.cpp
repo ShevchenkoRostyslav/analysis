@@ -101,6 +101,7 @@ double LHCXSGLimits::TanBeta(double mA, double xsection, const std::string& unce
 	      minimalDifference = difference;
 	      tanBetaTarget = tanBeta;
 	      xsecTarget = totXSec;
+	//	std::cout<<"Brs: A = "<<BrAbb<<" B = "<<BrHbb<<" Sigmas: A = "<<sigmaBBA<<" B = "<<sigmaBBH<<std::endl;
 	    }
 
 	    if (totXSec>xsection) {
@@ -116,28 +117,55 @@ double LHCXSGLimits::TanBeta(double mA, double xsection, const std::string& unce
 	return tanBetaTarget;
 }
 
-void LHCXSGLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band){
+void LHCXSGLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can){
 	/*
 	 * Virtual function that is actually plotting objects on the frame
 	 */
 	 
+	/*
+	 * Appearence of observed limits.
+	 * For the model dependent interpretation - there is a line, shows the central value
+	 * and shaded area with fully invisible border. Needed to not cover the axis on top
+	 * Also - an artificial TGraph is created to go the TLegend object with both - line and area
+	 * proper colored/painted
+	 */
+
 	//Modify appearence of the observed data to match 8 TeV paper
 	obs.SetLineColor(kRed);
-	obs.SetFillStyle(3002);
-	obs.SetFillColor(kRed-9);
-	obs.SetPoint(obs.GetN(),xMax_,yMax_);
-	obs.SetPoint(obs.GetN(),xMin_,yMax_);
-	 
+
+	//Shaded area with transperent borders
+	TGraph *obs_shaded = new TGraph(obs);
+	obs_shaded->SetLineColor(kWhite);
+	obs_shaded->SetLineWidth(0);
+	obs_shaded->SetFillColor(kRed-9);
+	obs_shaded->SetFillColorAlpha(kRed-9,0.35);
+	obs_shaded->SetPoint(obs_shaded->GetN(),xMax_,yMax_);		//Needed to make a closed area to be filled
+	obs_shaded->SetPoint(obs_shaded->GetN(),xMin_,yMax_);		//Needed to make a closed area to be filled
+
+	//Artificial TGraph to be used in the TLegend
+	TGraph *obs_legend = new TGraph();
+	obs_legend->SetLineColor(obs.GetLineColor());
+	obs_legend->SetLineWidth(obs.GetLineWidth());
+	obs_legend->SetFillColorAlpha(obs_shaded->GetFillColor(), 0.35);
+
+
+	 //Modify appearence of the observed data to match 8 TeV paper
+//	obs.SetLineColor(kRed);
+//	obs.SetFillColorAlpha(kRed-9,0.35);
+//	obs.SetPoint(obs.GetN(),xMax_,yMax_);
+//	obs.SetPoint(obs.GetN(),xMin_,yMax_);
+
 	if (!blindData_){
-		obs.Draw("FLsame");
+		obs_shaded->Draw("FLsame");
+//		obs.Draw("FLsame");
 		obs.Draw("Lsame");
-		leg.AddEntry(&obs,"Observed","lf");
+		leg.AddEntry(obs_legend,"Observed","lf");
 	}
 	//Add standard legend for the limits plot
 	exp.SetLineColor(kBlue);
 	leg.AddEntry(&exp,"Expected","l");
-	leg.AddEntry(&inner_band,"#pm1#sigma Expected","f");
-	leg.AddEntry(&outer_band,"#pm2#sigma Expected","f");
+	leg.AddEntry(&inner_band,"68% expected","f");
+	leg.AddEntry(&outer_band,"95% expected","f");
     // add excluded areas in phase space, according to the SMH
 	if(drawExcludedRegion_ != 0){
 		std::vector<TGraphAsymmErrors*> excludedAreas = getH125IncompatibleAreas(xs_tool_,drawExcludedRegion_);
@@ -149,44 +177,26 @@ void LHCXSGLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TG
 		}
 		//Add legend entry for it.
 		leg.AddEntry(excludedAreas.front(),("m_{h,H} #neq 125 #pm " + std::to_string(drawExcludedRegion_) + " GeV").c_str(),"FX");
-//		//Add legend to the exclusion plot
-//		  TLegend *leg_excl = new TLegend(0.21,.705 ,.45,.845);
-//		  leg_excl->SetHeader(scenarioLabel_.c_str());
-//		  leg_excl->SetBorderSize(1);
-//		  leg_excl->SetLineColor(kBlack);
-//		  leg_excl->SetLineWidth(2);
-//		  leg_excl->SetTextSize(0.035);
-//		  leg_excl->AddEntry(excludedAreas.front(),"m_{h,H} #neq 125 #pm 3 GeV","FX");
-//		  leg_excl->Draw();
 	}
-	leg.SetHeader(scenario_->getLabel().c_str());
-	leg.SetX1(0.8*leg.GetX1());
-	
+
 	//Compare with previous results:
-	if(compareWithPrevious_ && scenario_->previousExists()){
-		TGraph *previous_res = new TGraph(scenario_->getPreviousResults());
-		TText *previous_lab = new TText(scenario_->getPreviousResultsLabel());
+	if(compareWithPrevious_ != "" && scenario_->previousExists()){
+		scenario_->checkResultsToCompareWith(compareWithPrevious_);
+		TGraph *previous_res = new TGraph(scenario_->getPreviousResults(compareWithPrevious_));
+		TText *previous_lab = new TText(scenario_->getPreviousResultsLabel(compareWithPrevious_));
 		previous_res->Draw("Lsame");
 		previous_lab->Draw("same");
 	}
 
-//	  //Add text block describing scenario
-//	  TPaveText *text = new TPaveText(0.2,.7,.4,.85,"NDC");
-//	  text->SetFillColor(0);
-//	  text->SetBorderSize(1);
-//	  text->SetTextSize(0.035);
-//	  text->SetLineWidth(2);
-//	  text->AddText("m_{h}^{mod+} scenario");
-//	  text->AddText("#mu=-200");
-//	  text->Draw();
+	auto legendHeader = scenario_->getLabel();
+	leg.SetHeader(legendHeader.c_str());
+	leg.SetX1(0.8*leg.GetX1());
 
-	  //Add legend to the exclusion plot
-//	  TLegend *leg_excl = new TLegend(0.21,.705 ,.45,.845 - 2*HbbStyle::lineHeight());
-//	  leg_excl->SetLineColor(kBlack);
-//	  leg_excl->SetLineWidth(1);
-//	  leg_excl->SetTextSize(0.035);
-//	  leg_excl->AddEntry(excludedAreas.front(),"m_{h,H} #neq 125#pm3 GeV","FX");
-//	  leg_excl->Draw();
+	leg.Draw();
+	//In case of the long header like at mhmod+ scenario
+	if(legendHeader.length() > 30) HbbStyle::drawLegendSplittedHeader(&leg,",");
+
+	HbbStyle::drawStandardTitle("out");
 
 }
 

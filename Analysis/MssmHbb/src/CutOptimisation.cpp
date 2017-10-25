@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 CutOptimisation::CutOptimisation(const std::string & inputFilelist, const double & dataLumi, const bool & lowM,const int & njets, const bool & test) :
 		selectionDoubleB(inputFilelist,dataLumi,lowM,test) {

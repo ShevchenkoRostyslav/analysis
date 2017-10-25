@@ -45,7 +45,7 @@ void LimitsInterpretation::CheckHiggsBoson(){
 	}
 }
 
-void LimitsInterpretation::LimitPlotter(TLegend& legenda,
+void LimitsInterpretation::LimitPlotter(TLegend legenda,
 		const std::string& output,
 		const std::string& Lumi,
 		const std::string& xtitle,

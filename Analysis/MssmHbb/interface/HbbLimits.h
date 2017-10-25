@@ -53,6 +53,19 @@ public:
 		std::vector<Limit> limits;
 	};
 
+	struct DecomposedLimits{
+		std::vector<double> X;
+		std::vector<double> obs;
+		std::vector<double> median;
+		std::vector<double> minus1;
+		std::vector<double> minus2;
+		std::vector<double> plus1;
+		std::vector<double> plus2;
+		std::vector<double> zero;
+	};
+	//Method to decompose vector of limits to the vectors of individual quantities
+	DecomposedLimits DecomposeLimits(const std::vector<Limit>& v);
+
 //	Method to read Limits from the combine output
 	virtual void ReadCombineLimits(const std::string& file_name);
 //	Method to read one limit
@@ -75,9 +88,21 @@ public:
 	void setYMin(const double& ymin);
 	void setYMax(const double& ymax);
 
+	//Plot sub-ranges "step plot"
+	void PlotSubRangeSteps(
+			const std::vector<Limit>& limits_sr1,
+			const std::vector<Limit>& limits_sr2,
+			const std::vector<Limit>& limits_sr3,
+			const std::string& output = "",
+			const std::string& Lumi = "35.7 fb^{-1}",
+			const std::string& xtitle = "m_{A/H} [GeV]",
+			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
+			const bool& logY = true
+			);
+
 	//Plotting tools
 	virtual void LimitPlotter(const LimitsToCompare& comp_limits,
-			TLegend& leg,
+			TLegend leg,
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
@@ -85,7 +110,7 @@ public:
 			const bool& logY = true);
 
 	virtual void LimitPlotter(
-			TLegend& leg,
+			TLegend leg,
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
@@ -99,7 +124,7 @@ public:
 			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
 			const bool& logY = true);
 
-	virtual void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band);
+	virtual void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can);
 
 protected:
 

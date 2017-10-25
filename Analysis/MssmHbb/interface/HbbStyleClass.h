@@ -8,25 +8,30 @@
 #ifndef ANALYSIS_MSSMHBB_INTERFACE_HBBSTYLECLASS_H_
 #define ANALYSIS_MSSMHBB_INTERFACE_HBBSTYLECLASS_H_
 
+#include "TPad.h"
+#include "TCanvas.h"
 #include "TColor.h"
 #include "TError.h"
 #include "TLegend.h"
 #include "TPaveText.h"
 #include "TString.h"
 #include "TStyle.h"
-
-// Publication status: determines what is plotted in title
-enum PublicationStatus { INTERNAL, INTERNAL_SIMULATION, PRELIMINARY, PUBLIC, SIMULATION, UNPUBLISHED, PRIVATE };
-enum BkgTemplateType { B2B1C2bb, C1bb, Qbb, bbB2B1C2, bbC1Q };
+#include "TGraph.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TBox.h"
+#include "Analysis/Tools/interface/CMS_lumi.h"
+#include "iostream"
 
 class HbbStyle {
 public:
   // Adjusts the gStyle settings and store the PublicationStatus
   static void set(const PublicationStatus status);
+  static void setTDRstyle(const PublicationStatus status);
   static PublicationStatus status() { return publicationStatus_; }
 
   // Draws a title on the current pad
-  //  <CMS label>,  #sqrt{s} = 8 TeV,  19.7fb^{-1}
+  //  <CMS label>,  #sqrt{s} = 13 TeV,  35.7fb^{-1}
   // where <CMS label> depends on the PublicationStatus
   //  INTERNAL    : no extra label (intended for AN-only plots with data)
   //  INTERNAL    : show "Simulation" label (intended for AN-only plots, no lumi, no "CMS")
@@ -36,7 +41,9 @@ public:
   //  UNPUBLISHED : show "CMS (unpublished)" label (intended for additional material on TWiki)
   // Note that this method does not allow for easy memory
   // handling. For that, use standardTitle().
-  static void drawStandardTitle() { standardTitle()->Draw("same"); }
+  static void drawStandardTitle();
+  static void drawStandardTitle(const TString& CMS_string_position, const TString& CMS_string_alignment = "left", const int& iPeriod = 4);
+//  static void drawStandardTitle() { standardTitle()->Draw("same"); }
 
   // Returns a TPaveText object that fits as a histogram title
   // with the current pad dimensions.
@@ -95,6 +102,13 @@ public:
     return legend(nEntries,relWidth,false,false);
   }
 
+  /*
+   * Hack the TLegend header in case it's too long to fit into a single line
+   */
+  static void drawLegendSplittedHeader(TLegend * leg, const char* split_character);
+
+  static void drawLegendOnTopOfThePad(TLegend *leg, TCanvas *can, const double& pad_size);
+
 
   // Returns a TPaveText object that fits into the top-right corner
   // of the current pad and that can be used for additional labels.
@@ -141,16 +155,38 @@ public:
   }
 
 
-  // Returns the nicely-formatted name of the background template.
-  // Use in labels, legends, etc.
-  static TString bkgTemplDisplayName(const BkgTemplateType type);
-
   // for axis titles
   static TString axisTitleMass() { return "M_{12} [GeV]"; }
-  static TString axisTitleXTag() { return "X_{123}"; }
+  static TString axisTitleMAH() { return "m_{A/H} [GeV]"; }
+  static TString axisTitleMA() { return "m_{A} [GeV]"; }
+  
+  //Luminosity string
+  static TString lumiString() {return "35.7 fb^{-1} (13 TeV)"; }
+
+  //Style for the limits plots
+  static void setObservedLimitsStyle(TGraph *gr);
+  static void setExpectedLimitsStyle(TGraph *gr);
+  static void set1SigmaBandsStyle(TGraph *gr);
+  static void set2SigmaBandsStyle(TGraph *gr);
+  static void setFrameStyle(TH2 *frame);
+  
+  //Style for the Ratio plots
+  static TPad* getRatioTopPad(const float& relative_size = 0.7);
+  static TPad* getRatioBottomPad(const float& relative_size = 0.3);
+  static void setRatioTopFrame(TH2D *h, const double& canva_h);
+  static void setRatioTopFrame(TAxis *xaxis, TAxis *yaxis, const double& canva_h);
+  static void setRatioBottomFrame(TH2D *h, const double& topPad_w, const double& canva_h);
+  static void setRatioBottomFrame(TAxis *xaxis, TAxis *yaxis, const double& canva_h, const double& topPad_h);
 
 
+  //Style for the TLegend
+  static void setLegendStyle(TLegend *leg);
   static double lineHeight() { return lineHeight_; }
+
+  //Style for the Histograms
+  static void correctForTheBinWidth(TH1& h);
+  static void applyStandardDataHistoStyle(TH1&h);
+  static void applyStandardMCHistoStyle(TH1&h);
 
 
 private:
@@ -171,6 +207,11 @@ private:
   static void setXCoordinatesR(const double relWidth, double& x0, double& x1);
   static void setYCoordinatesT(const int nEntries, double& y0, double& y1);
   static void setYCoordinatesB(const int nEntries, double& y0, double& y1);
+
+  // Change the TPad coordinates
+  static void setCurrentPadCoordinates(const double& xlow, const double& ylow, const double& xup, const double& yup);
+  // Move TLegend to a certain position
+  static void moveTLegend(TLegend *pad, const double& xlow, const double& ylow, const double& xup, const double& yup);
 
   static TLegend* legend(const int nEntries, const double relWidth, const bool left, const bool top);
   static TPaveText* label(const int nEntries, const double relWidth, const bool leftt, const bool top);

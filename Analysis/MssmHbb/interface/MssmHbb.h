@@ -38,7 +38,7 @@
 //
 
 namespace analysis {
-   namespace mssmhbb {
+   namespace selection {
 
       class MssmHbb : public analysis::tools::Analysis, public BasicTree {
          public:

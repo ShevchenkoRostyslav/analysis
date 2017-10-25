@@ -57,7 +57,7 @@ void HbbLimits::ReadCombineLimits(const std::string& file_name){
 }
 
 void HbbLimits::LimitPlotter(
-		TLegend& leg,
+		TLegend leg,
 		const std::string& output,
 		const std::string& Lumi,
 		const std::string& xtitle,
@@ -80,12 +80,15 @@ void HbbLimits::LimitPlotter(
 	 * Method to avoid null_vec creation by user
 	 */
 	LimitsToCompare differ_limits;
-	TLegend leg(0.62,0.6,0.9,0.85);
+//	TLegend leg(0.62,0.6,0.9,0.85);
+	gStyle->SetPadLeftMargin(0.13);
+	gStyle->SetPadRightMargin(0.05);
+	TLegend &leg = *HbbStyle::legend("top,right",5);
 	LimitPlotter(differ_limits,leg,output,Lumi,xtitle,ytitle,logY);
 }
 
 void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
-		TLegend& leg,
+		TLegend leg,
 		const std::string& output,
 		const std::string& Lumi,
 		const std::string& xtitle,
@@ -98,9 +101,9 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 		exit(-1);
 	}
 	HbbStyle style;
-
-	gStyle->SetPadTopMargin   (0.08);
-	gStyle->SetPadLeftMargin(0.15);
+	std::cout<<"WTFFFF: "<<gStyle->GetPadLeftMargin()<<" "<<gStyle->GetPadRightMargin()<<std::endl;
+//	gStyle->SetPadTopMargin   (0.08);
+	gStyle->SetPadLeftMargin(0.13);
 	gStyle->SetPadRightMargin(0.05);
 
 	//Write value of limits in file
@@ -108,28 +111,7 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 //	Write(output);
 
 	int nPointsX = limits_.size();
-	std::vector<double> X;
-	std::vector<double> obs;
-	std::vector<double> median;
-	std::vector<double> minus1;
-	std::vector<double> minus2;
-	std::vector<double> plus1;
-	std::vector<double> plus2;
-	std::vector<double> zero;
-
-	std::cout<<"SIZE: "<<nPointsX<<std::endl;
-	for(const auto& l : limits_){
-		std::cout<<"x = "<<l.getX()<<" obs = "<<l.getObserved()<<" exp = "<<l.getMedian()<<std::endl;
-		X.push_back(l.getX());
-		obs.push_back(l.getObserved());
-		median.push_back(l.getMedian());
-		minus2.push_back(l.getMedian() - l.getMinus2G());
-		minus1.push_back(l.getMedian() - l.getMinus1G());
-		plus2.push_back(l.getPlus2G() - l.getMedian());
-		plus1.push_back(l.getPlus1G() - l.getMedian());
-		zero.push_back(0);
-
-	}
+	HbbLimits::DecomposedLimits decomposed = DecomposeLimits(limits_);
 
 	TGraph * differ_exp = nullptr;
 	bool compare_limits = false;
@@ -147,47 +129,31 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 		differ_exp->SetLineStyle(3);
 	}
 
-	TGraph * obsG = new TGraph(nPointsX, X.data(), obs.data());
-	obsG->SetLineWidth(3);
-	obsG->SetLineColor(1);
-	obsG->SetLineWidth(2);
-	obsG->SetMarkerColor(1);
-	obsG->SetMarkerStyle(20);
-	obsG->SetMarkerSize(1.4);
+	TGraph * obsG = new TGraph(nPointsX, decomposed.X.data(), decomposed.obs.data());
+	style.setObservedLimitsStyle(obsG);
 
-	TGraph * expG = new TGraph(nPointsX, X.data(),median.data());
-	expG->SetLineWidth(3);
-	expG->SetLineColor(2);
-	expG->SetLineStyle(2);
+	TGraph * expG = new TGraph(nPointsX, decomposed.X.data(), decomposed.median.data());
+	style.setExpectedLimitsStyle(expG);
 
-	TGraphAsymmErrors * innerBand = new TGraphAsymmErrors(nPointsX, X.data(), median.data(), zero.data(), zero.data(), minus1.data(), plus1.data());
-	innerBand->SetFillColor(kGreen);
-	innerBand->SetLineColor(kGreen);
+	TGraphAsymmErrors * innerBand = new TGraphAsymmErrors(nPointsX, decomposed.X.data(), decomposed.median.data(), decomposed.zero.data(), decomposed.zero.data(), decomposed.minus1.data(), decomposed.plus1.data());
+	style.set1SigmaBandsStyle(innerBand);
 
-	TGraphAsymmErrors * outerBand = new TGraphAsymmErrors(nPointsX, X.data(), median.data(), zero.data(), zero.data(), minus2.data(), plus2.data());
-	outerBand->SetFillColor(kYellow);
-	outerBand->SetLineColor(kYellow);
+	TGraphAsymmErrors * outerBand = new TGraphAsymmErrors(nPointsX, decomposed.X.data(), decomposed.median.data(), decomposed.zero.data(), decomposed.zero.data(), decomposed.minus2.data(), decomposed.plus2.data());
+	style.set2SigmaBandsStyle(outerBand);
 
-	TH2F * frame = nullptr;
-
-	frame = new TH2F("frame","",2,xMin_,xMax_,2,yMin_,yMax_);
-	frame->GetXaxis()->SetTitle(xtitle.c_str());
-	frame->GetYaxis()->SetTitle(ytitle.c_str());
-	frame->GetXaxis()->SetNdivisions(505);
-	frame->GetYaxis()->SetNdivisions(206);
-	frame->GetYaxis()->SetTitleOffset(1.3);
-	frame->GetXaxis()->SetTitleOffset(1.05);
-	frame->GetYaxis()->SetTitleSize(0.048);
-	frame->SetStats(0);
+	 TH2F frame("frame","",2,xMin_,xMax_,2,yMin_,yMax_);
+	style.setFrameStyle(&frame);
+	frame.GetXaxis()->SetTitle(xtitle.c_str());
+	frame.GetYaxis()->SetTitle(ytitle.c_str());
 
 	TCanvas *canv = new TCanvas("canv", "histograms", 600, 600);
+	auto *main_pad = new TPad("main_pad","main_pad",0,0,1,1);
+	main_pad->Draw();
+	main_pad->cd();
 
-	frame->Draw();
+	frame.Draw();
 
-	leg.SetFillColor(0);
-	leg.SetTextSize(0.035);
-	leg.SetLineWidth(2);
-	leg.SetBorderSize(1);
+	style.setLegendStyle(&leg);
 
 	outerBand->Draw("3same");
 	innerBand->Draw("3same");
@@ -197,31 +163,38 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 	if(compare_limits) {
 		leg.AddEntry(differ_exp,differ_limits.legend.c_str(),"l");
 	}
-	AddPlottingObjects(*frame,leg,*obsG,*expG,*innerBand,*outerBand);
+	AddPlottingObjects(frame,leg,*obsG,*expG,*innerBand,*outerBand,*canv);
+//	TPad * pad = (TPad*)canv->GetPad(0);
+	canv->RedrawAxis();
+	main_pad->RedrawAxis();
+////	leg.Draw();
+//	style.drawStandardTitle("out");
 
-	TPad * pad = (TPad*)canv->GetPad(0);
-	pad->RedrawAxis();
-	leg.Draw();
-	style.drawStandardTitle();
-
-	if(logY) canv->SetLogy();
+	canv->cd();
+	if(logY) main_pad->SetLogy();
 	canv->Update();
 	canv->Print( (output+".pdf").c_str() ,"Portrait pdf");
 	canv->Print( (output+".png").c_str()) ;
+//	canv->Print( (output+".root").c_str()) ;
 }
 
-void HbbLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band){
+void HbbLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can){
 	/*
 	 * Virtual function that is actually plotting objects on the frame
 	 */
+	frame.GetXaxis()->SetRangeUser(frame.GetXaxis()->GetXmin(), frame.GetXaxis()->GetXmax()-0.001);
+	leg.SetHeader("95% CL upper limits");
 	if (!blindData_){
 		obs.Draw("lpsame");
 		leg.AddEntry(&obs,"Observed","lp");
 	}
 
 	leg.AddEntry(&exp,"Expected","l");
-	leg.AddEntry(&inner_band,"#pm1#sigma Expected","f");
-	leg.AddEntry(&outer_band,"#pm2#sigma Expected","f");
+	leg.AddEntry(&inner_band,"68% expected","f");
+	leg.AddEntry(&outer_band,"95% expected","f");
+	leg.Draw();
+
+	HbbStyle::drawStandardTitle("out");
 
 }
 
@@ -264,6 +237,133 @@ const Limit HbbLimits::ReadCombineLimit(const std::string& tfile_name, const boo
     return limit;
 }
 
+void HbbLimits::PlotSubRangeSteps(
+			const std::vector<Limit>& limits_sr1,
+			const std::vector<Limit>& limits_sr2,
+			const std::vector<Limit>& limits_sr3,
+			const std::string& output,
+			const std::string& Lumi,
+			const std::string& xtitle,
+			const std::string& ytitle,
+			const bool& logY
+			){
+	/*
+	 * Method to plot sub-ranges step plots of GxBr
+	 */
+	if(limits_sr1.size() == 0 || limits_sr2.size() == 0 || limits_sr3.size() == 0) {
+		std::cerr<<"Error in HbbLimits::PlotSubRangeSteps: No limits with this name. Please check spelling";
+		exit(-1);
+	}
+	HbbStyle style;
+
+//	gStyle->SetPadTopMargin(0.08);
+	gStyle->SetPadLeftMargin(0.13);
+	gStyle->SetPadRightMargin(0.05);
+
+	//Sub-range 1
+	int nPoints_sr1 = limits_sr1.size();
+	HbbLimits::DecomposedLimits decomposed_sr1 = DecomposeLimits(limits_sr1);
+
+	TGraph obsG_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.obs.data());
+	style.setObservedLimitsStyle(&obsG_sr1);
+
+	TGraph expG_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.median.data());
+	style.setExpectedLimitsStyle(&expG_sr1);
+
+	TGraphAsymmErrors innerBand_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.median.data(), decomposed_sr1.zero.data(), decomposed_sr1.zero.data(), decomposed_sr1.minus1.data(), decomposed_sr1.plus1.data());
+	style.set1SigmaBandsStyle(&innerBand_sr1);
+
+	TGraphAsymmErrors outerBand_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.median.data(), decomposed_sr1.zero.data(), decomposed_sr1.zero.data(), decomposed_sr1.minus2.data(), decomposed_sr1.plus2.data());
+	style.set2SigmaBandsStyle(&outerBand_sr1);
+
+	//Sub-range 2
+	int nPoints_sr2 = limits_sr2.size();
+	HbbLimits::DecomposedLimits decomposed_sr2 = DecomposeLimits(limits_sr2);
+
+	TGraph obsG_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.obs.data());
+	style.setObservedLimitsStyle(&obsG_sr2);
+	obsG_sr2.SetMarkerStyle(22);
+
+	TGraph expG_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.median.data());
+	style.setExpectedLimitsStyle(&expG_sr2);
+
+	TGraphAsymmErrors innerBand_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.median.data(), decomposed_sr2.zero.data(), decomposed_sr2.zero.data(), decomposed_sr2.minus1.data(), decomposed_sr2.plus1.data());
+	style.set1SigmaBandsStyle(&innerBand_sr2);
+
+	TGraphAsymmErrors outerBand_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.median.data(), decomposed_sr2.zero.data(), decomposed_sr2.zero.data(), decomposed_sr2.minus2.data(), decomposed_sr2.plus2.data());
+	style.set2SigmaBandsStyle(&outerBand_sr2);
+
+	//Sub-range 3
+	int nPoints_sr3 = limits_sr3.size();
+	HbbLimits::DecomposedLimits decomposed_sr3 = DecomposeLimits(limits_sr3);
+
+	TGraph obsG_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.obs.data());
+	style.setObservedLimitsStyle(&obsG_sr3);
+	obsG_sr3.SetMarkerStyle(34);
+
+	TGraph expG_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.median.data());
+	style.setExpectedLimitsStyle(&expG_sr3);
+
+	TGraphAsymmErrors innerBand_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.median.data(), decomposed_sr3.zero.data(), decomposed_sr3.zero.data(), decomposed_sr3.minus1.data(), decomposed_sr3.plus1.data());
+	style.set1SigmaBandsStyle(&innerBand_sr3);
+
+	TGraphAsymmErrors outerBand_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.median.data(), decomposed_sr3.zero.data(), decomposed_sr3.zero.data(), decomposed_sr3.minus2.data(), decomposed_sr3.plus2.data());
+	style.set2SigmaBandsStyle(&outerBand_sr3);
+
+
+	TH2F frame("frame","",2,xMin_,xMax_,2,yMin_,yMax_);
+	style.setFrameStyle(&frame);
+	frame.GetXaxis()->SetTitle(xtitle.c_str());
+	frame.GetYaxis()->SetTitle(ytitle.c_str());
+
+	TCanvas canv("canv", "histograms", 600, 600);
+
+	frame.Draw();
+
+//	TLegend leg(0.62,0.6,0.9,0.85);
+	auto &leg = *HbbStyle::legend("top,right",7,0.4);
+	style.setLegendStyle(&leg);
+
+	//Draw SR1
+	outerBand_sr1.Draw("3same");
+	innerBand_sr1.Draw("3same");
+	expG_sr1.Draw("lsame");
+	//Draw SR2
+	outerBand_sr2.Draw("3same");
+	innerBand_sr2.Draw("3same");
+	expG_sr2.Draw("lsame");
+	//Draw SR3
+	outerBand_sr3.Draw("3same");
+	innerBand_sr3.Draw("3same");
+	expG_sr3.Draw("lsame");
+
+	if (!blindData_){
+		obsG_sr1.Draw("lpsame");
+		obsG_sr2.Draw("lpsame");
+		obsG_sr3.Draw("lpsame");
+		leg.AddEntry(&obsG_sr1," ","lp");
+		leg.AddEntry(&obsG_sr2,"Observed","lp");
+		leg.AddEntry(&obsG_sr3," ","lp");
+	}
+
+	leg.SetHeader("95% CL upper limits");
+	leg.AddEntry(&expG_sr1,"Expected","l");
+//	leg.AddEntry(&innerBand_sr1,"#pm1#sigma Expected","f");
+//	leg.AddEntry(&outerBand_sr1,"#pm2#sigma Expected","f");
+	leg.AddEntry(&innerBand_sr1,"68% expected","f");
+	leg.AddEntry(&outerBand_sr1,"95% expected","f");
+
+	TPad * pad = (TPad*)canv.GetPad(0);
+	pad->RedrawAxis();
+	leg.Draw();
+	style.drawStandardTitle("out");
+
+	if(logY) canv.SetLogy();
+	canv.Update();
+	canv.Print( (output+".pdf").c_str() ,"Portrait pdf");
+	canv.Print( (output+".png").c_str()) ;
+}
+
 void HbbLimits::Write(const std::string& name){
 	/*
 	 * Method to write limits to a .txt file
@@ -273,7 +373,8 @@ void HbbLimits::Write(const std::string& name){
 	fs<<"X     -2s     -1s  median     +1s     +2s     obs \n";
 	for(const auto& limit: limits_){
 		char strOut[400];
-		sprintf(strOut,"%4f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f",
+//		sprintf(strOut,"%4f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f  %6.2f",
+		sprintf(strOut,"%4f & %6.2f & %6.2f & %6.2f & %6.2f & %6.2f & %6.2f",
 				(limit.getX()),limit.getMinus2G(),limit.getMinus1G(),limit.getExpected(),limit.getPlus1G(),limit.getPlus2G(),limit.getObserved());
 		fs<<strOut;
 		fs<<"\n";
@@ -282,5 +383,24 @@ void HbbLimits::Write(const std::string& name){
 	std::cout<<"File: "<<name + ".txt"<<" has been written."<<std::endl;
 }
 
+HbbLimits::DecomposedLimits HbbLimits::DecomposeLimits(const std::vector<Limit>& v){
+	/*
+	 * Method to ddecompose Vector of limits to vectorS of individual quantities
+	 */
+	DecomposedLimits dec;
+	for(const auto& l : v){
+		dec.X.push_back(l.getX());
+		dec.obs.push_back(l.getObserved());
+		dec.median.push_back(l.getMedian());
+		dec.minus2.push_back(l.getMedian() - l.getMinus2G());
+		dec.minus1.push_back(l.getMedian() - l.getMinus1G());
+		dec.plus2.push_back(l.getPlus2G() - l.getMedian());
+		dec.plus1.push_back(l.getPlus1G() - l.getMedian());
+		dec.zero.push_back(0);
+	}
+	return dec;
+}
+
 } /* namespace MssmHbb */
 } /* namespace Analysis */
+

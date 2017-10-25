@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 selectionDoubleB::selectionDoubleB(const std::string & inputFilelist, const double & dataLumi, const bool & lowM, const bool & test) :
 JetAnalysisBase(inputFilelist,dataLumi,lowM,test) {

@@ -17,8 +17,8 @@
 #include "Analysis/MssmHbb/interface/MssmHbbSignal.h"
 
 namespace analysis{
-	namespace mssmhbb{
-		class BgStudy : public analysis::mssmhbb::MssmHbbSignal {
+	namespace selection{
+		class BgStudy : public analysis::selection::MssmHbbSignal {
 			public:
 				BgStudy(const std::string & inputFilelist,
 								const double & dataLumi,

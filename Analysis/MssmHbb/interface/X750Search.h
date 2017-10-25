@@ -17,8 +17,8 @@
 
 
 namespace analysis{
-	namespace mssmhbb{
-		class X750Search : public analysis::mssmhbb::TriggerEfficiency {
+	namespace selection{
+		class X750Search : public analysis::selection::TriggerEfficiency {
 //			friend class MssmHbbSignal;
 //			friend class ReverseB;
 		public:

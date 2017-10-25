@@ -54,8 +54,8 @@ TH3D THDMLimits::Get2HDM_GxBR_3D(const std::string& benchmark_path){
 		std::cout<<" LimitsInterpretation::Get2HDM_GxBR_3D - DONE"<<std::endl;
 	}
 
-	gStyle->SetPadLeftMargin(0.08);
-	gStyle->SetPadRightMargin(0.12);
+//	gStyle->SetPadLeftMargin(0.08);
+//	gStyle->SetPadRightMargin(0.12);
 
 	return *hOut;
 
@@ -75,7 +75,9 @@ TH2D THDMLimits::Get2HDM_GxBR_2D(const TH3& h_in, const double& var, const std::
 	//Var Range has to be setuped
 	int bin = -10;
 	var_axis_ = axis;
+	var_point_ = var;
 	if(axis == "x" || axis == "X") {
+		//x = mA
 		bin = h.GetXaxis()->FindBin(var);
 		h.GetXaxis()->SetRange(bin,bin);
 		//Project
@@ -83,12 +85,14 @@ TH2D THDMLimits::Get2HDM_GxBR_2D(const TH3& h_in, const double& var, const std::
 		proj->GetXaxis()->SetRangeUser(-1.,1.);
 	}
 	if(axis == "y" || axis == "Y") {
+		//tan\beta
 		bin = h.GetYaxis()->FindBin(var);
 		h.GetYaxis()->SetRange(bin,bin);
 		//Project
 		proj = (TH2D*)  h.Project3D("zx");
 	}
 	if(axis == "z" || axis == "Z") {
+		// cos(b-a)
 		bin = h.GetZaxis()->FindBin(var);
 		h.GetZaxis()->SetRange(bin,bin);
 		//Project
@@ -100,9 +104,9 @@ TH2D THDMLimits::Get2HDM_GxBR_2D(const TH3& h_in, const double& var, const std::
 	}
 
 	//Special Pad margins to plot 2D mu scans
-	gStyle->SetPadTopMargin   (0.09);
-	gStyle->SetPadLeftMargin(0.14);
-	gStyle->SetPadRightMargin(0.15);
+//	gStyle->SetPadTopMargin   (0.09);
+//	gStyle->SetPadLeftMargin(0.14);
+//	gStyle->SetPadRightMargin(0.15);
 
 	return *proj;
 }
@@ -260,6 +264,7 @@ const std::vector<Limit> THDMLimits::Get2HDM_1D_Limits(const TH2& h_in){
 		tan_b_limit.setPlus2G(double(THDMTanBeta(GxBR_2hdm,tan_b_limit.getX(),gxbr_limit.getPlus2G())));
 		tan_b_limit.setObserved(double(THDMTanBeta(GxBR_2hdm,tan_b_limit.getX(),gxbr_limit.getObserved())));
 		limits_.push_back(tan_b_limit);
+		std::cout<<"m = "<<tan_b_limit.getX()<<" Observed: "<<tan_b_limit.getObserved()<<" Expected: "<<tan_b_limit.getMedian()<<std::endl;
 	}
 	return limits_;
 }
@@ -334,47 +339,100 @@ void THDMLimits::SetTHDMHistos(TFile& f,std::map<std::string,TH3D*>& histos){
 	}
 }
 
-void THDMLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band){
+void THDMLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can){
 	/*
 	 * Virtual function that is actually plotting objects on the frame
 	 */
-	 //Modify appearence of the observed data to match 8 TeV paper
+
+	/*
+	 * Appearence of observed limits.
+	 * For the model dependent interpretation - there is a line, shows the central value
+	 * and shaded area with fully invisible border. Needed to not cover the axis on top
+	 * Also - an artificial TGraph is created to go the TLegend object with both - line and area
+	 * proper colored/painted
+	 */
+
+	//Modify appearence of the observed data to match 8 TeV paper
 	obs.SetLineColor(kRed);
-	obs.SetFillStyle(3002);
-	obs.SetFillColor(kRed-9);
-	obs.SetPoint(obs.GetN(),xMax_,yMax_);
-	obs.SetPoint(obs.GetN(),xMin_,yMax_);
-	 
+
+	//Shaded area with transperent borders
+	TGraph *obs_shaded = new TGraph(obs);
+	obs_shaded->SetLineColor(kWhite);
+	obs_shaded->SetLineWidth(0);
+	obs_shaded->SetFillColor(kRed-9);
+	obs_shaded->SetFillColorAlpha(kRed-9,0.35);
+	obs_shaded->SetPoint(obs_shaded->GetN(),xMax_,yMax_);		//Needed to make a closed area to be filled
+	obs_shaded->SetPoint(obs_shaded->GetN(),xMin_,yMax_);		//Needed to make a closed area to be filled
+
+	//Artificial TGraph to be used in the TLegend
+	TGraph *obs_legend = new TGraph();
+	obs_legend->SetLineColor(obs.GetLineColor());
+	obs_legend->SetLineWidth(obs.GetLineWidth());
+	obs_legend->SetFillColorAlpha(obs_shaded->GetFillColor(), 0.35);
+
+
+	 //Modify appearence of the observed data to match 8 TeV paper
+//	obs.SetLineColor(kRed);
+//	obs.SetFillColorAlpha(kRed-9,0.35);
+//	obs.SetPoint(obs.GetN(),xMax_,yMax_);
+//	obs.SetPoint(obs.GetN(),xMin_,yMax_);
+
 	if (!blindData_){
-		obs.Draw("FLsame");
+		obs_shaded->Draw("FLsame");
+//		obs.Draw("FLsame");
 		obs.Draw("Lsame");
-		leg.AddEntry(&obs,"Observed","lf");
+		leg.AddEntry(obs_legend,"Observed","lf");
 	}
 	
+	//Expected limits style
 	exp.SetLineColor(kBlue);
-	leg.AddEntry(&exp,"Expected","l");
-	leg.AddEntry(&inner_band,"#pm1#sigma Expected","f");
-	leg.AddEntry(&outer_band,"#pm2#sigma Expected","f");
+
+	//Legend style
+	auto legendHeader = scenario_->getLabel();
+	leg.SetHeader(legendHeader.c_str());
 	
-	leg.SetHeader(scenario_->getLabel().c_str());
-	if(compareWithPrevious_){
+	if(compareWithPrevious_ != ""){
 		//ATLAS Results
-		auto atlas_results = scenario_->getAtlasResults(var_axis_);
+		scenario_->checkResultsToCompareWith(compareWithPrevious_);
+		auto atlas_results = scenario_->getPreviousResults(var_axis_,compareWithPrevious_);
 		std::vector<TGraph*> patlas_results;
 		//Draw and add Legend
 		for(auto & gr : atlas_results){
 			//ATLAS style
 			TGraph *p_gr = new TGraph(gr);
-			p_gr->SetFillStyle(3002);
+			//p_gr->SetFillStyle(3002);
 			p_gr->SetFillColor(kAzure-4);
+			p_gr->SetFillColorAlpha(kAzure-4,0.35);
 			if(var_axis_=="z") p_gr->Draw("CFsame");
 			else p_gr->Draw("LFsame");
 			patlas_results.push_back(p_gr);
 			
+		}
+		leg.AddEntry(&inner_band,"68% expected","f");
+		leg.AddEntry(patlas_results.front(),"A#rightarrow Zh, ATLAS","f");
+		leg.AddEntry(&exp,"Expected","l");
+		leg.AddEntry(&outer_band,"95% expected","f");
 	}
-	leg.AddEntry(patlas_results.front(),"by A#rightarrow Zh, ATLAS","f");
+	else {
+		leg.AddEntry(&inner_band,"68% expected","f");
+		leg.AddEntry(&exp,"Expected","l");
+		leg.AddEntry(&outer_band,"95% expected","f");
 	}
 
+	HbbStyle::drawLegendOnTopOfThePad(&leg,&can,0.25);
+	//Get Legend position to not lost it
+	if(legendHeader.length() > 20) {
+		std::string specific_point = "A/H#rightarrow b#bar{b}, ";
+		if(var_axis_=="x") specific_point += "m_{A/H} = " + std::to_string(int(var_point_)) + " GeV";
+		else if(var_axis_ == "z") specific_point += "cos(#beta-#alpha) = " + to_string_with_precision(var_point_, 1);
+		legendHeader += ", " + specific_point;
+		leg.SetHeader(legendHeader.c_str());
+		HbbStyle::drawLegendSplittedHeader(&leg,",");
+	}
+	can.cd();
+	HbbStyle::drawStandardTitle("out");
+
+	frame.GetYaxis()->SetMoreLogLabels();
 }
 
 

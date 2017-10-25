@@ -55,7 +55,7 @@ public:
 //	Method to set higgs boson to be used: A/H/both
 	void SetHiggsBoson(const std::string& boson);
 	virtual void setScenario(AvailableScenarios scenario) {scenario_ = std::move(Scenario::Create(scenario)) /* scenario_ = std::make_unique<Scenario>(Scenario::Create(scenario)) */; xMax_ = scenario_->getXMax();}
-	void compareWithPrevious(const bool& c) {compareWithPrevious_ = c;}
+	void compareWithPrevious(const std::string& pas) {compareWithPrevious_ = pas;}
 	void drawExcludedRegion(const int& deltaM) {drawExcludedRegion_ = deltaM;}
 
 	//getters
@@ -85,7 +85,7 @@ public:
 				const bool& logY = true);
 
 	void LimitPlotter(
-				TLegend& leg,
+				TLegend leg,
 				const std::string& output = "",
 				const std::string& Lumi = "35.7 fb^{-1}",
 				const std::string& xtitle = "m_{A/H} [GeV]",
@@ -98,7 +98,7 @@ protected:
 	std::string boson_;
 	pScenario scenario_;
 	int drawExcludedRegion_{1};
-	bool compareWithPrevious_{false};
+	std::string compareWithPrevious_{""};
 	void CheckHiggsBoson();
 
 };

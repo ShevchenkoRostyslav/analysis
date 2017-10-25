@@ -29,7 +29,7 @@ public:
 	double TanBeta(double mA, double xsection, const std::string& uncert = "", const bool& UP = false, const std::string& benchmark_ref_path = "", const double& tanBref = -1);
 
 	//Additional plotting objects, i.e. box with model
-	virtual void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band);
+	virtual void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can);
 	// Plotter method with adjusted x and y axis according to MSSM interpretation
 //	void LimitPlotter(const HbbLimits::LimitsToCompare& differ_limits,
 //			TLegend& leg,

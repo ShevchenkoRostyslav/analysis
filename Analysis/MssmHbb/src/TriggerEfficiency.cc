@@ -12,7 +12,7 @@ namespace fs = boost::filesystem ;
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 TriggerEfficiency::TriggerEfficiency(const std::string & inputFilelist,const double & dataLumi, const bool & lowM, const bool & test) :
 								selectionDoubleB(inputFilelist,dataLumi,lowM,test)

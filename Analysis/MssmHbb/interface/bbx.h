@@ -18,8 +18,8 @@
 #include "Analysis/MssmHbb/interface/DataMcComparison.h"
 
 namespace analysis{
-	namespace mssmhbb{
-		class bbx : public analysis::mssmhbb::DataMcComparison {
+	namespace selection{
+		class bbx : public analysis::selection::DataMcComparison {
 			public:
 				bbx(const std::string & inputFilelist,
 								const double & dataLumi,

@@ -18,8 +18,8 @@
 
 
 namespace analysis{
-	namespace mssmhbb{
-		class selectionDoubleB : public analysis::mssmhbb::JetAnalysisBase {
+	namespace selection{
+		class selectionDoubleB : public analysis::selection::JetAnalysisBase {
 //			friend class MssmHbbSignal;
 //			friend class ReverseB;
 		public:

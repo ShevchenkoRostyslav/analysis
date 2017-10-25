@@ -45,7 +45,7 @@
 typedef std::unique_ptr<TFile> pTFile;
 
 namespace analysis{
-	namespace mssmhbb{
+	namespace selection{
 	class JetAnalysisBase : public analysis::tools::Analysis {
 	public:
 

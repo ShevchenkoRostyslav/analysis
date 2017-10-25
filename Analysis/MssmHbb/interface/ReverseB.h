@@ -16,8 +16,8 @@
 #include "Analysis/MssmHbb/interface/selectionDoubleB.h"
 
 namespace analysis{
-	namespace mssmhbb{
-	class ReverseB : public analysis::mssmhbb::selectionDoubleB {
+	namespace selection{
+	class ReverseB : public analysis::selection::selectionDoubleB {
 	public:
 		ReverseB(const std::string & inputFilelist,
 				const bool & lowM = true,

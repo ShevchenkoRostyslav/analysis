@@ -22,8 +22,8 @@
 
 
 namespace analysis{
-	namespace mssmhbb{
-		class CutOptimisation : public analysis::mssmhbb::selectionDoubleB {
+	namespace selection{
+		class CutOptimisation : public analysis::selection::selectionDoubleB {
 //			friend class MssmHbbSignal;
 //			friend class ReverseB;
 		public:

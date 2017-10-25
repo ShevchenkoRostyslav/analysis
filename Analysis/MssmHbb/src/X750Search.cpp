@@ -9,7 +9,7 @@
 
 using namespace analysis;
 using namespace analysis::tools;
-using namespace analysis::mssmhbb;
+using namespace analysis::selection;
 
 X750Search::X750Search(const std::string & inputFilelist, const double & dataLumi, const bool & lowM, const bool & test) :
 TriggerEfficiency(inputFilelist,dataLumi,lowM,test) {

@@ -16,10 +16,11 @@
 #include "Analysis/MssmHbb/interface/JetAnalysisBase.h"
 #include "Analysis/MssmHbb/interface/selectionDoubleB.h"
 #include "Analysis/MssmHbb/interface/utilLib.h"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 namespace analysis{
-	namespace mssmhbb{
-		class MssmHbbSignal : public analysis::mssmhbb::selectionDoubleB {
+	namespace selection{
+		class MssmHbbSignal : public analysis::selection::selectionDoubleB {
 			public:
 				MssmHbbSignal(const std::string & inputFilelist,
 								const double & dataLumi,

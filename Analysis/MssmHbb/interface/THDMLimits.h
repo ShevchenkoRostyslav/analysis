@@ -51,11 +51,12 @@ public:
 		double THDMTanBeta(const TH2& GxBR_2hdm, double mA, double xsection);
 		
 		//
-		void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band);
+		void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can);
 
 protected:
 		void SetTHDMHistos(TFile& file,std::map<std::string,TH3D*>&);
 		std::string var_axis_ {"z"};
+		float var_point_ {300};
 };
 
 } /* namespace mssmhbb */

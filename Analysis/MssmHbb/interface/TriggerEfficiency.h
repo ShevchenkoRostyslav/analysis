@@ -17,8 +17,8 @@
 #include "Analysis/MssmHbb/interface/selectionDoubleB.h"
 
 namespace analysis{
-	namespace mssmhbb{
-		class TriggerEfficiency : public analysis::mssmhbb::selectionDoubleB {
+	namespace selection{
+		class TriggerEfficiency : public analysis::selection::selectionDoubleB {
 			public:
 			TriggerEfficiency(const std::string & inputFilelist,
 								const double & dataLumi,
