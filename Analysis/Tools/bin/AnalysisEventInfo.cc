@@ -23,7 +23,6 @@ int main(int argc, char * argv[])
    std::string inputList = "rootFileList.txt";
    Analysis analysis(inputList);
    
-   
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
       std::cout << "Printing information from first 5 entries... \n\n";
