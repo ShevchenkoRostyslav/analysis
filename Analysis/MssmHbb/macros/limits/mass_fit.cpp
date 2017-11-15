@@ -40,6 +40,7 @@ int getMultiplicativeCrossection(const int& mass_point);
 TH1 * getHackedDataObsTFile(const int& mass_point);
 int getBackgroundFitUpEdge(const int& mass_point);
 int getBackgroundFitLowEdge(const int& mass_point);
+double findAverageErrorWithinTheBin(const vector<float>& v);
 
 int main(int argc, char **argv) {
 	/*
@@ -55,7 +56,7 @@ int main(int argc, char **argv) {
 	double xsec_vis = getMultiplicativeCrossection(mass);
 	if(mass < 500) gStyle->SetPadRightMargin(gStyle->GetPadRightMargin()*1.22);
 	string output = "/src/Analysis/MssmHbb/macros/pictures/";
-	string output_append = "";
+	string output_append = "test";
 	string campaign = "201708/23/unblinded/independent/mll/";
 
 	//Files with mll fit results
@@ -239,7 +240,7 @@ cout<<nbins<<endl;
 
     auto *frame2 = static_cast<RooPlot*>(x->frame(Name("frame2")));
     frame2->SetTitle("");
-    frame2->GetYaxis()->SetTitle("#frac{Data-Bkg.}{#sqrt{Bkg.}}");
+    frame2->GetYaxis()->SetTitle("Data-Bkg.");//SetTitle("#frac{Data-Bkg.}{#sigma_{Bkg.}}");//SetTitle("#frac{Data-Bkg.}{#sqrt{Bkg.}}");
     frame2->GetYaxis()->CenterTitle();
     HbbStyle::setRatioBottomFrame(frame2->GetXaxis(), frame2->GetYaxis(), canva_pixel_h, topPad_pixel_h);
 
@@ -250,7 +251,11 @@ cout<<nbins<<endl;
     auto *nominalY = nominal->GetY();
     auto *n1sigmaY = sigma1->GetY();
     auto *n2sigmaY = sigma2->GetY();
+    map<int,float> err1U,err1D,err2U,err2D, n;
+//    vector<float> err1U,err1D,err2U,err2D;
+    vector<double> aver1U,aver1D,aver2U,aver2D;
 
+    std::cout<<"WTF: bins = "<<h_rebinned->GetNbinsX()<<" N = "<<nominal->GetN()<<std::endl;
     for(int i = 0; i < nominal->GetN(); ++i){
         auto x_i = nominalX[i];
         auto n_i = nominalY[i];
@@ -260,13 +265,24 @@ cout<<nbins<<endl;
         auto n_2down_i = n2sigmaY[i];
         auto bin_i = h1sigmaU->FindBin( x_i );
         if(bin_i <= 0 || bin_i > h1sigmaU->GetNbinsX()) continue;
-//        auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
-//        auto n_data_i = h_rebinned->GetBinContent( bin_i );
-        h1sigmaU->SetBinContent( bin_i, (-n_i+n_1up_i));
-        h1sigmaD->SetBinContent( bin_i, (-n_i+n_1down_i));
-        h2sigmaU->SetBinContent( bin_i, (-n_i+n_2up_i));
-        h2sigmaD->SetBinContent( bin_i, (-n_i+n_2down_i));
-        //cout<<"bin"<<i<<" x = "<<x_i<<" y = "<<n_i<<" +-1 = "<<n_1up_i<<" +-2 = "<<n_2up_i<<endl;
+
+
+        //Needed
+        err1U[bin_i] += (-n_i+n_1up_i);
+        err1D[bin_i] += (-n_i+n_1down_i);
+        err2U[bin_i] += (-n_i+n_2up_i);
+        err2D[bin_i] += (-n_i+n_2down_i);
+        n[bin_i] += 1;
+
+//        err1U.clear(); err1D.clear(); err2U.clear(); err2D.clear();
+
+
+        std::cout<<"WTFFF: x = "<<x_i<<" bin = "<<bin_i<<" nominal = "<<n_i<<" 1up = "<<n_1up_i<<" diff = "<<-n_i+n_1up_i<<std::endl;
+
+//        h1sigmaU->SetBinContent( bin_i, (-n_i+n_1up_i));
+//        h1sigmaD->SetBinContent( bin_i, (-n_i+n_1down_i));
+//        h2sigmaU->SetBinContent( bin_i, (-n_i+n_2up_i));
+//        h2sigmaD->SetBinContent( bin_i, (-n_i+n_2down_i));
     }
 
     //redefine pulls here:
@@ -274,6 +290,12 @@ cout<<nbins<<endl;
     cout<<"BG NORMALISATION: "<<n_bkg_nobias->getVal()<<endl;
     bool divide_by_sqrt_bg = true;
     for(int bin_i = 1; bin_i < h_rebinned->GetNbinsX()+1; ++bin_i){
+    		//Fill band histograms from previous step
+        h1sigmaU->SetBinContent( bin_i, (err1U[bin_i]/n[bin_i]));
+        h1sigmaD->SetBinContent( bin_i, (err1D[bin_i]/n[bin_i]));
+        h2sigmaU->SetBinContent( bin_i, (err2U[bin_i]/n[bin_i]));
+        h2sigmaD->SetBinContent( bin_i, (err2D[bin_i]/n[bin_i]));
+
         auto n_data_i = h_rebinned->GetBinContent( bin_i );
         auto e_data_i = h_rebinned->GetBinError( bin_i );
         auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
@@ -281,17 +303,19 @@ cout<<nbins<<endl;
         auto bkg_int_i = pdf_bkg_nobias->createIntegral(RooArgSet(*x), ("Bin" + to_string(bin_i)).c_str())->getVal() / bkg_int * n_bkg_nobias->getVal();
         auto pull_i = (n_data_i-bkg_int_i);
         cout<<"Data: "<<n_data_i<<" ---- Bkg: "<<bkg_int_i<<endl;
-	cout<<"bin"<<bin_i<<" pull = "<<n_data_i-bkg_int_i<<" /sqrt(bg) = "<<pull_i/sqrt(bkg_int_i)<<std::endl;
-        hbkg->SetBinError( bin_i, 0.);
+        hbkg->SetBinError( bin_i, e_data_i);
         hdummy->SetBinContent( bin_i, 0.);
         hdummy->SetBinError( bin_i, 0.);
 	if(divide_by_sqrt_bg){
-		pull_i /= sqrt(bkg_int_i);
-        	h1sigmaU->SetBinContent( bin_i, h1sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        	h1sigmaD->SetBinContent( bin_i, h1sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        	h2sigmaU->SetBinContent( bin_i, h2sigmaU->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        	h2sigmaD->SetBinContent( bin_i, h2sigmaD->GetBinContent( bin_i )/sqrt( bkg_int_i ) );
-        	hbkg->SetBinError( bin_i, e_data_i/sqrt(bkg_int_i));
+		double divide_by = sqrt(bkg_int_i);//(abs(h1sigmaU->GetBinContent( bin_i )) + abs(h1sigmaD->GetBinContent( bin_i ))) / 2.;//sqrt(bkg_int_i);
+		pull_i /= divide_by;
+        	h1sigmaU->SetBinContent( bin_i, h1sigmaU->GetBinContent( bin_i )/divide_by );
+        	h1sigmaD->SetBinContent( bin_i, h1sigmaD->GetBinContent( bin_i )/divide_by );
+        	h2sigmaU->SetBinContent( bin_i, h2sigmaU->GetBinContent( bin_i )/divide_by );
+        	h2sigmaD->SetBinContent( bin_i, h2sigmaD->GetBinContent( bin_i )/divide_by );
+        	hbkg->SetBinError( bin_i, e_data_i/divide_by);
+
+        	std::cout<<"bin "<<bin_i<<" pull = "<<pull_i<<" 1u = "<<h1sigmaU->GetBinContent( bin_i )<<" 1d = "<<h1sigmaD->GetBinContent( bin_i )<<std::endl;
 	}
 	hbkg->SetBinContent( bin_i, pull_i);
     }
@@ -306,6 +330,12 @@ cout<<nbins<<endl;
 	frame2->Draw();
     frame2->SetMinimum(-3.9999);
     frame2->SetMaximum(+3.9999);
+//    frame2->SetMinimum(-180);
+//    frame2->SetMaximum(+180);
+//    if(mass > 900) {
+//    		frame2->SetMinimum(-100);
+//    		frame2->SetMaximum(+100);
+//    }
 	c1->cd();
 	HbbStyle::drawStandardTitle("out");
 	c1->Draw();
@@ -527,3 +557,8 @@ TH1 * getHackedDataObsTFile(const int& mass_point){
 	t->Draw("mbb>>histo");
 	return h;
 }
+
+double findAverageErrorWithinTheBin(const vector<float>& v){
+	return 1.0 * std::accumulate(v.begin(),v.end(),0.0)/v.size();
+}
+
