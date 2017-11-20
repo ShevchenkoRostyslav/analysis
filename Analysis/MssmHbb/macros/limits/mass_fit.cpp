@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
 	string output = "/src/Analysis/MssmHbb/macros/pictures/";
 	string output_append = "test";
 	string campaign = "201708/23/unblinded/independent/mll/";
+	int n_fit_bins = 5000;
+	output_append += "_nFitBins_" + to_string(n_fit_bins);
 
 	//Files with mll fit results
 //	TFile *fMLL 		= new TFile((mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/" + campaign + "SpBg/mll_M-" + mass_point + "/mlfit.root").c_str(),"READ");	//S+Bg mll
@@ -74,6 +76,7 @@ int main(int argc, char **argv) {
 
 	//Get data, pdfs, vars etc
 	auto *x 		= GetFromRooWorkspace<RooRealVar>(*workspace,"mbb");
+	x->setBins(n_fit_bins);
 //	auto *r 		= GetFromRooWorkspace<RooRealVar>(*workspace,"r");
 	auto hacked_data_obs_p = getHackedDataObsTFile(stoi(mass_point));
 //	auto *data_obs 	= GetFromRooWorkspace<RooDataHist>(*workspace,"data_obs");
@@ -139,29 +142,43 @@ cout<<nbins<<endl;
     auto *hbkg = new TH1F("hbkg", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     hbkg->SetMarkerStyle(gStyle->GetMarkerStyle());
     hbkg->SetMarkerSize(gStyle->GetMarkerSize());
-//    hbkg->SetFillColor(kAzure+1);
-//    hbkg->SetLineColor(kAzure+1);
-//    hbkg->SetLineWidth(0);
-//    hbkg->SetFillStyle(3001);
 
-    auto *h1sigmaU = new TH1F("h1sigmaU", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+//    auto *h1sigmaU = new TH1F("h1sigmaU", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+//    h1sigmaU->SetFillColor(kGreen+1);
+//    h1sigmaU->SetFillStyle(1001);
+//
+//    auto *h1sigmaD = new TH1F("h1sigmaD", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+//    h1sigmaD->SetFillColor(kGreen+1);
+//    h1sigmaD->SetFillStyle(1001);
+//
+//    auto *h2sigmaU = new TH1F("h2sigmaU", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+//    h2sigmaU->SetFillColor(kOrange);
+//    h2sigmaU->SetFillStyle(1001);
+//
+//    auto *h2sigmaD = new TH1F("h2sigmaD", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+//    h2sigmaD->SetFillColor(kOrange);
+//    h2sigmaD->SetFillStyle(1001);
+
+    TH1F* h1sigmaU = new TH1F("h1sigmaU", "", n_fit_bins, h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     h1sigmaU->SetFillColor(kGreen+1);
+    h1sigmaU->SetLineColor(kGreen+1);
     h1sigmaU->SetFillStyle(1001);
 
-    auto *h1sigmaD = new TH1F("h1sigmaD", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+    TH1F *h1sigmaD = new TH1F("h1sigmaD", "", n_fit_bins, h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     h1sigmaD->SetFillColor(kGreen+1);
+    h1sigmaD->SetLineColor(kGreen+1);
     h1sigmaD->SetFillStyle(1001);
 
-    auto *h2sigmaU = new TH1F("h2sigmaU", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+    TH1F *h2sigmaU = new TH1F("h2sigmaU", "", n_fit_bins, h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     h2sigmaU->SetFillColor(kOrange);
+    h2sigmaU->SetLineColor(kOrange);
     h2sigmaU->SetFillStyle(1001);
 
-    auto *h2sigmaD = new TH1F("h2sigmaD", "", h_rebinned->GetNbinsX(), h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
+    TH1F *h2sigmaD = new TH1F("h2sigmaD", "", n_fit_bins, h_rebinned->GetXaxis()->GetXmin(), h_rebinned->GetXaxis()->GetXmax());
     h2sigmaD->SetFillColor(kOrange);
+    h2sigmaD->SetLineColor(kOrange);
     h2sigmaD->SetFillStyle(1001);
 
-//    auto *leg = HbbStyle::legend("top,right",8,0.3);
-//    double x0 = gPad->GetLeftMargin() + gStyle->GetTickLength("Y")*1.1 ; //TODO finish this!!!
     auto *leg = new TLegend(0.63,0.5,0.85,0.88,"","brNDC");
     leg->SetHeader( ("m_{A/H} = " + mass_point + " GeV").c_str() );
     leg->SetFillStyle(0);
@@ -244,82 +261,97 @@ cout<<nbins<<endl;
     frame2->GetYaxis()->CenterTitle();
     HbbStyle::setRatioBottomFrame(frame2->GetXaxis(), frame2->GetYaxis(), canva_pixel_h, topPad_pixel_h);
 
-    auto *sigma2 = frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_2sigma").c_str());
-    auto *sigma1 = frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_1sigma").c_str());
-    auto *nominal = frame1->getCurve(pdf_bkg_nobias->GetName());
-    auto *nominalX = nominal->GetX();
-    auto *nominalY = nominal->GetY();
-    auto *n1sigmaY = sigma1->GetY();
-    auto *n2sigmaY = sigma2->GetY();
-    map<int,float> err1U,err1D,err2U,err2D, n;
-//    vector<float> err1U,err1D,err2U,err2D;
-    vector<double> aver1U,aver1D,aver2U,aver2D;
+    //Retrieve information from the RooPlot
+    auto *sigma2 	= frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_2sigma").c_str());
+    auto *sigma1 	= frame1->getCurve( (string(pdf_bkg_nobias->GetName())+"_1sigma").c_str());
+    auto *nominal 	= frame1->getCurve(pdf_bkg_nobias->GetName());
 
-    std::cout<<"WTF: bins = "<<h_rebinned->GetNbinsX()<<" N = "<<nominal->GetN()<<std::endl;
-    for(int i = 0; i < nominal->GetN(); ++i){
-        auto x_i = nominalX[i];
-        auto n_i = nominalY[i];
-        auto n_1up_i = n1sigmaY[2*nominal->GetN()-i-1];
-        auto n_1down_i = n1sigmaY[i];
-        auto n_2up_i = n2sigmaY[2*nominal->GetN()-i-1];
-        auto n_2down_i = n2sigmaY[i];
-        auto bin_i = h1sigmaU->FindBin( x_i );
-        if(bin_i <= 0 || bin_i > h1sigmaU->GetNbinsX()) continue;
+    TGraph up1Bound(nominal->GetN());
+    TGraph lo1Bound(nominal->GetN());
+    TGraph up2Bound(nominal->GetN());
+    TGraph lo2Bound(nominal->GetN());
+    double err1U,err1D,err2U,err2D;
+    bool divide_by_sqrt_bg = true;
+    std::cout<<"NUMBER OF BINS: "<<nominal->GetN()<<std::endl;
 
-
-        //Needed
-        err1U[bin_i] += (-n_i+n_1up_i);
-        err1D[bin_i] += (-n_i+n_1down_i);
-        err2U[bin_i] += (-n_i+n_2up_i);
-        err2D[bin_i] += (-n_i+n_2down_i);
-        n[bin_i] += 1;
-
-//        err1U.clear(); err1D.clear(); err2U.clear(); err2D.clear();
-
-
-        std::cout<<"WTFFF: x = "<<x_i<<" bin = "<<bin_i<<" nominal = "<<n_i<<" 1up = "<<n_1up_i<<" diff = "<<-n_i+n_1up_i<<std::endl;
-
-//        h1sigmaU->SetBinContent( bin_i, (-n_i+n_1up_i));
-//        h1sigmaD->SetBinContent( bin_i, (-n_i+n_1down_i));
-//        h2sigmaU->SetBinContent( bin_i, (-n_i+n_2up_i));
-//        h2sigmaD->SetBinContent( bin_i, (-n_i+n_2down_i));
+    for( int j = 0; j < sigma2->GetN(); ++j ){
+    	if( j < nominal->GetN() ){
+    		up1Bound.SetPoint(j, sigma1->GetX()[j], sigma1->GetY()[j]);
+    		up2Bound.SetPoint(j, sigma2->GetX()[j], sigma2->GetY()[j]);
+    	}
+    	else{
+    		lo1Bound.SetPoint(j, sigma1->GetX()[j], sigma1->GetY()[j]);
+    		lo2Bound.SetPoint(j, sigma2->GetX()[j], sigma2->GetY()[j]);
+    	}
     }
+
+    for( int bin_i = 1; bin_i <= h1sigmaU->GetNbinsX(); ++bin_i ){
+    		double x = h1sigmaU->GetBinCenter(bin_i);
+    	//        std::cout<<"WTFFF: x = "<<x<<" y = "<<nominal->Eval(x)<<" up1 = "<<up1Bound.Eval(x)<<" lo1 = "<<lo1Bound.Eval(x)<<" up2 = "<<up2Bound.Eval(x)<<" lo2 = "<<lo2Bound.Eval(x)<<std::endl;
+
+    		auto n_i = nominal->Eval(x);
+    		auto n_1up_i = up1Bound.Eval(x);
+    		auto n_1down_i = lo1Bound.Eval(x);
+    		auto n_2up_i = up2Bound.Eval(x);
+    		auto n_2down_i = lo2Bound.Eval(x);
+
+    		//Fill band histograms
+    		err1U = (-n_i+n_1up_i)  ;
+    		err1D = (-n_i+n_1down_i);
+    		err2U = (-n_i+n_2up_i)  ;
+    		err2D = (-n_i+n_2down_i);
+
+    		double divide_by = n_i;
+    		if(divide_by_sqrt_bg){
+    			err1U /= sqrt(divide_by);
+    			err1D /= sqrt(divide_by);
+    			err2U /= sqrt(divide_by);
+    			err2D /= sqrt(divide_by);
+    		}
+
+    		h1sigmaU->SetBinContent( bin_i, err1U);
+    		h1sigmaD->SetBinContent( bin_i, err1D);
+    		h2sigmaU->SetBinContent( bin_i, err2U);
+    		h2sigmaD->SetBinContent( bin_i, err2D);
+    }
+
+    for(int bin_i = 1; bin_i < h_rebinned->GetNbinsX()+1; ++bin_i){
+            auto n_data_i = h_rebinned->GetBinContent( bin_i );
+            auto e_data_i = h_rebinned->GetBinError( bin_i );
+
+            //Evaluate value of the Bg-function
+            double bkg_int_i = nominal->Eval(h_rebinned->GetBinCenter(bin_i));
+            double divide_by = sqrt(bkg_int_i);//ssqrt(n_data_i);//
+            auto pull_i = (n_data_i-bkg_int_i)/divide_by;
+            e_data_i /= divide_by;
+
+            hbkg->SetBinContent( bin_i, pull_i);
+            hbkg->SetBinError( bin_i, e_data_i);
+            hdummy->SetBinContent( bin_i, 0.);
+            hdummy->SetBinError( bin_i, 0.);
+        }
 
     //redefine pulls here:
-    auto bkg_int = pdf_bkg_nobias->createIntegral(RooArgSet(*x))->getVal();
-    cout<<"BG NORMALISATION: "<<n_bkg_nobias->getVal()<<endl;
-    bool divide_by_sqrt_bg = true;
-    for(int bin_i = 1; bin_i < h_rebinned->GetNbinsX()+1; ++bin_i){
-    		//Fill band histograms from previous step
-        h1sigmaU->SetBinContent( bin_i, (err1U[bin_i]/n[bin_i]));
-        h1sigmaD->SetBinContent( bin_i, (err1D[bin_i]/n[bin_i]));
-        h2sigmaU->SetBinContent( bin_i, (err2U[bin_i]/n[bin_i]));
-        h2sigmaD->SetBinContent( bin_i, (err2D[bin_i]/n[bin_i]));
-
-        auto n_data_i = h_rebinned->GetBinContent( bin_i );
-        auto e_data_i = h_rebinned->GetBinError( bin_i );
-        auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
-        x->setRange( ("Bin" + to_string(bin_i)).c_str(), h_rebinned->GetBinLowEdge(bin_i), h_rebinned->GetBinLowEdge(bin_i)+bin_width_i);
-        auto bkg_int_i = pdf_bkg_nobias->createIntegral(RooArgSet(*x), ("Bin" + to_string(bin_i)).c_str())->getVal() / bkg_int * n_bkg_nobias->getVal();
-        auto pull_i = (n_data_i-bkg_int_i);
-        cout<<"Data: "<<n_data_i<<" ---- Bkg: "<<bkg_int_i<<endl;
-        hbkg->SetBinError( bin_i, e_data_i);
-        hdummy->SetBinContent( bin_i, 0.);
-        hdummy->SetBinError( bin_i, 0.);
-	if(divide_by_sqrt_bg){
-		double divide_by = sqrt(bkg_int_i);//(abs(h1sigmaU->GetBinContent( bin_i )) + abs(h1sigmaD->GetBinContent( bin_i ))) / 2.;//sqrt(bkg_int_i);
-		pull_i /= divide_by;
-        	h1sigmaU->SetBinContent( bin_i, h1sigmaU->GetBinContent( bin_i )/divide_by );
-        	h1sigmaD->SetBinContent( bin_i, h1sigmaD->GetBinContent( bin_i )/divide_by );
-        	h2sigmaU->SetBinContent( bin_i, h2sigmaU->GetBinContent( bin_i )/divide_by );
-        	h2sigmaD->SetBinContent( bin_i, h2sigmaD->GetBinContent( bin_i )/divide_by );
-        	hbkg->SetBinError( bin_i, e_data_i/divide_by);
-
-        	std::cout<<"bin "<<bin_i<<" pull = "<<pull_i<<" 1u = "<<h1sigmaU->GetBinContent( bin_i )<<" 1d = "<<h1sigmaD->GetBinContent( bin_i )<<std::endl;
-	}
-	hbkg->SetBinContent( bin_i, pull_i);
-    }
-
+//    auto bkg_int = pdf_bkg_nobias->createIntegral(RooArgSet(*x))->getVal();
+//    for(int bin_i = 1; bin_i < h_rebinned->GetNbinsX()+1; ++bin_i){
+//        auto n_data_i = h_rebinned->GetBinContent( bin_i );
+//        auto e_data_i = h_rebinned->GetBinError( bin_i );
+//        auto bin_width_i = h_rebinned->GetBinWidth( bin_i );
+//        x->setRange( ("Bin" + to_string(bin_i)).c_str(), h_rebinned->GetBinLowEdge(bin_i), h_rebinned->GetBinLowEdge(bin_i)+bin_width_i);
+//        auto bkg_int_i = pdf_bkg_nobias->createIntegral(RooArgSet(*x), ("Bin" + to_string(bin_i)).c_str())->getVal() / bkg_int * n_bkg_nobias->getVal();
+//        double divide_by = sqrt(bkg_int_i);
+//        auto pull_i = (n_data_i-bkg_int_i);
+//
+//        cout<<"Data: "<<n_data_i<<" ---- Bkg: "<<bkg_int_i<<endl;
+//        if(divide_by_sqrt_bg){
+//        		pull_i /= divide_by;
+//        		e_data_i /= divide_by;
+//        }
+//        hbkg->SetBinContent( bin_i, pull_i);
+//		hbkg->SetBinError( bin_i, e_data_i);
+//        hdummy->SetBinContent( bin_i, 0.);
+//        hdummy->SetBinError( bin_i, 0.);
+//    }
 
     frame2->addTH1(h2sigmaU, "HIST");
     frame2->addTH1(h2sigmaD, "HIST");
@@ -341,6 +373,7 @@ cout<<nbins<<endl;
 	c1->Draw();
 
 	c1->Print( (mssmhbb::cmsswBase + output + "Post_fit_m_" + mass_point + output_append + ".pdf").c_str());
+	c1->SaveAs("bla.root");
 
 //	TH1F *bg 		= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_background");	// post-fit BG
 //	TH1F *signal 	= GetFromTFile<TH1F>(*fIn,"shapes_fit_s/bbHTo4b/total_signal"); 	// post-fit Signal
