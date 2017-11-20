@@ -64,6 +64,7 @@ FitContainer::FitContainer(const std::string& outputDir) :
 		normChi2BkgOnly_(-10000.0),
 		ndfBkgOnly_(-10000),
 		nbins_(73), //73
+		nBinsToPlot_(48),
 		lumi_(35.7), //2.69,12.9,36.62
 		obs_(26760.) //SR1-259399, SR2-105053, SR3-26760
 {}
@@ -533,20 +534,44 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   // Top frame
   std::unique_ptr<RooPlot> frame(mbb.frame());
   data.plotOn(frame.get(),
-//	     RooFit::MarkerSize(0.8),	//0.8 for lowM
-	     //RooFit::DataError(RooAbsData::Auto), 
+		 RooFit::Binning(nBinsToPlot_),
 	     RooFit::Name("data_curve"));
+
+    mbb.setBins(nBinsToPlot_);
+  //Get TH1D from data
+  TH1D *hData = static_cast<TH1D*>(data.createHistogram("data",mbb));
+
+  std::string bg_curve_name = "background_curve";
+
+//  Uncertainty bands
+//  2 Sigma
   Pdf.plotOn(frame.get(),
-//	     RooFit::VisualizeError(*fitResult,1,kFALSE),
-//		 RooFit::VisualizeError(*fitResult,2,kFALSE),
-             //RooFit::DrawOption("L"),
-             RooFit::LineColor(kRed),
-             RooFit::Name("background_curve"),
-             RooFit::NormRange(fullRangeId_.c_str()),
-             RooFit::Range(fitRangeId_.c_str()),
-             RooFit::Normalization(data.sumEntries("1", fitRangeId_.c_str()),
-                                   RooAbsReal::NumEvent));
-//  frame->GetYaxis()->SetTitle( ("Events / " + std::to_string( int((mbb.getMax() - mbb.getMin())/nbins_) )  + " GeV").c_str());
+		  RooFit::VisualizeError(*fitResult, 2, false),
+		  RooFit::LineColor(kRed),
+		  RooFit::LineStyle(kSolid),
+		  RooFit::FillColor(kOrange),
+		  RooFit::Name( (bg_curve_name + "_2sigma").c_str()),
+		  RooFit::Normalization(data.sumEntries("1", fitRangeId_.c_str()) , RooAbsReal::NumEvent),
+		  RooFit::MoveToBack() );
+
+  //  1 Sigma
+  Pdf.plotOn(frame.get(),
+		  RooFit::VisualizeError(*fitResult, 1, false),
+		  RooFit::LineColor(kRed),
+		  RooFit::LineStyle(kSolid),
+		  RooFit::FillColor(kGreen+1),
+		  RooFit::Name( (bg_curve_name + "_1sigma").c_str()),
+		  RooFit::Normalization(data.sumEntries("1", fitRangeId_.c_str()) , RooAbsReal::NumEvent));
+
+//  Central
+  Pdf.plotOn(frame.get(),
+		//RooFit::DrawOption("L"),
+		RooFit::LineColor(kRed),
+		RooFit::Name(bg_curve_name.c_str()),
+		RooFit::NormRange(fullRangeId_.c_str()),
+		RooFit::Range(fitRangeId_.c_str()),
+		RooFit::Normalization(data.sumEntries("1", fitRangeId_.c_str()), RooAbsReal::NumEvent));
+
 
   if(plot_params){
 	  double par_xmin = 0.65, par_xmax = 0.9, par_ymax = 0.6;
@@ -607,9 +632,7 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   // Bottom frame
   RooHist* hpull;
   hpull = frame->pullHist();
-//  hpull->SetMarkerSize(0.8);	//0.8 for lowM
-  std::unique_ptr<RooPlot> frame2(mbb.frame());
-  frame2->addPlotable(hpull,"P");
+  std::unique_ptr<RooPlot> frame2(mbb.frame(hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax()));
 
   TCanvas canvas;
   canvas.cd();
@@ -665,13 +688,29 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   leg.AddEntry(frame->getCurve("background_curve"),"Fit","l");
   leg.Draw();
 
+  canvas.Modified();
   canvas.cd();
 //  TPad *pad2 = new TPad("pad2","",0,0.0,1,pad1_ymin);
   auto pad2 = HbbStyle::getRatioBottomPad(pad1_ymin);
   pad2->Draw();
   pad2->cd();
 
-  frame2->SetYTitle("#frac{Data-Fit}{#sqrt{Data}}");
+  bool drawUncertaintyBands = true;
+  hBands bands;
+  if(drawUncertaintyBands) {
+	  bands = getPullBands_(frame.get(),bg_curve_name, hData, mbb, Pdf);
+	  frame2->addTH1(bands.h2sigmaU,"HIST");
+	  frame2->addTH1(bands.h2sigmaD,"HIST");
+	  frame2->addTH1(bands.h1sigmaU,"HIST");
+	  frame2->addTH1(bands.h1sigmaD,"HIST");
+	  frame2->addTH1(bands.central,"E1");
+	  frame2->SetYTitle("#frac{Data-Fit}{#sqrt{Fit}}");
+  }
+  else {
+	  frame2->addPlotable(hpull,"P");
+	  frame2->SetYTitle("#frac{Data-Fit}{#sqrt{Data}}");
+  }
+
   HbbStyle::setRatioBottomFrame(frame2->GetXaxis(),frame2->GetYaxis(),pad_hPixel,pad1_hPixel);
   frame2->GetYaxis()->SetRangeUser(-3.9999, 3.9999);
   frame2->Draw();
@@ -854,6 +893,7 @@ bool FitContainer::applyModifiers_(RooAbsPdf& pdf,
   RooRealVar* parameter = static_cast<RooRealVar*>(iter->Next());
   while (parameter) {
     for (const auto& m : modifiers) {
+    		m.show();
       if (m.modify(*parameter)) {
         modified = true;
       }
@@ -978,6 +1018,197 @@ void FitContainer::SetupBottomFrame(RooPlot *frame2, const double& pad_w, const 
     frame2->GetXaxis()->SetTitleSize(gStyle->GetTitleSize("X") * pad_h);
     	frame2->GetXaxis()->SetTitleOffset(3.5);
     	frame2->GetXaxis()->SetLabelOffset(gStyle->GetLabelOffset("X") * pad_h / pad_hPixel );
+}
+
+FitContainer::hBands FitContainer::getPullBands_(RooPlot * frame, const std::string& curve_name, TH1D * hData, RooRealVar & x, RooAbsPdf & fit){
+	/*
+	 * Method to calculate 1 and 2 sigma badns for the
+	 * pull distribution
+	 */
+	hBands bands;
+	TH1::SetDefaultSumw2(1);
+
+    TH1D *hcentral = new TH1D("hcentral", "", hData->GetNbinsX(), hData->GetXaxis()->GetXmin(), hData->GetXaxis()->GetXmax());
+    bands.central = hcentral;
+    bands.central->SetMarkerColor(1);
+
+    TH1D *h1sigmaU = new TH1D("h1sigmaU", "", nbins_, hData->GetXaxis()->GetXmin(), hData->GetXaxis()->GetXmax());
+    bands.h1sigmaU = h1sigmaU;
+    bands.h1sigmaU->SetFillColor(kGreen+1);
+    bands.h1sigmaU->SetLineColor(kGreen+1);
+    bands.h1sigmaU->SetFillStyle(1001);
+
+    TH1D *h1sigmaD = new TH1D("h1sigmaD", "", nbins_, hData->GetXaxis()->GetXmin(), hData->GetXaxis()->GetXmax());
+    bands.h1sigmaD = h1sigmaD;
+    bands.h1sigmaD->SetFillColor(kGreen+1);
+    bands.h1sigmaD->SetLineColor(kGreen+1);
+    bands.h1sigmaD->SetFillStyle(1001);
+
+    TH1D *h2sigmaU = new TH1D("h2sigmaU", "", nbins_, hData->GetXaxis()->GetXmin(), hData->GetXaxis()->GetXmax());
+    bands.h2sigmaU = h2sigmaU;
+    bands.h2sigmaU->SetFillColor(kOrange);
+    bands.h2sigmaU->SetLineColor(kOrange);
+    bands.h2sigmaU->SetFillStyle(1001);
+
+    TH1D *h2sigmaD = new TH1D("h2sigmaD", "", nbins_, hData->GetXaxis()->GetXmin(), hData->GetXaxis()->GetXmax());
+    bands.h2sigmaD = h2sigmaD;
+    bands.h2sigmaD->SetFillColor(kOrange);
+    bands.h2sigmaD->SetLineColor(kOrange);
+    bands.h2sigmaD->SetFillStyle(1001);
+
+    //Retrieve information from the RooPlot
+    auto *sigma2 = frame->getCurve((curve_name + "_2sigma").c_str());
+    auto *sigma1 = frame->getCurve((curve_name + "_1sigma").c_str());
+    auto *nominal= frame->getCurve(curve_name.c_str());
+
+    TGraph up1Bound(nominal->GetN());
+    TGraph lo1Bound(nominal->GetN());
+    TGraph up2Bound(nominal->GetN());
+    TGraph lo2Bound(nominal->GetN());
+    double err1U,err1D,err2U,err2D;
+    bool divide_by_sqrt_bg = true;
+    std::cout<<"NUMBER OF BINS: "<<nominal->GetN()<<std::endl;
+
+    for( int j = 0; j < sigma2->GetN(); ++j ){
+      if( j < nominal->GetN() ){
+          up1Bound.SetPoint(j, sigma1->GetX()[j], sigma1->GetY()[j]);
+      	  up2Bound.SetPoint(j, sigma2->GetX()[j], sigma2->GetY()[j]);
+      }
+      else{
+          lo1Bound.SetPoint(j, sigma1->GetX()[j], sigma1->GetY()[j]);
+      	  lo2Bound.SetPoint(j, sigma2->GetX()[j], sigma2->GetY()[j]);
+      }
+    }
+
+    for( int bin_i = 1; bin_i <= h1sigmaU->GetNbinsX(); ++bin_i ){
+        double x = h1sigmaU->GetBinCenter(bin_i);
+
+        auto n_i = nominal->Eval(x);
+        auto n_1up_i = up1Bound.Eval(x);
+        auto n_1down_i = lo1Bound.Eval(x);
+        auto n_2up_i = up2Bound.Eval(x);
+        auto n_2down_i = lo2Bound.Eval(x);
+
+        //Fill band histograms
+        err1U = (-n_i+n_1up_i)  ;
+        err1D = (-n_i+n_1down_i);
+        err2U = (-n_i+n_2up_i)  ;
+        err2D = (-n_i+n_2down_i);
+
+        err1D = -1 * err1U;
+        err2D = -1 * err2U;
+
+//        auto n_data_i = hData->GetBinContent( bin_i );
+        double divide_by = n_i;//n_data_i;//n_i;
+
+        if(divide_by_sqrt_bg){
+        		err1U /= sqrt(divide_by);
+        		err1D /= sqrt(divide_by);
+        		err2U /= sqrt(divide_by);
+        		err2D /= sqrt(divide_by);
+        }
+
+        h1sigmaU->SetBinContent( bin_i, err1U);
+        h1sigmaD->SetBinContent( bin_i, err1D);
+        h2sigmaU->SetBinContent( bin_i, err2U);
+        h2sigmaD->SetBinContent( bin_i, err2D);
+
+        std::cout<<"j = "<<bin_i<<"WTFFF: x = "<<x<<" y = "<<n_i<<" up1 = "<<err1U<<" lo1 = "<<err1D<<" up2 = "<<err2U<<" lo2 = "<<err2D<<std::endl;
+    }
+
+    for(int bin_i = 1; bin_i < hData->GetNbinsX()+1; ++bin_i){
+        auto n_data_i = hData->GetBinContent( bin_i );
+        auto e_data_i = hData->GetBinError( bin_i );
+
+        //Evaluate value of the Bg-function
+        double bkg_int_i = nominal->Eval(hData->GetBinCenter(bin_i));
+        double divide_by = sqrt(bkg_int_i);//ssqrt(n_data_i);//
+        auto pull_i = (n_data_i-bkg_int_i)/divide_by;
+
+        if(n_data_i == 0) {
+        		bands.central->SetBinContent(bin_i,0);
+        		bands.central->SetBinError( bin_i,0);
+        		bands.h1sigmaU->SetBinContent( bin_i,0);
+        		bands.h1sigmaD->SetBinContent( bin_i,0);
+        		bands.h2sigmaU->SetBinContent( bin_i,0);
+        		bands.h2sigmaD->SetBinContent( bin_i,0);
+        }
+        else {
+            bands.central->SetBinContent( bin_i, pull_i);
+            bands.central->SetBinError( bin_i, e_data_i/divide_by);
+        }
+    }
+    x.getValV();fit.getValV();
+
+    /*
+    for(int i =0; i <nominal->GetN(); ++i){
+    		int j = i + 2;
+    		if( sigma1X[j] != nominalX[i] || sigma2X[j] != nominalX[i]) throw std::logic_error("SOMETHING WRONG with point in RooCurves at  FitContainer::getPullBands_");
+        auto x_i = nominalX[i];
+        auto n_i = nominalY[i];
+        auto n_1up_i = n1sigmaY[(sigma1->GetN())-j-1];
+        auto n_1down_i = n1sigmaY[j];
+        auto n_2up_i = n2sigmaY[(sigma2->GetN())-j-1];
+        auto n_2down_i = n2sigmaY[j];
+        auto bin_i = h1sigmaU->FindBin( x_i );
+
+        std::cout<<"bands: i = "<<i<<" x = "<<x_i<<" y = "<<n_i<<" up1 = "<<n_1up_i<<" as = "<<n1sigmaY[sigma1->GetN() - i]<<" down = "<<n1sigmaY[i]<<" lol = "<<sigma1->average(nominalX[i],nominalX[i+1])<<std::endl;
+        if(bin_i <= 0 || bin_i > h1sigmaU->GetNbinsX()) continue;
+
+        //Fill band histograms
+        err1U = (-n_i+n_1up_i)  ;
+        err1D = (-n_i+n_1down_i);
+        err2U = (-n_i+n_2up_i)  ;
+        err2D = (-n_i+n_2down_i);
+
+        if(divide_by_sqrt_bg){
+        		err1U /= sqrt(n_i);
+        		err1D /= sqrt(n_i);
+        		err2U /= sqrt(n_i);
+        		err2D /= sqrt(n_i);
+        }
+
+        h1sigmaU->SetBinContent( i, err1U);
+        h1sigmaD->SetBinContent( i, err1D);
+        h2sigmaU->SetBinContent( i, err2U);
+        h2sigmaD->SetBinContent( i, err2D);
+//        bands.h1sigmaU->SetBinContent( bin_i, (-n_i+n_1up_i));
+//        bands.h1sigmaD->SetBinContent( bin_i, (-n_i+n_1down_i));
+//        bands.h2sigmaU->SetBinContent( bin_i, (-n_i+n_2up_i));
+//        bands. h2sigmaD->SetBinContent( bin_i, (-n_i+n_2down_i));
+    }
+    */
+
+    //redefine pulls here
+    /*
+    auto bkg_int = fit.createIntegral(RooArgSet(x))->getVal();
+    for(int bin_i = 1; bin_i < hData->GetNbinsX()+1; ++bin_i){
+//    		std::cout<<"WTFsss: data = "<<bin_i<<" ["<<hData->GetBinLowEdge(bin_i)<<","<<hData->GetBinLowEdge(bin_i) + hData->GetBinWidth( bin_i )<<"]"<<std::endl;
+        auto n_data_i = hData->GetBinContent( bin_i );
+        auto e_data_i = hData->GetBinError( bin_i );
+        auto bin_width_i = hData->GetBinWidth( bin_i );
+        x.setRange( ("Bin" + std::to_string(bin_i)).c_str(), hData->GetBinLowEdge(bin_i), hData->GetBinLowEdge(bin_i)+bin_width_i);
+        auto bkg_int_i = fit.createIntegral(RooArgSet(x), ("Bin" + std::to_string(bin_i)).c_str())->getVal() * hData->Integral() / bkg_int;// / bkg_int * nominal->getVal();
+
+        double divide_by = sqrt(bkg_int_i);
+        auto pull_i = (n_data_i-bkg_int_i)/divide_by;
+
+        if(n_data_i == 0) {
+        		bands.central->SetBinContent(bin_i,0);
+        		bands.central->SetBinError( bin_i,0);
+        		bands.h1sigmaU->SetBinContent( bin_i,0);
+        		bands.h1sigmaD->SetBinContent( bin_i,0);
+        		bands.h2sigmaU->SetBinContent( bin_i,0);
+        		bands.h2sigmaD->SetBinContent( bin_i,0);
+        }
+        else {
+            bands.central->SetBinContent( bin_i, pull_i);
+            bands.central->SetBinError( bin_i, e_data_i/divide_by);
+        }
+    }
+    */
+
+	return bands;
 }
 
 const std::string FitContainer::defaultOutputDir_ =

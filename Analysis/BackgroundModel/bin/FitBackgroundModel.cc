@@ -48,8 +48,9 @@ int main(int argc, char* argv[]) {
     ("fit_min", po::value<float>(), "Lower bound of the fit range.")
     ("fit_max", po::value<float>(), "Upper bound of the fit range.")
     ("nbins", po::value<int>(), "Number of bins in the fit range.")
+	("nBinsPlot", po::value<int>(), "Number of bins for the plot.")
 	("control_region", po::value<bool>()->default_value(true), "Number of bins in the fit range.")
-    ("modify_param,m", po::value<std::vector<std::string> >()->composing()
+    ("modify_param,m", po::value<std::vector<std::string> >()->multitoken()//->composing()
      ->default_value(std::vector<std::string>(), ""),
      "Modify parameters as follows: "
      "\"name: [start=<value>,] [min=<value>,] [max=<value>,] "
@@ -145,9 +146,10 @@ int main(int argc, char* argv[]) {
 
 
 int backgroundOnlyFit(ab::FitContainer& fitter, po::variables_map& vm) {
-  if (!vm["fit_min"].empty()) fitter.fitRangeMin(vm["fit_min"].as<float>());
-  if (!vm["fit_max"].empty()) fitter.fitRangeMax(vm["fit_max"].as<float>());
-  if (!vm["nbins"].empty())   fitter.setNBins(vm["nbins"].as<int>());
+  if (!vm["fit_min"].empty()) 	fitter.fitRangeMin(vm["fit_min"].as<float>());
+  if (!vm["fit_max"].empty()) 	fitter.fitRangeMax(vm["fit_max"].as<float>());
+  if (!vm["nbins"].empty())   	fitter.setNBins(vm["nbins"].as<int>());
+  if (!vm["nBinsPlot"].empty())	fitter.setBinsToPlot(vm["nBinsPlot"].as<int>());
   std::vector<ab::ParamModifier> bkgModifiers =
     ab::parseModifiers(vm["modify_param"].as<std::vector<std::string> >());
   fitter.setModel(ab::FitContainer::Type::background,

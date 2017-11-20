@@ -53,6 +53,22 @@ namespace analysis {
         return "";              // to silence compiler
       };
 
+      struct hBands{
+      	TH1D *h1sigmaU = nullptr;
+      	TH1D *h2sigmaU = nullptr;
+      	TH1D *h1sigmaD = nullptr;
+      	TH1D *h2sigmaD = nullptr;
+      	TH1D *central  = nullptr;
+	};
+
+		int getBinsToPlot() const {
+			return nBinsToPlot_;
+		}
+
+		void setBinsToPlot(int binsToPlot) {
+			nBinsToPlot_ = binsToPlot;
+		}
+
       FitContainer(const TH1* data, const TH1* signal, const TH1* background,
 		   const std::string& outputDir = defaultOutputDir_);
       FitContainer(const TH1* data, const std::string& outputDir = defaultOutputDir_, const std::string & type = "data");
@@ -102,6 +118,7 @@ namespace analysis {
       double getPeakStart_(const Type& type,const double& max);
       double getPeakStart_(const Type& type);
       double getMaxPosition_(const RooAbsData& data);
+      hBands getPullBands_(RooPlot * frame, const std::string& curve_name, TH1D * hData, RooRealVar & x, RooAbsPdf & fit);
 
       // internal methods
       static void prepareCanvas_(TCanvas& raw);
@@ -148,6 +165,7 @@ namespace analysis {
       double covMatrix_[400];
       double eigenVector_[400];
       int nbins_;
+      int nBinsToPlot_;
       float lumi_;
       float obs_;
     };
