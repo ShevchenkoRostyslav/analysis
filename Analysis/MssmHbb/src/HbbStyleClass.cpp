@@ -16,6 +16,7 @@ TString toTString(const PublicationStatus status) {
   else if( status == PUBLIC      )         			str = "public";
   else if( status == SIMULATION  )         			str = "simulation (public)";
   else if( status == UNPUBLISHED )         			str = "unpublished";
+  else if( status == WORKINPROGRESS )			   	str = "Work in progress";
   else if( status == PRIVATE )			   			str = "Private work";
 
   return str;
@@ -134,6 +135,8 @@ TString HbbStyle::header(const PublicationStatus status) {
   } else if( status == UNPUBLISHED ) {
     txt = "CMS (unpublished),  "+txt;
   } else if( status == PRIVATE ) {
+	  txt = "Private work  " + txt;
+  } else if( status == WORKINPROGRESS){
 	  txt = "Work in progress,  " + txt;
   }
 

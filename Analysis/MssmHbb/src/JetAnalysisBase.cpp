@@ -265,13 +265,17 @@ void JetAnalysisBase::applySelection(){
 
 		//PU reweighting for MC
 		if(isMC()) {
+			weight_["NLO"] = this->genWeight() / std::abs(this->genWeight());
+//			weight_["NLO"] = 1;
 			weight_["PU_central"] 	= pWeight_->PileUpWeight(*hCorrections1D_["hPileUpData_central"],*hCorrections1D_["hPileUpMC"],this->nTruePileup());
-			NumberOfGenEvents_afterMHat_rewPU += weight_["PU_central"];
+			NumberOfGenEvents_afterMHat_rewPU += weight_["PU_central"] * weight_["NLO"];
 			if(signalMC_) {
+				//Take into account negative weights in NLO MC:
+
 				// PDF uncertainty
 				pdfUncertainties(this->genScale(), this->pdf());
-				NumberOfGenEvents_afterMHat_rewPU_PDFup += weight_["PU_central"] * weight_["PDF_up"];
-				NumberOfGenEvents_afterMHat_rewPU_PDFdown += weight_["PU_central"] * weight_["PDF_down"];
+				NumberOfGenEvents_afterMHat_rewPU_PDFup += weight_["PU_central"] * weight_["PDF_up"] * weight_["NLO"];
+				NumberOfGenEvents_afterMHat_rewPU_PDFdown += weight_["PU_central"] * weight_["PDF_down"] * weight_["NLO"];
 			}
 //			NumberOfGenEvents_afterMHat_rewPU = NumberOfGenEvents_afterMHat;
 			(histo_.getHisto())["nTruePileup"]->Fill(this->nTruePileup());
@@ -489,6 +493,7 @@ void JetAnalysisBase::applySelection(){
 	    totWeight = this->assignWeight();
 	    this->fillHistograms(shiftedJets,totWeight);
 		NumberOfEventsAfterSelection_weighted += totWeight;
+
 	}
 
 	double xsection = 0;
@@ -510,6 +515,7 @@ void JetAnalysisBase::applySelection(){
 //		if(file_name.find("bEnriched") != std::string::npos || file_name.find("BGenFilter") != std::string::npos || file_name.find("QCD") != std::string::npos){
 //			weight_["Lumi"] 			=pWeight_->LumiWeight(dataLumi_,1. / xsection); // To be able to Scale histograms after!!!
 //		}
+
 	}
 	(histo_.getHisto())["xsection"]->Fill(xsection);
 	(histo_.getHisto())["lumi_weight"]->Fill(weight_["Lumi"]);

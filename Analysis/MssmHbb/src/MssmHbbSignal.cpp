@@ -45,6 +45,47 @@ MssmHbbSignal::~MssmHbbSignal() {
 
 const bool MssmHbbSignal::leadingJetSelection(const std::shared_ptr<tools::Collection<tools::Jet> > & offlineJets){
 
+	// Special for cut flow
+	
+        Jet jet1 = offlineJets->at(0);
+        Jet jet2 = offlineJets->at(1);
+	Jet jet3 = offlineJets->at(2);
+
+	//Trigger selection
+	if(!cuts_.check("TriggerBit",this->triggerResult(triggerLogicName_))) return false;
+	if(!cuts_.check("TriggerMatching",this->OnlineSelection(jet1,jet2)))  return false;
+
+	//BTag selection
+	if(!cuts_.check("btag1",jet1.btag() >= btag1_)) return false;
+	if(!cuts_.check("btag2",jet2.btag() >= btag2_)) return false;
+	if(!cuts_.check("btag3",jet3.btag() >= btag3_)) return false;
+
+	//pT selection
+	if(!cuts_.check("pt1",jet1.pt() >= pt1_)) return false;
+        if(!cuts_.check("pt2",jet2.pt() >= pt2_)) return false;
+	if(!cuts_.check("pt3",jet3.pt() >= pt3_)) return false;
+
+	//eta selection
+	if(!cuts_.check("eta1",std::abs(jet1.eta()) <= eta1_)) return false;
+        if(!cuts_.check("eta2",std::abs(jet2.eta()) <= eta2_)) return false;
+	if(!cuts_.check("eta3",std::abs(jet3.eta()) <= eta3_)) return false;
+	if(lowM_) if(!cuts_.check("deta12",std::abs(jet1.eta() - jet2.eta()) <= dEta_)) return false;
+	
+	//dR selection
+	if(!cuts_.check("dR12",jet1.deltaR(jet2) > dR_)) return false;
+	if(!cuts_.check("dR23",jet2.deltaR(jet3) > dR_)) return false;
+        if(!cuts_.check("dR13",jet1.deltaR(jet3) > dR_)) return false;
+
+        //Trigger selection
+//        if(!cuts_.check("TriggerBit",this->triggerResult(triggerLogicName_))) return false;
+//        if(!cuts_.check("TriggerMatching",this->OnlineSelection(jet1,jet2)))  return false;
+
+//	//BTag selection
+//	if(!cuts_.check("btag1",jet1.btag() >= btag1_)) return false;
+//        if(!cuts_.check("btag2",jet2.btag() >= btag2_)) return false;
+//	if(!cuts_.check("btag3",jet3.btag() >= btag3_)) return false;
+
+/*
 	//To avoid code duplication frind class were used
 	if(!selectionDoubleB::leadingJetSelection(offlineJets)) return false;
 
@@ -76,7 +117,7 @@ const bool MssmHbbSignal::leadingJetSelection(const std::shared_ptr<tools::Colle
 	//deltaR requirements
 	if(!cuts_.check("dR23",jet2.deltaR(jet3) > dR_)) return false;
 	if(!cuts_.check("dR13",jet1.deltaR(jet3) > dR_)) return false;
-
+*/
 	return true;
 }
 
@@ -201,6 +242,7 @@ double weight = 1;
 //		weight = weight_["SFb_central"] * weight_["SFl_central"];
 		weight = weight_["PtEff_central"] * weight_["PU_central"] * weight_["SFb_central"] * weight_["SFl_central"];// * weight_["Signal_Shape"];
 		weight *= weight_["BTagEff_central"];
+		weight *= weight_["NLO"];
 	}
 //	weight = weight_["PtEff_central"] * weight_["PU_central"];
 //	weight = 1;
