@@ -10,9 +10,10 @@
 #include <TFile.h>
 #include "TSystem.h"
 
-#include "Analysis/MssmHbb/interface/HbbLimits.h"
+#include "Analysis/MssmHbb/interface/LHCXSGLimits.h"
 #include "Analysis/MssmHbb/interface/Limit.h"
-#include "Analysis/MssmHbb/macros/Drawer/HbbStylesNew.C"
+#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 using namespace std;
 using namespace analysis::mssmhbb;
@@ -25,9 +26,7 @@ public:
 	std::string name;
 };
 
-const string cmsswBase = static_cast<std::string>(gSystem->Getenv("CMSSW_BASE"));
-
-Uncertainty evaluate(HbbLimits& limits, const std::vector<Limit>& GxBR, const std::string& benchmark, const std::string& name);
+Uncertainty evaluate(LHCXSGLimits& limits, const std::string& path_to_limits,const std::string& name);
 void DrawUncertainty(const Uncertainty&, const std::string& output);
 void fillTGraph(TGraph& gr, const std::vector<Limit>& limits);
 void divideTGraphs(TGraph& finale, TGraph& up, TGraph& down);
@@ -39,18 +38,17 @@ int main(int argc, char **argv) {
 	 * to be used as lnN nuisance for MSSM limits
 	 */
 	//Set style
-	HbbStylesNew style;
-	style.SetStyle();
-	HbbLimits limits(true,false);
-	string path_to_limits = cmsswBase + "/src/Analysis/MssmHbb/datacards/201707/26/blinded/independent/bias/Hbb.limits";
-	string interpretation = "tauphobic_13TeV";
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/TheoryUncertainty/" + interpretation + "_";
-	string benchmark = cmsswBase + "/src/Analysis/MssmHbb/macros/signal/" + interpretation + ".root";
+	HbbStyle style;
+	style.set(PRELIMINARY);
+	string path_to_limits = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/independent/bias/Hbb.limits";
+	string interpretation = "hMSSM_13TeV";//hMSSM_13TeV//mhmodp_mu200_13TeV//lightstopmod_13TeV//lightstau1_13TeV//tauphobic_13TeV//
+	string output = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/TheoryUncertainty/" + interpretation + "_";
+	string benchmark = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/signal/" + interpretation + ".root";
+	LHCXSGLimits limits(mssmhbb::blinded,"both",benchmark);
 
 	//Read output of the combine tool:
-	vector<Limit> GBR2016 			= limits.ReadCombineLimits(path_to_limits);
-	Uncertainty pdfas = evaluate(limits,GBR2016,benchmark,"pdfas");
-	Uncertainty scale = evaluate(limits,GBR2016,benchmark,"scale");
+	Uncertainty pdfas = evaluate(limits,path_to_limits,"pdfas");
+	Uncertainty scale = evaluate(limits,path_to_limits,"scale");
 
 	//Plot
 	DrawUncertainty(pdfas,output);
@@ -58,14 +56,17 @@ int main(int argc, char **argv) {
 
 }
 
-Uncertainty evaluate(HbbLimits& limits, const std::vector<Limit>& GxBR, const std::string& benchmark, const std::string& name){
+Uncertainty evaluate(LHCXSGLimits& limits, const std::string& path_to_limits,const std::string& name){
 	/*
 	 * Method to evaluate uncertainty for a given parameter "name"
 	 */
 	Uncertainty unc;
-	unc.central 	= limits.GetMSSMLimits(GxBR,benchmark,"");
-	unc.up 			= limits.GetMSSMLimits(GxBR,benchmark,name,true);	//UP
-	unc.down	 	= limits.GetMSSMLimits(GxBR,benchmark,name,false); 	//Down
+	limits.ReadCombineLimits(path_to_limits,"");
+	unc.central = limits.getLimits();
+	limits.ReadCombineLimits(path_to_limits,name,true); //UP
+	unc.up = limits.getLimits();
+	limits.ReadCombineLimits(path_to_limits,name,false); //DOWN
+	unc.down = limits.getLimits();
 	unc.name		= name;
 
 	return unc;

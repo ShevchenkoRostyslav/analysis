@@ -38,7 +38,7 @@ int main(int argc, const char** argv){
 	//Prefix to the output
 	string output_prefix = "13TeV_limits";
 	//ATLAS results
-	string ATLAS_results = "ATLAS-CONF-2017-055";//"1502.04478";//
+	string ATLAS_results = "1502.04478";//"ATLAS-CONF-2017-055";//"1502.04478";//
 	//paths with results of the combine tool
 	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/mhmodp_200/bias/Hbb.limits";
 	//value of cos(beta-alpha)

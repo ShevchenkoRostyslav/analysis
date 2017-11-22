@@ -63,11 +63,11 @@ int main(int argc, const char **argv){
 	//Prefix to the output
 	string output_prefix = "13TeV_limits";
 	//ATLAS results
-	string ATLAS_results = "ATLAS-CONF-2017-055";//"1502.04478";//
+	string ATLAS_results = "1502.04478";//"ATLAS-CONF-2017-055";//"1502.04478";//
 	//paths with results of the combine tool
 	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/mhmodp_200/bias/Hbb.limits";
 	//value of cos(beta-alpha)
-	double mass = 500;
+	double mass = 300;
 	//Details of the 2HDM produciton
 	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION";
 	// type of the 2hdm: type2 or type3
@@ -120,6 +120,10 @@ int main(int argc, const char **argv){
 				limits.setXMin(-0.5); limits.setXMax(0.5);
 				limits.setYMin(4);limits.setYMax(50);
 //				limits.setXMax(0.9); limits.setYMax(50);
+			} else if(ATLAS_results == "1502.04478"){
+				limits.setXMin(-0.8); limits.setYMin(4);
+				limits.setXMax(0.8); limits.setYMax(50);
+				
 			}
 			output += "vs_ATLAS_" + ATLAS_results;
 			limits.compareWithPrevious(ATLAS_results);
@@ -131,10 +135,12 @@ int main(int argc, const char **argv){
 //			limits.setXMax(0.8); limits.setYMax(50);
 			// plot zoomed cos(b-a) range
 			if(thdm_type == "type2"){
-//				limits.setXMin(-0.9); limits.setYMin(4);
-//				limits.setXMax(0.9); limits.setYMax(50);
+				if(ATLAS_results == "1502.04478"){
+				limits.setXMin(-0.9); limits.setYMin(4);
+				limits.setXMax(0.9); limits.setYMax(50);
 //				leg.SetX1NDC(0.4); leg.SetX2NDC(0.75);
 //				leg.SetY1NDC(0.27); leg.SetY2NDC(0.52);
+				}
 			}
 
 			limits.LimitPlotter(leg,output,"35.7 fb^{-1}","cos(#beta-#alpha)","tan#beta",true);
