@@ -24,14 +24,15 @@ typedef unique_ptr<variables_map> pVariables_map;
 unique_ptr<variables_map> ProcessUserInput(int argc, char** argv);
 void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map);
 void DrawSignalShapes(const unique_ptr<variables_map> & var_map);
-void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin);
-void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin);
+void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation);
+void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation);
+void DrawSignalPDFsAndTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation);
 void SetCenteredTLegendHeader_(TLegend &leg, const char* header);
 string PrepareOutputName(const unique_ptr<variables_map> & var_map);
 double GetSignalNormalisation_(const int& mp);
 
 vector<int> nice_colors {kRed,kBlue,kGreen+3,kOrange-3,kMagenta+1,kAzure-4};
-vector<int> nice_linestyles {1,2,4,6};
+vector<int> nice_linestyles {1,2,4,6,9,10};
 
 int main(int argc,char** argv){
 	HbbStyle style;
@@ -52,8 +53,10 @@ void DrawSignalShapes(const unique_ptr<variables_map> & var_map){
 	float ymax = var_map->at("ymax").as<float>();
 	vector<int> mass_points = var_map->at("mass_points").as<vector<int>>();
 	bool draw_templates = var_map->at("templates").as<bool>();
+	bool draw_pdfs = var_map->at("pdfs").as<bool>();
 	string legend_pos   = var_map->at("legend_pos").as<string>();
 	double rebin 		= var_map->at("rebin").as<float>();
+	bool normalisation = var_map->at("normalisation").as<float>();
 
 	TCanvas can;
 	//Setup plotting frame
@@ -65,8 +68,12 @@ void DrawSignalShapes(const unique_ptr<variables_map> & var_map){
 	auto &leg = *HbbStyle::legend(legend_pos.c_str(),mass_points.size()+2);
 	HbbStyle::setLegendStyle(&leg);
 
-	if(draw_templates) DrawSignalTemplates_(frame,mass_points,leg, rebin);
-	else DrawSignalPDFs_(frame,mass_points,leg,rebin);
+	if(draw_templates && !draw_pdfs) DrawSignalTemplates_(frame, mass_points, leg, rebin, normalisation);
+	if(draw_pdfs && !draw_templates) DrawSignalPDFs_(frame, mass_points, leg, rebin, normalisation);
+	if(draw_templates && draw_pdfs) DrawSignalPDFsAndTemplates_(frame, mass_points, leg, rebin, normalisation);
+//	else DrawSignalPDFs_(frame,mass_points,leg,rebin);
+//	DrawSignalTemplates_(frame,mass_points,leg,rebin);
+
 	leg.Draw();
 
 	HbbStyle::drawStandardTitle("out");
@@ -75,7 +82,7 @@ void DrawSignalShapes(const unique_ptr<variables_map> & var_map){
 
 }
 
-void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin){
+void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation){
 	/*
 	 * Main funtion to draw signal templates
 	 */
@@ -88,12 +95,14 @@ void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & 
 		h->SetLineColor(nice_colors.at(i));
 		h->SetLineWidth(2);
 		h->SetLineStyle(nice_linestyles.at(i));
+		if(normalisation != -1) h->Scale(normalisation / h->Integral());
 		leg.AddEntry(h,("m_{A/H} = " + to_string(mp) + " GeV").c_str(),"l");
 		h->Draw("HIST same");
 		++i;
 	}
 }
-void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin){
+
+void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation){
 	/*
 	 * Main function to draw RooFit PDFs
 	 */
@@ -107,6 +116,7 @@ void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, 
 		auto *file = new TFile(mssmhbb::signal_templates.at(mp).c_str());
 		auto *h = GetFromTFile<TH1>(*file,"templates/bbH_Mbb_VIS");
 		h->Rebin(rebin);
+		if(normalisation != -1) h->Scale(normalisation / h->Integral());
 		RooDataHist *hist = new RooDataHist("hist","hist",RooArgList(*x),h);
 		auto *fr 	= x->frame();
 		hist->plotOn(fr,RooFit::Invisible());
@@ -117,6 +127,16 @@ void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, 
 	}
 }
 
+void DrawSignalPDFsAndTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & leg, const float& rebin, const float& normalisation){
+	/*
+	 * Draw Both PDFs and Templates
+	 */
+	DrawSignalTemplates_(frame, mass_points, leg, rebin, normalisation);
+	leg.Clear();
+	DrawSignalPDFs_(frame, mass_points, leg, rebin, normalisation);
+	leg.SetHeader("Signal");
+}
+
 string PrepareOutputName(const unique_ptr<variables_map> & var_map){
 	/*
 	 * Make an output name from the input
@@ -124,8 +144,11 @@ string PrepareOutputName(const unique_ptr<variables_map> & var_map){
 	string output_folder = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/";
 	string output_name = "";
 	//Templates or PDFs
-	if(var_map->at("templates").as<bool>()) output_name = "SignalTemplates_PAS_";
-	else output_name = "SignalPDFs_PAS_";
+	auto pdfs = var_map->at("pdfs").as<bool>();
+	auto templates = var_map->at("templates").as<bool>();
+	if(templates && !pdfs) output_name = "SignalTemplates_PAS_";
+	if(pdfs && !templates) output_name = "SignalPDFs_PAS_";
+	if(pdfs && templates) output_name =  "SignalPDFsAndTemplates_PAS_";
 	//Add mass points
 	auto &v = var_map->at("mass_points").as<vector<int>>();
 	for(const auto& m : v){
@@ -158,7 +181,10 @@ unique_ptr<variables_map> ProcessUserInput(int argc,char** argv){
 	generalOptions.add_options()
 		("help,h", "produce help message")
 		("verbose,v", value<int>()->default_value(0), "more verbose output")
-		("templates", value<bool>()->default_value(false),"signal templates or signal pdfs")
+		("rebin,r", value<float>()->default_value(1), "rebin histograms")
+		("templates", value<bool>()->default_value(false),"draw signal templates")
+		("pdfs", value<bool>()->default_value(true),"draw signal pdfs")
+		("normalisation", value<float>()->default_value(-1),"Total normalisation of the tempaltes/pdfs. -1 - normalise to a real area from a selection")
 		("legend_pos",value<string>()->default_value("top,right"),"position of the legend: 'top,right', 'top,left'");
 
 	// command line options
@@ -235,6 +261,8 @@ void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map){
 	 */
 	auto sub_range = (*var_map)["sub_range"].as<string>();
 	auto draw_templates = (*var_map)["templates"].as<bool>();
+	auto normalisation = (*var_map)["normalisation"].as<float>();
+//	auto draw_pdfs = (*var_map)["pdfs"].as<bool>();
 	float xmin,xmax,ymin,ymax;
 	float rebin = 1;
 	vector<int> vec;
@@ -247,24 +275,9 @@ void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map){
 			ymax = 100;
 		}
 		ymax = 100;
-//		var_map->insert(make_pair("xmin",variable_value(float(200.0),false)));
-//		var_map->insert(make_pair("xmax",variable_value(float(650.0),false)));
-//		var_map->insert(make_pair("ymin",variable_value(float(0.0),false)));
-//		var_map->insert(make_pair("ymax",variable_value(float(0.2),false)));
-//		var_map->insert(make_pair("mass_points",variable_value(vector<int>(mssmhbb::sr1),false)));
 
-
-//		(*var_map)["xmin"] = variable_value(0,false);
-//		var_map->at("xmin") = variable_value
-//		var_map->insert(make_pair("xmin",boost::any(0)));
-//		var_map->insert(make_pair("xmax",(800)));
-//		var_map->insert(make_pair("ymin",(0)));
-//		var_map->insert(make_pair("ymax",(1)));
-//		(*var_map).at("xmin").value() = boost::any(0);
-//		var_map->at("xmax").value() = boost::any(800);
-//		var_map->at("ymin").value() = boost::any(0);
-//		var_map->at("ymax").value() = boost::any(1);
-//		var_map->at("mass_points").value() = boost::any(mssmhbb::sr1);
+		//Adjust ymax for the normalised plots
+		if(normalisation == 1) ymax = 0.3;
 	}
 	else if (findStrings(sub_range,"sr2")){
 		vec = mssmhbb::sr2;
@@ -274,6 +287,9 @@ void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map){
 			ymax = 100;
 		}
 		ymax = 100;
+
+		//Adjust ymax for the normalised plots
+		if(normalisation == 1) ymax = 0.2;
 
 //		var_map->insert(make_pair("xmin",variable_value(float(350.0),false)));
 //		var_map->insert(make_pair("xmax",variable_value(float(1190.0),false)));
@@ -295,6 +311,9 @@ void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map){
 //		if(draw_templates) ymax = 20;
 		ymax = 40;
 		rebin = 2;
+
+		//Adjust ymax for the normalised plots
+		if(normalisation == 1) ymax = 0.1;
 
 //		var_map->insert(make_pair("xmin",variable_value(float(500.0),false)));
 //		var_map->insert(make_pair("xmax",variable_value(float(1700.0),false)));
