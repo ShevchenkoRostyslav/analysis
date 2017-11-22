@@ -5,14 +5,14 @@ INSTRUCTIONS FOR INSTALLATION
 module load cmssw
 ## Create a CMSSW project, e.g.
 setenv SCRAM_ARCH slc6_amd64_gcc493
-scram p -s CMSSW CMSSW_7_6_3
-cd CMSSW_7_6_3/src
+scram p -s CMSSW CMSSW_8_0_20_patch1
+cd CMSSW_8_0_20_patch1/src
 cmsenv
 
 ## Installing the head
 ## Clone the head (branch develop) of the repository (notice the dot at the end,
 ## it helps preserve the directory structure of CMSSW)
-git clone https://github.com/desy-cms/analysis.git .
+git clone git@github.com:ShevchenkoRostyslav/analysis.git .
 scram b -j4
 
 ## If you want to use a frozen tag (latest one is winter15-pre2 from 22 Feb 2016)
