@@ -153,6 +153,9 @@ int corelation(){
 	    		double yy = eff_pt_slice[biny]->GetEfficiency(biny+1);
 	    		double xy = eff_pt_slice[binx]->GetEfficiency(biny+1);
 
+	    		std::cout<<"bins: y = "<<biny+1<<" x = "<<binx+1<<" glob. = "<<binx+1 + biny*(TwoDEff_Num->GetNbinsY() + 2)<<std::endl;
+	    		cout<<"x: "<<binx+1<<" y: "<<biny+1<<" xx = "<<xx<<" yy = "<<yy<<endl;
+
 	    		double cxy = 0;
 	    		double ecxy = 0;
 	    		if(xx > 0 && yy>0){
