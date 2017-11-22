@@ -60,7 +60,7 @@ def submit(cshFile):
 if __name__ == '__main__':
 
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/unblinded/tests/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201708/23/unblinded/tests/GOF/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #algorithm from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideHiggsAnalysisCombinedLimit#Goodness_of_fit_tests
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     # Total number oftoys 
     Ntoys = 3000 
     #list of mass points for those GOFwill be calculated
-#     mass = ['300','350','400','500','600','700','900','1100','1300']
-    mass = ['350','700','1300']
+    #mass = ['300','350','400','500','600','700','900','1100','1300']
+    mass = ['1100','1300']
     #combine preferences to be added
     combine_add = ''
     for m in mass:

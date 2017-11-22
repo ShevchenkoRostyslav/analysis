@@ -76,8 +76,8 @@ def AdjustSignalStrength(mass, bg_only,blinded):
     rmin = '-10'
     rmax = '10'
     if(bg_only):
-        rmin = '-5'#'-0.001'
-        rmax = '5'#'0.001'
+        rmin = '-0.001'#'-0.001'
+        rmax = '0.001'#'0.001'
     else:
         if mass == '300' or mass == '350':
         	if not blinded:
@@ -105,9 +105,9 @@ if __name__ == '__main__':
 
     #bg_only fit?
     blinded = False
-    bg_only = True
+    bg_only = False
     #working directory with datacards and stored output:
-    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201707/26/unblinded/independent/mll/bg_only/'
+    datacard_folder = '/afs/desy.de/user/s/shevchen/cms/cmssw-analysis/CMSSW_8_0_20_patch1/src/Analysis/MssmHbb/datacards/201708/23/unblinded/independent/mll/SpBg/'
     checkInput(datacard_folder)
     os.chdir(datacard_folder)
     #list of mass points
