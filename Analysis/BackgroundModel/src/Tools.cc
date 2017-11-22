@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
@@ -42,6 +43,7 @@ namespace analysis {
           if (m.find("constant") != std::string::npos) paramModifier.constant();
           if (m.find("floating") != std::string::npos) paramModifier.floating();
         }
+        paramModifier.show();
         output.push_back(paramModifier);
       }
       return output;

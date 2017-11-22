@@ -546,7 +546,7 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
 //  Uncertainty bands
 //  2 Sigma
   Pdf.plotOn(frame.get(),
-		  RooFit::VisualizeError(*fitResult, 2, false),
+		  RooFit::VisualizeError(*fitResult, 2, true),
 		  RooFit::LineColor(kRed),
 		  RooFit::LineStyle(kSolid),
 		  RooFit::FillColor(kOrange),
@@ -556,7 +556,7 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
 
   //  1 Sigma
   Pdf.plotOn(frame.get(),
-		  RooFit::VisualizeError(*fitResult, 1, false),
+		  RooFit::VisualizeError(*fitResult, 1, true),
 		  RooFit::LineColor(kRed),
 		  RooFit::LineStyle(kSolid),
 		  RooFit::FillColor(kGreen+1),
@@ -727,6 +727,16 @@ std::unique_ptr<RooFitResult> FitContainer::backgroundOnlyFit(const std::string&
   canvas.Modified();
   canvas.Update();
   canvas.SaveAs((plotDir_+name+"_lowM_log.pdf").c_str());
+
+  //Write the worksapce and RooFitResult
+  workspace_.writeToFile(outRootFileName_.c_str());
+  TFile out(outRootFileName_.c_str(), "update");
+  out.cd();
+  fitResult->Write("FitResults");
+  out.Write();
+//  fitResult->writeToFile(outRootFileName_.c_str());
+  out.Close();
+  written_ = true;
 
   return fitResult;
 }
@@ -1067,7 +1077,7 @@ FitContainer::hBands FitContainer::getPullBands_(RooPlot * frame, const std::str
     TGraph lo2Bound(nominal->GetN());
     double err1U,err1D,err2U,err2D;
     bool divide_by_sqrt_bg = true;
-    std::cout<<"NUMBER OF BINS: "<<nominal->GetN()<<std::endl;
+//    std::cout<<"NUMBER OF BINS: "<<nominal->GetN()<<std::endl;
 
     for( int j = 0; j < sigma2->GetN(); ++j ){
       if( j < nominal->GetN() ){
@@ -1113,7 +1123,7 @@ FitContainer::hBands FitContainer::getPullBands_(RooPlot * frame, const std::str
         h2sigmaU->SetBinContent( bin_i, err2U);
         h2sigmaD->SetBinContent( bin_i, err2D);
 
-        std::cout<<"j = "<<bin_i<<"WTFFF: x = "<<x<<" y = "<<n_i<<" up1 = "<<err1U<<" lo1 = "<<err1D<<" up2 = "<<err2U<<" lo2 = "<<err2D<<std::endl;
+//        std::cout<<"j = "<<bin_i<<"WTFFF: x = "<<x<<" y = "<<n_i<<" up1 = "<<err1U<<" lo1 = "<<err1D<<" up2 = "<<err2U<<" lo2 = "<<err2D<<std::endl;
     }
 
     for(int bin_i = 1; bin_i < hData->GetNbinsX()+1; ++bin_i){

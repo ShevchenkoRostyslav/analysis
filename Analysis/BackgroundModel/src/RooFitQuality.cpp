@@ -54,11 +54,14 @@ Chi2Ndf RooFitQuality::chiSquare(RooPlot& frame,const std::string& curvename, co
 		auto exh = hist.GetEXhigh()[i] ;
 		auto curve_yavg = curve.average(x-exl,x+exh);
 
+		double pull;
 		if(y!=0){
-			double pull = (y > curve_yavg) ? ((y - curve_yavg)/eyl) : ((y - curve_yavg)/eyh);
+			pull = (y > curve_yavg) ? ((y - curve_yavg)/eyl) : ((y - curve_yavg)/eyh);
 			chi2 += pull*pull;
 			++nbins;
+
 		}
+//		std::cout<<" x = "<<x<<" y = "<<y<<" curve_yavg = "<<curve_yavg<<" x-exl = "<<x-exl<<" x+exh = "<<x+exh<<std::endl;
 	}
 	return Chi2Ndf(chi2,nbins-nFitParam);
 }
