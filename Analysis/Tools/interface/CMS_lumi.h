@@ -17,7 +17,7 @@
 //#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
 
 // Publication status: determines what is plotted in title
-enum PublicationStatus { INTERNAL, INTERNAL_SIMULATION, PRELIMINARY, PUBLIC, SIMULATION, UNPUBLISHED, PRIVATE, PRELIMINARY_SIMULATION };
+enum PublicationStatus { INTERNAL, INTERNAL_SIMULATION, PRELIMINARY, PUBLIC, SIMULATION, UNPUBLISHED, PRIVATE, PRELIMINARY_SIMULATION, WORKINPROGRESS };
 
 class CMS_lumi{
 public:

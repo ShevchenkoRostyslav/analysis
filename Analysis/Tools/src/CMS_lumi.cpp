@@ -26,6 +26,8 @@ TString CMS_lumi::getExtraText(const PublicationStatus status){
 	} else if( status == UNPUBLISHED ) {
 		txt = "(unpublished)";
 	} else if( status == PRIVATE ) {
+		txt = "Private work";
+	} else if ( status == WORKINPROGRESS ) {
 		txt = "Work in progress";
 	}
 
@@ -57,7 +59,7 @@ void CMS_lumi::drawCMSlumi(TPad *pad, const PublicationStatus status, const int&
 	//Get iPos according to the user input
 	// Setup position
 	if ( loweredPosition.Contains("left-top")) iPosx += 1;		// Default one
-	else if (loweredPosition.Contains("center-top")) iPosx += 2;
+	else if (loweredPosition.Contains("centert-top")) iPosx += 2;
 	else if (loweredPosition.Contains("right-top")) iPosx += 3;
 	else if (loweredPosition.Contains("out")) iPosx += 0;
 	else iPosx += 1;
@@ -69,7 +71,6 @@ void CMS_lumi::drawCMSlumi(TPad *pad, const PublicationStatus status, const int&
 	else iPosx += 10;
 
 	if(loweredPosition.Contains("out")) iPosx =0;
-
 	drawCMSlumi(pad,status,iPeriod,iPosx);
 
 }
