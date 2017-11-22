@@ -15,6 +15,7 @@ __init__.py
 *.pydevproject
 *.pydevproject
 *.png
+*.pdf
 Analysis/*/python/__init__.py
 Analysis/Tools/test/crab_proj*
 *._
