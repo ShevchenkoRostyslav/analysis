@@ -50,6 +50,8 @@
 <bin   name="mssm_xs_uncertainty" file="../macros/results_interpretation/MSSM/uncertainties/mssm_xs_uncertainty.cpp" />
 #<bin   name="Plot2HDM_2D" 				file="../macros/limits/Plot2HDM_2D.cpp"></bin>
 <bin   name="mass_fit"                          file="../macros/limits/mass_fit.cpp"></bin>
+<bin   name="FullMass_SpBg"                     file="../macros/PAS/FullMass_SpBg.cpp"></bin>
+<bin   name="mass_fit_SpBg"                          file="../macros/PAS/mass_fit_SpBg.cpp"></bin>
 
 #data vs mc
 <bin   name="FlavourContamination"		file="../macros/FlavourContamination_2b.cpp"></bin>
@@ -66,6 +68,7 @@
 #Generator MC level study
 <bin   name="mass_dependence"			file="../macros/Gen_level/mass_dependence.cpp"></bin>
 <bin   name="peak_width"			file="../macros/Gen_level/peak_width.cpp"></bin>
+<bin   name="NLO_vs_LO_study"                   file="../macros/Gen_level/NLO_vs_LO_study.cpp"></bin>
 
 #Signal modelling
 <bin   name="parametrisation"			file="../macros/Signal_shapes/parametrisation.cpp"></bin>
@@ -75,3 +78,7 @@
 
 #tests
 <bin  name="pdfuncert_test"			file="../test/pdfuncert_test.cpp"></bin>
+
+#trigger efficiency
+<bin  name="TriggerEfficiency_SFs"		file="../macros/triggerPerformance/TriggerEfficiency_SFs.cpp"></bin>
+<bin  name="TriggerEfficiency_Correlations"     file="../macros/triggerPerformance/TriggerEfficiency_Correlations.cpp"></bin>
