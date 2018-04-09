@@ -7,6 +7,7 @@
 #include "RooDataHist.h"
 
 #include <memory>
+//#include "TColor.h"
 #include "TLegendEntry.h"
 
 #include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
@@ -31,12 +32,38 @@ void SetCenteredTLegendHeader_(TLegend &leg, const char* header);
 string PrepareOutputName(const unique_ptr<variables_map> & var_map);
 double GetSignalNormalisation_(const int& mp);
 
-vector<int> nice_colors {kRed,kBlue,kGreen+3,kOrange-3,kMagenta+1,kAzure-4};
-vector<int> nice_linestyles {1,2,4,6,9,10};
+HbbStyle style;
+
+//*****************Test different colors*********************
+TColor *col0 = new TColor(10000, 0, 0.4470588235, 0.6980392157);
+TColor *col1 = new TColor(10001, 0.337254902, 0.7058823529, 0.9137254902);
+TColor *col2 = new TColor(10002, 0.8, 0.4745098039, 0.6549019608);
+TColor *col3 = new TColor(10003, 0, 0.6196078431, 0.4509803922);
+TColor *col4 = new TColor(10004, 0.8352941176, 0.368627451, 0);
+TColor *col_darkturquoise 		= new TColor(10005,25./255, 109./255, 128./255, 	"darkturquoise");
+TColor *col_violet				= new TColor(10006,129./255, 31./255, 157./255, 	"violet");
+TColor *col_darkblue				= new TColor(10007,34./255, 91./255, 196./255, 	"darkblue");
+TColor *col_lightblue			= new TColor(10008,50./255, 160./255, 246./255, 	"lightblue");
+TColor *col_pink					= new TColor(10009,247./255, 125./255, 247./255, "pink");
+TColor *col_lightturquoise		= new TColor(10010,58./255, 209./255, 218./255, 	"lightturquoise");
+TColor *col_darkred				= new TColor(10011,166./255, 25./255, 63./255, 	"darkred");
+TColor *col_lightorange			= new TColor(10012,242./255, 85./255, 41./255,  	"lightorange");
+TColor *col_green				= new TColor(10013,38./255, 178./255, 94./255,  	"green");
+TColor *col_yellow				= new TColor(10014,238./255, 239./255, 78./255,  	"yellow");
+TColor *col_lightgreen			= new TColor(10015,163./255, 248./255, 137./255, 	"lightgreen");
+TColor *col_beige				= new TColor(10016,248./255, 230./255, 193./255, 	"beige");
+//************************************************************
+//vector<int> nice_colors {kRed,kBlue,kGreen+3,kOrange-3,kMagenta+1,kAzure-4};
+vector<int> nice_colors {10011,10007,10013,10003,10004,5};
+vector<int> nice_linestyles {1,3,2,6,4,10};
+//vector<int> nice_linestyles {1,1,1,1,1,1,1};
 
 int main(int argc,char** argv){
-	HbbStyle style;
-	style.setTDRstyle(PRELIMINARY_SIMULATION);
+        PublicationStatus status = mssmhbb::publication_status;
+        if(status == PRELIMINARY) status = PRELIMINARY_SIMULATION;
+        else if (status == PUBLIC) status = SIMULATION;
+	status = PRIVATE;
+	style.setTDRstyle(status);
 	auto user_input = ProcessUserInput(argc, argv);
 	DrawSignalShapes(user_input);
 }
@@ -62,7 +89,9 @@ void DrawSignalShapes(const unique_ptr<variables_map> & var_map){
 	//Setup plotting frame
 	TH2D *frame = new TH2D("frame","",1,xmin,xmax,1,ymin,ymax);
 	frame->GetYaxis()->SetTitle("a.u.");
+	frame->GetYaxis()->SetTitle("Arbitrary units");
 	frame->GetXaxis()->SetTitle(HbbStyle::axisTitleMass());
+	std::cout<<"Wanna know the offset: "<<frame->GetYaxis()->GetTitleOffset()<<std::endl;
 	frame->Draw();
 	//Legend
 	auto &leg = *HbbStyle::legend(legend_pos.c_str(),mass_points.size()+2);
@@ -76,8 +105,10 @@ void DrawSignalShapes(const unique_ptr<variables_map> & var_map){
 
 	leg.Draw();
 
-	HbbStyle::drawStandardTitle("out");
+	HbbStyle::drawStandardTitle();
 	auto out_name = PrepareOutputName(var_map);
+	gPad->RedrawAxis();
+	can.RedrawAxis();
 	can.Print( (out_name + ".pdf").c_str());
 
 }
@@ -90,7 +121,9 @@ void DrawSignalTemplates_(TH2* frame, const vector<int>& mass_points, TLegend & 
 	int i = 0;
 	for(const auto& mp : mass_points){
 		auto *f = new TFile(mssmhbb::signal_templates.at(mp).c_str());
-		auto *h = GetFromTFile<TH1>(*f,"templates/bbH_Mbb_VIS");
+		std::string h_name = "templates/bbH_Mbb_VIS";
+//		if(frame->GetXaxis()->GetXmin() == 200 && frame->GetXaxis()->GetXmax() == 650 ) h_name = "bbH_Mbb";
+		auto *h = GetFromTFile<TH1>(*f,h_name.c_str());
 		h->Rebin(rebin);
 		h->SetLineColor(nice_colors.at(i));
 		h->SetLineWidth(2);
@@ -120,7 +153,7 @@ void DrawSignalPDFs_(TH2* frame, const vector<int>& mass_points, TLegend & leg, 
 		RooDataHist *hist = new RooDataHist("hist","hist",RooArgList(*x),h);
 		auto *fr 	= x->frame();
 		hist->plotOn(fr,RooFit::Invisible());
-		pdf->plotOn(fr,RooFit::LineColor(nice_colors.at(i)),RooFit::Range(frame->GetXaxis()->GetXmin(),frame->GetXaxis()->GetXmax()),RooFit::Name((string("signal_pdf_") + to_string(i)).c_str()));//,RooFit::Normalization(norm, RooAbsReal::Relative));//,RooFit::Normalization(norm->getValV()));
+		pdf->plotOn(fr,RooFit::LineColor(nice_colors.at(i)),RooFit::Range(frame->GetXaxis()->GetXmin(),frame->GetXaxis()->GetXmax()),RooFit::Name((string("signal_pdf_") + to_string(i)).c_str()),RooFit::LineStyle(nice_linestyles.at(i)));//,RooFit::Normalization(norm, RooAbsReal::Relative));//,RooFit::Normalization(norm->getValV()));
 		leg.AddEntry(fr->getCurve((string("signal_pdf_") + to_string(i)).c_str()),("m_{A/H} = " + to_string(mp) + " GeV").c_str(),"l");
 		fr->Draw("same");
 		++i;
@@ -141,7 +174,7 @@ string PrepareOutputName(const unique_ptr<variables_map> & var_map){
 	/*
 	 * Make an output name from the input
 	 */
-	string output_folder = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/";
+	string output_folder = mssmhbb::cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/Thesis/";//mssmhbb::pictures_output;
 	string output_name = "";
 	//Templates or PDFs
 	auto pdfs = var_map->at("pdfs").as<bool>();
@@ -305,7 +338,7 @@ void SetupPreDefSubRangeOptions_(unique_ptr<variables_map> & var_map){
 //		var_map->at("mass_points").value() = boost::any(mssmhbb::sr2);
 	}
 	else {
-		legend_pos = "left,top";
+		legend_pos = "right,top";
 		vec = mssmhbb::sr3;
 		xmin = 100; xmax = 1700; ymin = 0; ymax = 0.1;
 //		if(draw_templates) ymax = 20;
