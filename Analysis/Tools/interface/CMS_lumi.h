@@ -14,16 +14,14 @@
 #include "TBox.h"
 #include "TASImage.h"
 #include <memory>
+#include "Analysis/Tools/interface/PublicationStatus.h"
 //#include "Analysis/MssmHbb/interface/HbbStyleClass.h"
-
-// Publication status: determines what is plotted in title
-enum PublicationStatus { INTERNAL, INTERNAL_SIMULATION, PRELIMINARY, PUBLIC, SIMULATION, UNPUBLISHED, PRIVATE, PRELIMINARY_SIMULATION, WORKINPROGRESS };
 
 class CMS_lumi{
 public:
 	void drawCMSlumi(TPad *pad, const PublicationStatus status, int iPeriod, int iPosX=10 );
 	void drawCMSlumi(TPad *pad, const PublicationStatus status, const int& iPeriod = 4 , const TString& CMS_string_position  = "top-left", const TString& CMS_string_alignment = "left" );
-	TString getLumiText(const int& iPeriod, const bool& outOfFrame = false);
+	TString getLumiText(const int& iPeriod, const bool& outOfFrame = false, const bool & simulation = false);
 	TString getExtraText(const PublicationStatus status);
 	void drawLumiLatex(TLatex & latex,TString & lumiText, const float& t, const float& r, const bool& outOfFrame = false);
 	void drawCMSLatex(TLatex& latex, TString & extratext, const int& iPosX, TPad * pad, const bool& outOfFrame = false);
@@ -65,11 +63,11 @@ protected:
 	int getYAlign_(const int& iPosx);
 	int getTotAlign_(const int& alignX, const int& alignY);
 
-	TString get7TeVLumiText_();
-	TString get8TeVLumiText_();
-	TString get13TeVLumiText_();
-	TString get7p8TeVLumiText_();
-	TString get7p8p13TeVLumiText_();
+	TString get7TeVLumiText_(const bool& simulation = false);
+	TString get8TeVLumiText_(const bool& simulation = false);
+	TString get13TeVLumiText_(const bool& simulation = false);
+	TString get7p8TeVLumiText_(const bool& simulation = false);
+	TString get7p8p13TeVLumiText_(const bool& simulation = false);
 
 	float setCMSsignXpos_(const int& iPosX, const float& t, const float&  l, const float& r, const float& b, const float& W, const float& H, const bool& extraText);
 	float setCMSsignYpos_(const int& iPosX, const float& t, const float& b, const bool& extraText);
@@ -81,7 +79,8 @@ protected:
 	// in unit of the top margin size
 	float lumiTextSize_     = 0.6;
 	float lumiTextOffset_   = 0.2;
-	float cmsTextSize_      = 0.75;
+	float cmsTextSize_      = 1.;//0.75;
+	//float cmsTextSize_	= 0.75;
 	float cmsTextOffset_    = 0.1;  // only used in outOfFrame version
 
 	float relPosX_    = 0.045;

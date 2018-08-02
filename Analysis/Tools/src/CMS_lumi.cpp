@@ -27,8 +27,12 @@ TString CMS_lumi::getExtraText(const PublicationStatus status){
 		txt = "(unpublished)";
 	} else if( status == PRIVATE ) {
 		txt = "Private work";
+	} else if( status == PRIVATE_SIMULATION) {
+		txt = "Private Simulation";
 	} else if ( status == WORKINPROGRESS ) {
 		txt = "Work in progress";
+	} else if ( status == SUPPLEMENTARY) {
+		txt = "Supplementary";
 	}
 
 	return txt;
@@ -82,6 +86,8 @@ void CMS_lumi::drawCMSlumi( TPad* pad, const PublicationStatus status, int iPeri
 	 */
 	bool outOfFrame    = false;
 	if( iPosX/10==0 ) outOfFrame = true;
+	bool simulation = PublicationStatusToString(status).find("SIMULATION") != std::string::npos;
+
 	auto extratext = getExtraText(status);
 
 	float t = pad->GetTopMargin();
@@ -90,12 +96,14 @@ void CMS_lumi::drawCMSlumi( TPad* pad, const PublicationStatus status, int iPeri
 
 	pad->cd();
 
-	TString lumiText = getLumiText(iPeriod,outOfFrame);
+	TString lumiText = getLumiText(iPeriod,outOfFrame,simulation);
 
 	TLatex latex;
 
 	//Setup Lumi latex object
-	drawLumiLatex(latex,lumiText,t,r,outOfFrame);
+	//only for the data
+//	if(!simulation)
+	{drawLumiLatex(latex,lumiText,t,r,outOfFrame);}
 
 	//Setup CMS latex object
 	drawCMSLatex(latex,extratext,iPosX,pad,outOfFrame);
@@ -123,74 +131,74 @@ int CMS_lumi::getTotAlign_(const int& alignX, const int& alignY){
 	return 10*alignX + alignY;
 }
 
-TString CMS_lumi::get7TeVLumiText_(){
+TString CMS_lumi::get7TeVLumiText_(const bool& simulation){
 	/*
 	 * 7 TeV Lumi Sign
 	 */
 	TString lumiText;
-	lumiText += lumi_7TeV_;
-	lumiText += " (7 TeV)";
+	if(!simulation) lumiText += lumi_7TeV_ + " ";
+	lumiText += "(7 TeV)";
 	return lumiText;
 }
 
-TString CMS_lumi::get8TeVLumiText_(){
+TString CMS_lumi::get8TeVLumiText_(const bool& simulation){
 	/*
 	 * 8 TeV Lumi Sign
 	 */
 	TString lumiText;
-	lumiText += lumi_8TeV_;
-	lumiText += " (8 TeV)";
+	if(!simulation) lumiText += lumi_8TeV_ + " ";
+	lumiText += "(8 TeV)";
 	return lumiText;
 }
 
-TString CMS_lumi::get13TeVLumiText_(){
+TString CMS_lumi::get13TeVLumiText_(const bool& simulation){
 	/*
 	 * 13 TeV Lumi sign
 	 */
 	TString lumiText;
-	lumiText += lumi_13TeV_;
-	lumiText += " (13 TeV)";
+	if(!simulation) lumiText += lumi_13TeV_ + " ";
+	lumiText += "(13 TeV)";
 	return lumiText;
 
 }
-TString CMS_lumi::get7p8TeVLumiText_(){
+TString CMS_lumi::get7p8TeVLumiText_(const bool& simulation){
 	/*
 	 * 8 + 7 TeV Lumi sign
 	 */
 	TString lumiText;
-    lumiText = lumi_8TeV_;
-    lumiText += " (8 TeV)";
+	if(!simulation) lumiText = lumi_8TeV_ + " ";
+    lumiText += "(8 TeV)";
     lumiText += " + ";
-    lumiText += lumi_7TeV_;
-    lumiText += " (7 TeV)";
+    if(!simulation) lumiText += lumi_7TeV_ + " ";
+    lumiText += "(7 TeV)";
     return lumiText;
 }
 
-TString CMS_lumi::get7p8p13TeVLumiText_(){
+TString CMS_lumi::get7p8p13TeVLumiText_(const bool& simulation){
 	/*
 	 * 13 + 8 + 7 TeV Lumi sign
 	 */
 	TString lumiText;
-    lumiText += lumi_13TeV_;
-    lumiText += " (13 TeV)";
+	if(!simulation)  lumiText += lumi_13TeV_ + " ";
+    lumiText += "(13 TeV)";
     lumiText += " + ";
-    lumiText += lumi_8TeV_;
-    lumiText += " (8 TeV)";
+    if(!simulation) lumiText += lumi_8TeV_ + " ";
+    lumiText += "(8 TeV)";
     lumiText += " + ";
-    lumiText += lumi_7TeV_;
-    lumiText += " (7 TeV)";
+    if(!simulation) lumiText += lumi_7TeV_ + " ";
+    lumiText += "(7 TeV)";
     return lumiText;
 }
 
-TString CMS_lumi::getLumiText(const int& iPeriod, const bool& outOfFrame){
+TString CMS_lumi::getLumiText(const int& iPeriod, const bool& outOfFrame, const bool & simulation){
 	TString lumiText;
-	if( iPeriod==1 ) lumiText = get7TeVLumiText_();
-	else if ( iPeriod==2 ) lumiText = get8TeVLumiText_();
-	else if ( iPeriod==3 ) lumiText = get7p8TeVLumiText_();
-	else if ( iPeriod==4 ) lumiText = get13TeVLumiText_();
+	if( iPeriod==1 ) lumiText = get7TeVLumiText_(simulation);
+	else if ( iPeriod==2 ) lumiText = get8TeVLumiText_(simulation);
+	else if ( iPeriod==3 ) lumiText = get7p8TeVLumiText_(simulation);
+	else if ( iPeriod==4 ) lumiText = get13TeVLumiText_(simulation);
 	else if ( iPeriod==7 ){
-		if( outOfFrame) lumiText += "#scale[0.85]{" + get7p8p13TeVLumiText_() + "}";
-		else lumiText = get7p8p13TeVLumiText_();
+		if( outOfFrame) lumiText += "#scale[0.85]{" + get7p8p13TeVLumiText_(simulation) + "}";
+		else lumiText = get7p8p13TeVLumiText_(simulation);
 	}
 	else if ( iPeriod==0 ){
 		lumiText += lumi_sqrtS_;
@@ -272,6 +280,13 @@ void CMS_lumi::drawCMSLatex(TLatex& latex, TString& extraText, const int& iPosX,
 	float r = pad->GetRightMargin();
 	float b = pad->GetBottomMargin();
 
+        latex.SetNDC();
+        latex.SetTextAngle(0);
+        latex.SetTextColor(kBlack);
+        latex.SetTextFont(42);
+        latex.SetTextAlign(31);
+        latex.SetTextSize(lumiTextSize_*t);
+
 	int alignX = getXAlign_(iPosX);
 	int alignY = getYAlign_(iPosX);
 	int align_ = getTotAlign_(alignX, alignY);
@@ -328,3 +343,18 @@ void CMS_lumi::drawCMSLatex(TLatex& latex, TString& extraText, const int& iPosX,
 	    }
 }
 
+//std::string PublicationStatusToString(const PublicationStatus status){
+//	/* Convert publicationStatus to string
+// 	*
+// 	*/
+//	if(status == INTERNAL) return "INTERNAL";
+//	else if (status == INTERNAL_SIMULATION) return "INTERNAL_SIMULATION";
+//	else if (status == PRELIMINARY) return "PRELIMINARY";
+//	else if (status == PUBLIC) return "PUBLIC";
+//	else if (status == SIMULATION) return "SIMULATION";
+//	else if (status == UNPUBLISHED) return "UNPUBLISHED";
+//	else if (status == PRIVATE) return "PRIVATE";
+//	else if (status == PRELIMINARY_SIMULATION) return "PRELIMINARY_SIMULATION";
+//	else if (status == WORKINPROGRESS) return "WORKINPROGRESS";
+//	else return "";
+//}
