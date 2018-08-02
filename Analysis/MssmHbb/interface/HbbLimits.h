@@ -45,7 +45,7 @@ namespace mssmhbb {
 class HbbLimits {
 public:
 	HbbLimits();
-	HbbLimits(const bool& blindData, const double& xMin = 200, const double& xMax = 1300, const double& yMin = 0.1, const double& yMax = 30, const bool& test = false);
+	HbbLimits(const bool& blindData, const double& xMin = 250, const double& xMax = 1300, const double& yMin = 0.1, const double& yMax = 30, const bool& test = false);
 	virtual ~HbbLimits();
 
 	struct LimitsToCompare{
@@ -96,7 +96,7 @@ public:
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
-			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
+			const std::string& ytitle = "95%C.L. limit on #sigma(b#bar{b}A/H) x BR(A/H#rightarrow b#bar{b}) [pb]",
 			const bool& logY = true
 			);
 
@@ -106,7 +106,7 @@ public:
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
-			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
+			const std::string& ytitle = "95%C.L. limit on #sigma(b#bar{b}A/H) x BR(A/H#rightarrow b#bar{b}) [pb]",
 			const bool& logY = true);
 
 	virtual void LimitPlotter(
@@ -114,14 +114,14 @@ public:
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
-			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
+			const std::string& ytitle = "95%C.L. limit on #sigma(b#bar{b}A/H) x BR(A/H#rightarrow b#bar{b}) [pb]",
 			const bool& logY = true);
 
 	void LimitPlotter(
 			const std::string& output = "",
 			const std::string& Lumi = "35.7 fb^{-1}",
 			const std::string& xtitle = "m_{A/H} [GeV]",
-			const std::string& ytitle = "95%C.L. limit on #sigma x BR [pb]",
+			const std::string& ytitle = "95%C.L. limit on #sigma(b#bar{b}A/H) x BR(A/H#rightarrow b#bar{b}) [pb]",
 			const bool& logY = true);
 
 	virtual void AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGraph& exp, TGraphAsymmErrors& inner_band, TGraphAsymmErrors& outer_band, TCanvas &can);

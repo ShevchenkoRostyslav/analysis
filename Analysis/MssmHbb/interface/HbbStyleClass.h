@@ -188,6 +188,9 @@ public:
   static void applyStandardDataHistoStyle(TH1&h);
   static void applyStandardMCHistoStyle(TH1&h);
 
+  //Draw Ratio to be compatible to the old RatioPlots.cpp style file
+//  TH1 *DrawRatio(TH1 *numerator, TH1 *denumerator, TCanvas *can = nullptr, TLegend *leg = nullptr, TH1 *systErr = nullptr, TH1 *mc_stat_err = nullptr);
+
 
 private:
   static PublicationStatus publicationStatus_;

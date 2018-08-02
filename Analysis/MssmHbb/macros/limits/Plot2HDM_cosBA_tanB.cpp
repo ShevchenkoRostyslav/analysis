@@ -23,7 +23,7 @@
 #include "Analysis/MssmHbb/interface/THDMLimits.h"
 #include "Analysis/MssmHbb/interface/Limit.h"
 #include "Analysis/MssmHbb/interface/HbbStyleClass.h"
-#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 HbbStyle style;
 
@@ -59,15 +59,17 @@ using namespace mssmhbb;
 
 int main(int argc, const char **argv){
 
-	style.setTDRstyle(PRELIMINARY);
+	PublicationStatus status = publication_status;
+	status = PRIVATE;
+	style.setTDRstyle(status);
 	//Prefix to the output
 	string output_prefix = "13TeV_limits";
 	//ATLAS results
-	string ATLAS_results = "1502.04478";//"ATLAS-CONF-2017-055";//"1502.04478";//
+	string ATLAS_results = "ATLAS-CONF-2017-055";//"1502.04478";//
 	//paths with results of the combine tool
-	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/mhmodp_200/bias/Hbb.limits";
+	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201712/13/unblinded/mhmodp_200/bias/Hbb.limits";
 	//value of cos(beta-alpha)
-	double mass = 300;
+	double mass = 1100;
 	//Details of the 2HDM produciton
 	string thdm_production = "production_cosB_A_-1_1_tanB_0p5-100_COMBINATION";
 	// type of the 2hdm: type2 or type3
@@ -84,7 +86,9 @@ int main(int argc, const char **argv){
 
 	//higgs boson: H/A/both
 	string boson = "both";
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170823/";
+//	string output = pictures_output + "/ParametricLimits/20171213/";
+//	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20171213/";
+	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/Thesis/limits/";
 	if(!mssmhbb::blinded) output += "unblinded/";
 	output += "2hdm/" + thdm_type + "/";
 	CheckOutputDir(output);
@@ -94,15 +98,16 @@ int main(int argc, const char **argv){
 	limits.setXMax(1);
 	limits.SetHiggsBoson(boson);
 	limits.ReadCombineLimits(path2016);
-	limits.Get2HDM_1D_Limits(thdm_scans,mass,"z");
+	auto lol = limits.Get2HDM_1D_Limits(thdm_scans,mass,"x");
 
 	vector<Limit> GBR2016 = limits.getGxBrLimits();
 	TH3D GxBR_2hdm_3D;
 	TH2D GxBR_2hdm_mA;
 	vector<Limit> THDM_limits;
 	for(const auto& l : GBR2016){
-		cout<<"M: "<<l.getX()<<" exp = "<<l.getMedian()<<" 1G = "<<l.getPlus1G()<<endl;
+		cout<<"M: "<<l.getX()<<" exp = "<<l.getMedian()<<" +1G = "<<l.getPlus1G()<<" -1G = "<<l.getMinus1G()<<" +2G = "<<l.getPlus2G()<<" -2G = "<<l.getMinus2G()<<" Obs = "<<l.getObserved()<<endl;
 		if(l.getX() == mass){
+			std::cout<<"Make limits for mass = "<<l.getX()<<std::endl;
 			GxBR_2hdm_mA = limits.Get2HDM_GxBR_2D(thdm_scans,mass,"x");
 			if(thdm_type!="type1" && thdm_type!="type4") limits.Get2HDM_Limits(GxBR_2hdm_mA,l);
 		}

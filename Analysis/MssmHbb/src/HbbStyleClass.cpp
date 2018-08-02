@@ -18,6 +18,7 @@ TString toTString(const PublicationStatus status) {
   else if( status == UNPUBLISHED )         			str = "unpublished";
   else if( status == WORKINPROGRESS )			   	str = "Work in progress";
   else if( status == PRIVATE )			   			str = "Private work";
+  else if( status == SUPPLEMENTARY )				str = "Supplementary";
 
   return str;
 }
@@ -563,8 +564,10 @@ void HbbStyle::setLegendStyle(TLegend *leg){
 	*/
 	leg->SetFillColor(0);
 	leg->SetTextSize(0.035);
+//	leg->SetLineWidth(2);
+//	leg->SetBorderSize(1);
 	leg->SetLineWidth(2);
-	leg->SetBorderSize(1);
+	leg->SetBorderSize(0);
 }
 
 TPad* HbbStyle::getRatioTopPad(const float& relative_size){

@@ -20,7 +20,7 @@
 #include "Analysis/MssmHbb/interface/LHCXSGLimits.h"
 #include "Analysis/MssmHbb/interface/LHCXSGScenarious.h"
 #include "Analysis/MssmHbb/interface/Limit.h"
-#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 HbbStyle style;
 
@@ -32,23 +32,24 @@ std::string getBanchmarkPath(AvailableScenarios scenario);
 void setFolderNamesAccordingToBlinding(string& input, string & output);
 
 int main(){
-
-	style.setTDRstyle(PRELIMINARY);
+	PublicationStatus status = mssmhbb::publication_status;
+	//status = SUPPLEMENTARY;
+	style.setTDRstyle(status);
 	//Prefix to the output
-	string output_prefix = "solo_13TeV_limits";
+	string output_prefix = "solo_13TeV_limits_Journal";
 	//paths with results
-	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/";
+	string path2016_solo 	 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201712/13/";
 	string path2016_combined = cmsswBase + "/src/Analysis/MssmHbb/datacards/201705/15/Asymptotic/mssm/No_Bias/Hbb.limits";	//If combination is performed
 	//ouptut folder
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170823/";
+	string output = mssmhbb::pictures_output + "ParametricLimits/20171213/";//cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20171213/";
 	setFolderNamesAccordingToBlinding(path2016_solo,output);
 	string boson = "both";
-	std::vector<AvailableScenarios> scenarious = {MHMODP_200,LIGHT_STOP,LIGHT_STAU,HMSSM,TAU_PHOBIC};//{MHMODP_200};//
+	std::vector<AvailableScenarios> scenarious = {MHMODP_200,LIGHT_STOP,LIGHT_STAU,HMSSM,TAU_PHOBIC};//{MHMODP_200};//{MHMODP_200};//
 	for(const auto& scenario : scenarious){
 		std::cout<<"Scenario: "<<AvailableScenariosToString(scenario)<<std::endl;
 		string output_mod 			= output + AvailableScenariosToString(scenario) + "/";
 		string path2016_solo_mod 	= path2016_solo + AvailableScenariosToString(scenario) + "/bias/Hbb.limits";
-		CheckOutputDir(output);
+		CheckOutputDir(output_mod);
 		//benchmark scenario path
 		LHCXSGLimits limits(mssmhbb::blinded,boson,getBanchmarkPath(scenario));
 		limits.compareWithPrevious("CMS-AN-2013-229v10");

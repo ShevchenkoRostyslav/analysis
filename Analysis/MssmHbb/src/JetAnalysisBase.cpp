@@ -4,6 +4,8 @@
  *  Created on: 17 апр. 2016 г.
  *      Author: rostyslav
  */
+#include "TTree.h"
+
 #include <stdlib.h>
 #include "LHAPDF/LHAPDF.h"
 #include <chrono>
@@ -87,7 +89,9 @@ JetAnalysisBase::JetAnalysisBase(const std::string & inputFilelist, const double
 	this->triggerResults("MssmHbb/Events/TriggerResults");
 
 	// Tree for Jets
-	this->addTree<Jet> ("Jets","MssmHbb/Events/slimmedJetsReapplyJEC");
+	//Work around for 1200 GeV Mass point:
+	if(findStrings(inputFilelist,"M-1200")) this->addTree<Jet> ("Jets","MssmHbb/Events/selectedUpdatedPatJets");
+	else this->addTree<Jet> ("Jets","MssmHbb/Events/slimmedJetsReapplyJEC");
 	// Tree for Vertices
 	this->addTree<Vertex> ("Vertices","MssmHbb/Events/offlineSlimmedPrimaryVertices");
 
@@ -246,15 +250,33 @@ void JetAnalysisBase::applySelection(){
 	else selection_type = "High Mass";
 	cuts_ = CutFlow(baseOutputName_,selection_type);
 
+	//NLO vs LO reweighting object:
+	TString NLO_pt_weights_fullPath = TString(getenv("CMSSW_BASE")) + "/src/HiggsPtReweighting/bbH/data/bbHweights_bparton.root";
+	bbHweights NLO_vs_LO_weights(NLO_pt_weights_fullPath);
+
 	std::array<Jet,5> LeadJet;
 	std::vector<std::pair<int,Jet> > TrueBJets;
 	TrueBJets.reserve(2);
 	std::array<std::vector<BTagScaleFactor::ScaleFactor> , 3 > BTagSFs;
 
+//	TTree NLO_pt_rew;
+//	double LO_weight;
+//	NLO_pt_rew.Branch("weight",&LO_weight,"weight/D");
+//	double higgts_pt;
+//	NLO_pt_rew.Branch("higgts_pt",&higgts_pt,"higgts_pt/D");
+//	double leadingspectator_parton_pt, leadingspectator_genjet_pt;
+//	NLO_pt_rew.Branch("leadingspectator_parton_pt",&leadingspectator_parton_pt,"leadingspectator_parton_pt/D");
+//	NLO_pt_rew.Branch("leadingspectator_genjet_pt",&leadingspectator_genjet_pt,"leadingspectator_genjet_pt/D");
+//	double leadingspectator_parton_eta, leadingspectator_genjet_eta;
+//	NLO_pt_rew.Branch("leadingspectator_parton_eta",&leadingspectator_parton_eta,"leadingspectator_parton_eta/D");
+//	NLO_pt_rew.Branch("leadingspectator_genjet_eta",&leadingspectator_genjet_eta,"leadingspectator_genjet_eta/D");
+//	double leadingspectator_parton_phi, leadingspectator_genjet_phi;
+//	NLO_pt_rew.Branch("leadingspectator_parton_phi",&leadingspectator_parton_phi,"leadingspectator_parton_phi/D");
+//	NLO_pt_rew.Branch("leadingspectator_genjet_phi",&leadingspectator_genjet_phi,"leadingspectator_genjet_phi/D");
+
 	if(TEST) TotalNumberOfGenEvents = 100;
 	else TotalNumberOfGenEvents = this->size();
 	std::cout<<"Events to process: "<<TotalNumberOfGenEvents<<std::endl;
-//	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 	for(auto i = 0; i < TotalNumberOfGenEvents; ++ i){
 		this->event(i);
 
@@ -263,12 +285,98 @@ void JetAnalysisBase::applySelection(){
 		if(isSignalMC() && !cuts_.check("mHat",(mHat() >= 0.7 * returnMassPoint()))) continue;
 		++NumberOfGenEvents_afterMHat;
 
+		//Define MC specific collections:
+		if(isMC()){
+			genJets_ = (std::shared_ptr<Collection<Jet> >) this->collection<Jet>("GenJets");
+
+
+			//NLO vs LO pT reweighting:
+			/*
+			 * Step 0: find
+			 */
+			/*
+			 * Step 1:
+			 * Select generated particles for the leading spectators
+			 * and higgs
+			 */
+			/*
+
+			GenParticle higgs, leading_spectator_b_parton, b_spect_parton, bbar_spect_parton;
+			bool found_higgs = false, found_bspectator = false, found_bbarspectator = false;
+			auto genParticles = this->collection<GenParticle>("GenParticles");
+//			std::cout<<"\nEvents: "<<i<<std::endl;
+			for ( int j = 0 ; j < genParticles->size() ; ++j ){
+				GenParticle gp = genParticles->at(j);
+//				std::cout<<" j = "<<j<<" pdg_id = "<<gp.pdgId()<<" status = "<<gp.status()<<" pt = "<<gp.pt()<<" eta = "<<gp.eta()<<" phi = "<<gp.phi()<<" higgs_daughter? "<<gp.higgsDaughter()<<std::endl;
+				//higgs
+				if ( gp.pdgId() == 36 && gp.status() == 62 ) {
+					higgs = gp;
+					found_higgs = true;
+				}
+				//spectators
+				if(std::abs(gp.pdgId()) == 5 && gp.status() == 62 && !gp.higgsDaughter()){
+//				if(std::abs(gp.pdgId()) == 5 && gp.status() == 23 && (j == 1 || j ==2 ) && !gp.higgsDaughter()){
+					if(gp.pdgId() == 5) {b_spect_parton = gp; found_bspectator = true;}
+					else if (gp.pdgId() == -5) {bbar_spect_parton = gp; found_bbarspectator = true;}
+				}
+
+	//			if(std::abs(gp.pdgId()) == 5)std::cout<<" j = "<<j<<" pdg_id = "<<gp.pdgId()<<" status = "<<gp.status()<<" pt = "<<gp.pt()<<" higgs_daughter? "<<gp.higgsDaughter()<<std::endl;
+				if (found_higgs && found_bspectator && found_bbarspectator) break;
+			}
+			//order in pt
+			if(b_spect_parton.pt() > bbar_spect_parton.pt()) leading_spectator_b_parton = b_spect_parton;
+			else leading_spectator_b_parton = bbar_spect_parton;
+	*/
+			/*
+			 * Step 2:
+			 * Select the gen_jet that matches to the spectator b-partons
+			 */
+			/*
+			genJets_ = (std::shared_ptr<Collection<Jet> >) this->collection<Jet>("GenJets");
+			Jet leading_spectator_b_genjet, b_spect_genjet, bbar_spect_genjet;
+			float dRBQuarkMin = 0.7, dRBBarQuarkMin = 0.7;
+			for ( int j = 0 ; j < genJets_->size() ; ++j ){
+				Jet gj = genJets_->at(j);
+				//gen jet for the b-parton
+				if(gj.deltaR(b_spect_parton) < dRBQuarkMin && found_bspectator) {
+					b_spect_genjet = gj;
+					dRBQuarkMin = gj.deltaR(b_spect_parton);
+				}
+				//gen jet for the bbar parton
+				if(gj.deltaR(bbar_spect_parton) < dRBBarQuarkMin && found_bbarspectator) {
+					bbar_spect_genjet = gj;
+					dRBBarQuarkMin = gj.deltaR(bbar_spect_parton);
+				}
+			}
+			//order in pT
+			if(b_spect_genjet.pt() > bbar_spect_genjet.pt()) leading_spectator_b_genjet = b_spect_genjet;
+			else leading_spectator_b_genjet = bbar_spect_genjet;
+
+
+			LO_weight = 0;
+			higgts_pt = higgs.pt();
+			leadingspectator_parton_pt  = leading_spectator_b_parton.pt();
+			leadingspectator_parton_eta = leading_spectator_b_parton.eta();
+			leadingspectator_parton_phi = leading_spectator_b_parton.phi();
+
+			leadingspectator_genjet_pt  = leading_spectator_b_genjet.pt();
+			leadingspectator_genjet_eta = leading_spectator_b_genjet.eta();
+			leadingspectator_genjet_phi = leading_spectator_b_genjet.phi();
+
+//			LO_weight = NLO_vs_LO_weights.weight2D(higgts_pt,returnMassPoint(),leadingspectator_genjet_pt);
+			LO_weight = NLO_vs_LO_weights.weight2D(higgts_pt,returnMassPoint(),leadingspectator_parton_pt);
+			weight_["NLO_vs_LO_pT"] = LO_weight;
+
+			NLO_pt_rew.Fill();
+			*/
+		}
+
+
 		//PU reweighting for MC
 		if(isMC()) {
 			weight_["NLO"] = this->genWeight() / std::abs(this->genWeight());
-//			weight_["NLO"] = 1;
 			weight_["PU_central"] 	= pWeight_->PileUpWeight(*hCorrections1D_["hPileUpData_central"],*hCorrections1D_["hPileUpMC"],this->nTruePileup());
-			NumberOfGenEvents_afterMHat_rewPU += weight_["PU_central"] * weight_["NLO"];
+			NumberOfGenEvents_afterMHat_rewPU += weight_["PU_central"] * weight_["NLO"];// * weight_["NLO_vs_LO_pT"];//
 			if(signalMC_) {
 				//Take into account negative weights in NLO MC:
 
@@ -288,6 +396,12 @@ void JetAnalysisBase::applySelection(){
 		auto offlineJets = this->collection<Jet>("Jets");
 		auto shiftedJets = std::make_shared<Collection<Jet> >();
 
+		if(isMC()){
+			//Apply JER smearing for gen-jets if this is MC:
+		    offlineJets->matchTo(*genJets_,3,0.2);
+		    offlineJets->smearTo(*genJets_,JERshift_);
+		}
+
 //		std::array<Jet,5> LeadJet;
 //			std::vector<std::pair<int,Jet> > TrueBJets;
 //			std::array<BTagScaleFactor::ScaleFactor,3> BTagSFs;
@@ -299,14 +413,6 @@ void JetAnalysisBase::applySelection(){
 //		BTagSFs.fill(BTagScaleFactor::ScaleFactor());
 //		Clean LeadJet
 		LeadJet.fill(Jet());
-
-		//Define MC specific collections:
-		if(isMC()){
-			genJets_ = (std::shared_ptr<Collection<Jet> >) this->collection<Jet>("GenJets");
-			//Apply JER smearing if this is MC:
-		    offlineJets->matchTo(*genJets_,3,0.2);
-		    offlineJets->smearTo(*genJets_,JERshift_);
-		}
 
 		if(!cuts_.check("nJets",offlineJets->size() >= nJets_)) continue;
 		//Match offline Jets to online Objects
@@ -443,6 +549,8 @@ void JetAnalysisBase::applySelection(){
 	    		weight_["Ht_bbx"] = pWeight_->Ht_bbxWeight(*hCorrections1D_["hHtWeight_bbx"],Ht);
 	    	}
 
+	    	weight_["LOscaleToNLO"] = pWeight_->LOEfficiencyScaleToNLO(returnMassPoint());
+
 	    	combineBTagSFs(BTagSFs,lumis,dataLumi_);
 
 //	    	double Lumi_GtoH = 16382;
@@ -541,6 +649,7 @@ void JetAnalysisBase::applySelection(){
 		std::cout<<"Number of selected Events: "<<NumberOfEventsAfterSelection<<std::endl;
 		std::cout<<"***********************************"<<std::endl;
 	}
+//	outputFile_->WriteObject(&NLO_pt_rew, "NLO_pt_weight_tree");
 
 //	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 //	std::cout<<"EVENT LOOP tooks "<<std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()<<" ms."<<std::endl;
@@ -862,7 +971,9 @@ void JetAnalysisBase::setupXSections(){
     xsection_[800] = 1.;//0.18;	//0.17940535717
     xsection_[900] = 1.;//0.051;	//0.0507664661841
     xsection_[1100] = 1.;//0.018;//0.0180548176636
+    xsection_[1200] = 1.;
     xsection_[1300] = 1.;//0.008;//0.00802737010696
+    xsection_[1400] = 1.;
 }
 
 const double JetAnalysisBase::mHat(){

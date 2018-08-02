@@ -49,6 +49,9 @@ public:
 	// Ht weight
 	double HtWeight(TH1 * histo, const double & Ht);
 
+	// Scale signal efficiency of the LO to the NLO
+	double LOEfficiencyScaleToNLO(const int& mass);
+
 	// Luminosity normalisation
 	double LumiWeight(const double & data_lumi, const double & mc_lumi);
 

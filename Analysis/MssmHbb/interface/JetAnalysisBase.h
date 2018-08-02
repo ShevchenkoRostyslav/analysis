@@ -40,6 +40,8 @@
 
 #include "Analysis/MssmHbb/interface/CutFlow.h"
 
+#include "HiggsPtReweighting/bbH/interface/bbHweights.h"
+
 
 //TODO: Add template arguments to unique_ptr depending on the TH type
 typedef std::unique_ptr<TFile> pTFile;

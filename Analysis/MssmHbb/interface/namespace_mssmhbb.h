@@ -2,6 +2,8 @@
 #include <string>
 #include <map>
 #include <vector>
+//#include "Analysis/Tools/interface/CMS_lumi.h"
+#include "Analysis/Tools/interface/PublicationStatus.h"
 
 /*
  * Namespace that contains all basic variables
@@ -9,16 +11,21 @@
  */
 
 namespace mssmhbb{
-	//blinded analysis or not
-	const bool blinded = false;
 	// current CMSSW release base dir
 	static const std::string cmsswBase = getenv("CMSSW_BASE");
+	//publication status
+	const PublicationStatus publication_status = PUBLIC;//PRELIMINARY;
+	//pictures output folder
+	const std::string pictures_output = cmsswBase +  "/src/Analysis/MssmHbb/pictures/" + PublicationStatusToString(publication_status) + "/";
+//	const std::string pictures_output = cmsswBase +  "/src/Analysis/MssmHbb/pictures/";
+	//blinded analysis or not
+	const bool blinded = false;
 	// current signal selection
-	static const std::string signal_selection = "";
+	static const std::string signal_selection = "NLO_correction_";
 	// vector of masses:
 	static const std::vector<int> masses = {300,350,400,500,600,700,900,1100,1300};
 	// list of shape signal systematics
-	static const std::vector<std::string> signal_shape_unc = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV","CMS_PDF_13TeV"};
+	static const std::vector<std::string> signal_shape_unc = {"CMS_scale_j_13TeV","CMS_res_j_13TeV","CMS_eff_pTonl_13TeV","CMS_eff_b_13TeV"};//,"CMS_PDF_13TeV"};
 	// signal MC points and pathes
 	static const std::map<int,std::string> signal_templates {
 		{300,cmsswBase + "/src/Analysis/MssmHbb/output/MssmHbbSignal_" + signal_selection + "lowM_SUSYGluGluToBBHToBB_NarrowWidth_M-300_TuneCUETP8M1_13TeV-pythia8.root"},
@@ -33,15 +40,15 @@ namespace mssmhbb{
 	};
 	// signal MC folders
 	static const std::map<int,std::string> signal_folders {
-		{300,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-300"},
-		{350,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-350"},
-		{400,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-400"},
-		{500,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-500"},
-		{600,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-600"},
-		{700,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-700"},
-		{900,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-900"},
-		{1100,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-1100"},
-		{1300,cmsswBase + "/src/Analysis/MssmHbb/output/test_ReReco_signal_M-1300"},
+		{300,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-300"},
+		{350,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-350"},
+		{400,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-400"},
+		{500,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-500"},
+		{600,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-600"},
+		{700,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-700"},
+		{900,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-900"},
+		{1100,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1100"},
+		{1300,cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_signal_M-1300"},
 	};
 	// signal MC PDF workspaces
 	static const std::map<int,std::string> signal_workspaces {

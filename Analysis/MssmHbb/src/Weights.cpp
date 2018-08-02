@@ -337,6 +337,24 @@ double Weights::PileUpWeight(TH1 *data, const double & N_mc, const double & NTru
 	return weight;
 }
 
+double Weights::LOEfficiencyScaleToNLO(const int& mass){
+	/*
+	 * Scale factors for the signal efficiency according to the LO to NLO
+	 */
+	double sf = 1;
+	if(mass == 300) sf = 1;
+	else if (mass == 350) sf = 0.98;
+	else if (mass == 400) sf = 0.97;
+	else if (mass == 500) sf = 0.95;
+	else if (mass == 600) sf = 0.93;
+	else if (mass == 700) sf = 0.91;
+	else if (mass == 900) sf = 0.9;
+	else if (mass == 1100) sf = 0.9;
+	else if (mass == 1300) sf = 0.92;
+	else sf = 1;
+	return sf;
+}
+
 /*
 double Weights::PileUpWeight(TH1 *data, TH1 *mc, const double & NTruePileUpMC){
 

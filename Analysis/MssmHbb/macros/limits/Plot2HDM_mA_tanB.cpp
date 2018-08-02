@@ -24,7 +24,7 @@
 #include "Analysis/MssmHbb/interface/THDMLimits.h"
 #include "Analysis/MssmHbb/interface/Limit.h"
 #include "Analysis/MssmHbb/interface/HbbStyleClass.h"
-#include "Analysis/MssmHbb/src/namespace_mssmhbb.cpp"
+#include "Analysis/MssmHbb/interface/namespace_mssmhbb.h"
 
 HbbStyle style;
 
@@ -34,13 +34,14 @@ using namespace mssmhbb;
 
 int main(int argc, const char** argv){
 
-	style.setTDRstyle(PRELIMINARY);
+	PublicationStatus status = publication_status;
+	style.setTDRstyle(status);
 	//Prefix to the output
 	string output_prefix = "13TeV_limits";
 	//ATLAS results
-	string ATLAS_results = "1502.04478";//"ATLAS-CONF-2017-055";//"1502.04478";//
+	string ATLAS_results = "ATLAS-CONF-2017-055";//"1502.04478";//
 	//paths with results of the combine tool
-	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201708/23/unblinded/mhmodp_200/bias/Hbb.limits";
+	string path2016 = cmsswBase + "/src/Analysis/MssmHbb/datacards/201712/13/unblinded/mhmodp_200/bias/Hbb.limits";
 	//value of cos(beta-alpha)
 	double cB_A = 0.1;
 	//Details of the 2HDM produciton
@@ -58,16 +59,19 @@ int main(int argc, const char** argv){
 
 	//higgs boson: H/A/both
 	string boson = "both";
-	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20170823/";
+	string output = pictures_output + "/ParametricLimits/20171213/";
+//	string output = cmsswBase + "/src/Analysis/MssmHbb/macros/pictures/ParametricLimits/20171213/";
 	if(!mssmhbb::blinded) output += "unblinded/";
 	output += "2hdm/" + thdm_type + "/";
 	CheckOutputDir(output);
 
-	THDMLimits limits(mssmhbb::blinded,boson,200,900,0.5,60);
+	THDMLimits limits(mssmhbb::blinded,boson,200,900,0.7,60);
 	limits.setScenario(scenario);
 	limits.SetHiggsBoson(boson);
 	limits.ReadCombineLimits(path2016);
-	limits.Get2HDM_1D_Limits(thdm_scans,cB_A,"z");
+	auto thdmLim = limits.Get2HDM_1D_Limits(thdm_scans,cB_A,"z");
+	for(const auto& l: limits.getGxBrLimits()) cout<<"GxBR M: "<<l.getX()<<" exp = "<<l.getMedian()<<" +1G = "<<l.getPlus1G()<<" -1G = "<<l.getMinus1G()<<" +2G = "<<l.getPlus2G()<<" -2G = "<<l.getMinus2G()<<" Obs = "<<l.getObserved()<<endl;
+	for(const auto& l: thdmLim) cout<<"M: "<<l.getX()<<" exp = "<<l.getMedian()<<" +1G = "<<l.getPlus1G()<<" -1G = "<<l.getMinus1G()<<" +2G = "<<l.getPlus2G()<<" -2G = "<<l.getMinus2G()<<" Obs = "<<l.getObserved()<<endl;
 	limits.compareWithPrevious(ATLAS_results);
 
 	// 2HDM tanBeta vs mA limits for cos(beta-alpha) = cB_A

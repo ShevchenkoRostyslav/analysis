@@ -18,7 +18,7 @@ namespace mssmhbb {
 HbbLimits::HbbLimits() :
 		blindData_(true),
 		TEST_(false),
-		xMin_(200),
+		xMin_(250),
 		xMax_(1300),
 		yMin_(0.1),
 		yMax_(30)
@@ -101,7 +101,6 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 		exit(-1);
 	}
 	HbbStyle style;
-	std::cout<<"WTFFFF: "<<gStyle->GetPadLeftMargin()<<" "<<gStyle->GetPadRightMargin()<<std::endl;
 //	gStyle->SetPadTopMargin   (0.08);
 	gStyle->SetPadLeftMargin(0.13);
 	gStyle->SetPadRightMargin(0.05);
@@ -168,7 +167,7 @@ void HbbLimits::LimitPlotter(const LimitsToCompare& differ_limits,
 	canv->RedrawAxis();
 	main_pad->RedrawAxis();
 ////	leg.Draw();
-//	style.drawStandardTitle("out");
+//	style.drawStandardTitle();
 
 	canv->cd();
 	if(logY) main_pad->SetLogy();
@@ -189,7 +188,7 @@ void HbbLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGrap
 		leg.AddEntry(&obs,"Observed","lp");
 	}
 
-	leg.AddEntry(&exp,"Expected","l");
+	leg.AddEntry(&exp,"Median expected","l");
 	leg.AddEntry(&inner_band,"68% expected","f");
 	leg.AddEntry(&outer_band,"95% expected","f");
 	leg.Draw();
@@ -267,6 +266,10 @@ void HbbLimits::PlotSubRangeSteps(
 	TGraph obsG_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.obs.data());
 	style.setObservedLimitsStyle(&obsG_sr1);
 
+	//Adjust style according to the Francisco's comments
+	TGraph obsG_sr1_points(nPoints_sr1-1, decomposed_sr1.X.data(), decomposed_sr1.obs.data());	// Duplicate of the SR1 limits with N-1 points
+	style.setObservedLimitsStyle(&obsG_sr1_points);
+
 	TGraph expG_sr1(nPoints_sr1, decomposed_sr1.X.data(), decomposed_sr1.median.data());
 	style.setExpectedLimitsStyle(&expG_sr1);
 
@@ -282,7 +285,11 @@ void HbbLimits::PlotSubRangeSteps(
 
 	TGraph obsG_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.obs.data());
 	style.setObservedLimitsStyle(&obsG_sr2);
-	obsG_sr2.SetMarkerStyle(22);
+	//	obsG_sr2.SetMarkerStyle(22);
+
+	//Adjust style according to the Francisco's comments
+	TGraph obsG_sr2_points(nPoints_sr2-1, decomposed_sr2.X.data(), decomposed_sr2.obs.data());	// Duplicate of the SR1 limits with N-1 points
+	style.setObservedLimitsStyle(&obsG_sr2_points);
 
 	TGraph expG_sr2(nPoints_sr2, decomposed_sr2.X.data(), decomposed_sr2.median.data());
 	style.setExpectedLimitsStyle(&expG_sr2);
@@ -299,7 +306,7 @@ void HbbLimits::PlotSubRangeSteps(
 
 	TGraph obsG_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.obs.data());
 	style.setObservedLimitsStyle(&obsG_sr3);
-	obsG_sr3.SetMarkerStyle(34);
+//	obsG_sr3.SetMarkerStyle(34);
 
 	TGraph expG_sr3(nPoints_sr3, decomposed_sr3.X.data(), decomposed_sr3.median.data());
 	style.setExpectedLimitsStyle(&expG_sr3);
@@ -321,8 +328,9 @@ void HbbLimits::PlotSubRangeSteps(
 	frame.Draw();
 
 //	TLegend leg(0.62,0.6,0.9,0.85);
-	auto &leg = *HbbStyle::legend("top,right",7,0.4);
+	auto &leg = *HbbStyle::legend("top,right",5,0.4);
 	style.setLegendStyle(&leg);
+	leg.SetBorderSize(0);
 
 	//Draw SR1
 	outerBand_sr1.Draw("3same");
@@ -338,25 +346,38 @@ void HbbLimits::PlotSubRangeSteps(
 	expG_sr3.Draw("lsame");
 
 	if (!blindData_){
-		obsG_sr1.Draw("lpsame");
-		obsG_sr2.Draw("lpsame");
+		obsG_sr1.Draw("lsame");
+		obsG_sr1_points.Draw("psame");
+		obsG_sr2.Draw("lsame");
+		obsG_sr2_points.Draw("psame");
 		obsG_sr3.Draw("lpsame");
-		leg.AddEntry(&obsG_sr1," ","lp");
+//		leg.AddEntry(&obsG_sr1," ","lp");
 		leg.AddEntry(&obsG_sr2,"Observed","lp");
-		leg.AddEntry(&obsG_sr3," ","lp");
+//		leg.AddEntry(&obsG_sr3," ","lp");
 	}
 
 	leg.SetHeader("95% CL upper limits");
-	leg.AddEntry(&expG_sr1,"Expected","l");
-//	leg.AddEntry(&innerBand_sr1,"#pm1#sigma Expected","f");
-//	leg.AddEntry(&outerBand_sr1,"#pm2#sigma Expected","f");
+//	leg.AddEntry(&expG_sr1,"Expected","l");
+	leg.AddEntry(&expG_sr1,"Median expected","l");
 	leg.AddEntry(&innerBand_sr1,"68% expected","f");
 	leg.AddEntry(&outerBand_sr1,"95% expected","f");
+
+	//Draw Lines according to Francisco's comment
+	//At 500 GeV
+	TLine line_500(500,yMin_,500,12.9);
+	line_500.SetLineStyle(2);
+	line_500.Draw();
+
+	//At 500 GeV
+	TLine line_1100(1100,yMin_,1100,2.5);
+	line_1100.SetLineStyle(2);
+	line_1100.Draw();
 
 	TPad * pad = (TPad*)canv.GetPad(0);
 	pad->RedrawAxis();
 	leg.Draw();
-	style.drawStandardTitle("out");
+//	style.drawStandardTitle("out");
+	style.drawStandardTitle();
 
 	if(logY) canv.SetLogy();
 	canv.Update();
@@ -378,6 +399,15 @@ void HbbLimits::Write(const std::string& name){
 				(limit.getX()),limit.getMinus2G(),limit.getMinus1G(),limit.getExpected(),limit.getPlus1G(),limit.getPlus2G(),limit.getObserved());
 		fs<<strOut;
 		fs<<"\n";
+	}
+	fs<<"\n\n";
+
+	// Style for the latex tables
+	for(const auto& limit: limits_){
+		char strOut[400];
+		sprintf(strOut,"%i & %6.1f & %6.1f & %6.1f & %6.1f & %6.1f & %6.1f \\",(int(limit.getX())),limit.getMinus2G(),limit.getMinus1G(),limit.getExpected(),limit.getPlus1G(),limit.getPlus2G(),limit.getObserved());
+		fs<<strOut;
+		 fs<<"\n";
 	}
 	fs.close();
 	std::cout<<"File: "<<name + ".txt"<<" has been written."<<std::endl;

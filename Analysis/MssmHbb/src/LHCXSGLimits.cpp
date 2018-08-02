@@ -182,10 +182,24 @@ void LHCXSGLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TG
 	//Compare with previous results:
 	if(compareWithPrevious_ != "" && scenario_->previousExists()){
 		scenario_->checkResultsToCompareWith(compareWithPrevious_);
-		TGraph *previous_res = new TGraph(scenario_->getPreviousResults(compareWithPrevious_));
+		auto previous_res = scenario_->getPreviousResults(compareWithPrevious_);
+		for(auto & gr : previous_res){
+			TGraph *p_gr = new TGraph(gr);
+			p_gr->Draw("Lsame");
+		}
+//		TGraph *previous_res = new TGraph(scenario_->getPreviousResults(compareWithPrevious_));
 		TText *previous_lab = new TText(scenario_->getPreviousResultsLabel(compareWithPrevious_));
-		previous_res->Draw("Lsame");
+//		previous_res->Draw("Lsame");
 		previous_lab->Draw("same");
+
+//		/* Temproary for the Journal review
+// 		*  putting the observed limits as well
+// 		*/
+//		std::array<double,8> x = {{100,140,160,200,300,350,400,500}};
+//		std::array<double,8> y = {{14.2,22.4,18.2,14.8,34.1,37.1,34.4,50.0}};
+//	        TGraph *gr_obs = new TGraph(8,&x[0],&y[0]);
+//        	gr_obs->SetLineColor(kBlack);
+//		gr_obs->Draw("Lsame");
 	}
 
 	auto legendHeader = scenario_->getLabel();

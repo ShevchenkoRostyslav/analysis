@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include <vector>
 #include <string>
 #include "TText.h"
 #include "TGraph.h"
@@ -39,7 +40,7 @@ class Scenario{
 public:
 	 Scenario() = default;
 	virtual std::string getLabel() const = 0;
-	virtual TGraph getPreviousResults(const std::string& PAS) const = 0;
+	virtual std::vector<TGraph> getPreviousResults(const std::string& PAS) const = 0;
 	virtual std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const = 0;
 	virtual TText getPreviousResultsLabel(const std::string& PAS) const = 0;
 	virtual double getXMax() const = 0;
@@ -63,7 +64,7 @@ class LHCXSGScenario : public Scenario {
 public:
 	LHCXSGScenario() = default;
 	virtual std::string getLabel() const = 0;
-	virtual TGraph getPreviousResults(const std::string& PAS) const = 0;
+	virtual std::vector<TGraph> getPreviousResults(const std::string& PAS) const = 0;
 	virtual TText getPreviousResultsLabel(const std::string& PAS) const = 0;
 	virtual std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const = 0;
 	virtual double getXMax() const = 0;
@@ -76,7 +77,7 @@ class mhmodp_200 : public LHCXSGScenario{
 public:
 	mhmodp_200();
 	std::string getLabel() const {return "m_{h}^{mod+} scenario,  #mu = +200 GeV";}
-	TGraph getPreviousResults(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const;
 	TText getPreviousResultsLabel(const std::string& PAS) const;
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
@@ -87,7 +88,7 @@ class light_stop : public LHCXSGScenario{
 public:
 	light_stop();
 	std::string getLabel() const {return "Light-#tilde{t} scenario";}	
-	TGraph getPreviousResults(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const;
 	TText getPreviousResultsLabel(const std::string& PAS) const;
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
@@ -98,7 +99,7 @@ class light_stau : public LHCXSGScenario{
 public:
 	light_stau();
 	std::string getLabel() const {return "Light-#tilde{#tau} scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const;
 	TText getPreviousResultsLabel(const std::string& PAS) const;
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
@@ -109,7 +110,7 @@ class hMSSM : public LHCXSGScenario{
 public:
 	hMSSM();
 	std::string getLabel() const {return "hMSSM scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const;
 	TText getPreviousResultsLabel(const std::string& PAS) const;
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
@@ -120,7 +121,7 @@ class tau_phobic : public LHCXSGScenario{
 public:
 	tau_phobic();
 	std::string getLabel() const {return "#tau-phobic scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const;
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const;
 	TText getPreviousResultsLabel(const std::string& PAS) const;
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	double getXMax() const {return 900;}
@@ -131,7 +132,18 @@ class type1 : public Scenario{
 public:
 	type1();
 	std::string getLabel() const {return "2HDM type-I scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
+	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
+	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
+	double getXMax() const {return 900;}
+	bool previousExists() const {return false;} //exists but too small mH/A
+};
+
+class lepton_specific : public Scenario{
+public:
+	lepton_specific();
+	std::string getLabel() const {return "2HDM Lepton Specific scenario";}
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}
@@ -142,7 +154,7 @@ class type2 : public Scenario{
 public:
 	type2();
 	std::string getLabel() const {return "2HDM type-II scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}
@@ -153,7 +165,7 @@ class flipped : public Scenario{
 public:
 	flipped();
 	std::string getLabel() const {return "2HDM flipped scenario";}
-	TGraph getPreviousResults(const std::string& PAS) const {TGraph gr; return gr;}
+	std::vector<TGraph> getPreviousResults(const std::string& PAS) const {std::vector<TGraph> gr; return gr;}
 	TText getPreviousResultsLabel(const std::string& PAS) const {TText tx; return tx;}
 	std::vector<TGraph> getPreviousResults(const std::string& var,const std::string& PAS) const;
 	double getXMax() const {return 900;}

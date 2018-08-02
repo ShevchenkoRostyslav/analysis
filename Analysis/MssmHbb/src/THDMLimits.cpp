@@ -56,6 +56,8 @@ TH3D THDMLimits::Get2HDM_GxBR_3D(const std::string& benchmark_path){
 
 //	gStyle->SetPadLeftMargin(0.08);
 //	gStyle->SetPadRightMargin(0.12);
+//	std::cout<<"REQUESTED value is : "<<hOut->GetBinContent(bin_mA, bin_tb, bin_cba)<<" interpolate : "<<hOut->Interpolate(400, 32.6, 0.1)<<std::endl;
+
 
 	return *hOut;
 
@@ -165,12 +167,13 @@ std::vector<Limit> THDMLimits::Get2HDM_Limits(const TH2& h_in, const Limit& GxBR
 	TH2D GxBR_2hdm = *(TH2D*) h_in.Clone();
 	GxBR_2hdm.GetXaxis()->SetRangeUser(min,max);
 	double Limit_95CL[6];
-	Limit_95CL[0] = GxBR_95CL.getMinus2G();
-	Limit_95CL[1] = GxBR_95CL.getMinus1G();
-	Limit_95CL[2] = GxBR_95CL.getMedian();
-	Limit_95CL[3] = GxBR_95CL.getPlus1G();
-	Limit_95CL[4] = GxBR_95CL.getPlus2G();
-	Limit_95CL[5] = GxBR_95CL.getObserved();
+
+	Limit_95CL[0] = GxBR_95CL.getObserved();
+	Limit_95CL[1] = GxBR_95CL.getMinus2G();
+	Limit_95CL[2] = GxBR_95CL.getMinus1G();
+	Limit_95CL[3] = GxBR_95CL.getMedian();
+	Limit_95CL[4] = GxBR_95CL.getPlus1G();
+	Limit_95CL[5] = GxBR_95CL.getPlus2G();
 
 	TCanvas canva("canva","",800,600);
 	GxBR_2hdm.DrawCopy("colz");
@@ -193,12 +196,30 @@ std::vector<Limit> THDMLimits::Get2HDM_Limits(const TH2& h_in, const Limit& GxBR
 	TGraph *expected = nullptr;
 	TGraph *observed = nullptr;
 
-	outerBand_down	= (TGraph*) ((TList*)conts->At(0))->First();
-	innerBand_down	= (TGraph*) ((TList*)conts->At(1))->First();
-	expected		= (TGraph*) ((TList*)conts->At(2))->First();
-	innerBand_up 	= (TGraph*) ((TList*)conts->At(3))->First();
-	outerBand_up 	= (TGraph*) ((TList*)conts->At(4))->First();
-	observed		= (TGraph*) ((TList*)conts->At(5))->First();
+	outerBand_down	= (TGraph*) ((TList*)conts->At(1))->First();
+	innerBand_down	= (TGraph*) ((TList*)conts->At(2))->First();
+	expected		= (TGraph*) ((TList*)conts->At(3))->First();
+	innerBand_up 	= (TGraph*) ((TList*)conts->At(4))->First();
+	outerBand_up 	= (TGraph*) ((TList*)conts->At(5))->First();
+	observed		= (TGraph*) ((TList*)conts->At(0))->First();
+
+	//Test:
+	for(int i = 0; i < 6; ++i){
+		TCanvas canva("canva","",800,600);
+		GxBR_2hdm.DrawCopy("colz");
+		double val = Limit_95CL[i];
+		GxBR_2hdm.SetContour(1,&val);
+		GxBR_2hdm.Draw("cont Z LIST");
+		canva.Update();
+
+		conts = (TObjArray*)gROOT->GetListOfSpecials()->FindObject("contours");
+		if(i==0) observed		= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+		else if (i == 1) outerBand_down	= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+		else if (i == 2) innerBand_down	= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+		else if (i == 3) expected	= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+		else if (i == 4) innerBand_up 	= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+		else if (i == 5) outerBand_up 	= (TGraph*) ((TList*)conts->At(0))->First()->Clone();
+	}
 
 	if(!outerBand_down || !outerBand_up ){
 		std::logic_error("ERROR in LimitsInterpretation::Get2HDM_Limits: ***No 2G up or Down contours***");
@@ -233,6 +254,8 @@ std::vector<Limit> THDMLimits::Get2HDM_Limits(const TH2& h_in, const Limit& GxBR
 		l.setPlus1G(in_up[i]);
 		l.setPlus2G(out_up[i]);
 		limits_.push_back(l);
+
+//		std::cout<<"WTF: x = "<<x[i]<<" obs = "<<obs[i]<<" exp = "<<exp[i]<<" -1G = "<<in_down[i]<<" -2G = "<<out_down[i]<<std::endl;
 	}
 
 	if(TEST_){
@@ -264,7 +287,7 @@ const std::vector<Limit> THDMLimits::Get2HDM_1D_Limits(const TH2& h_in){
 		tan_b_limit.setPlus2G(double(THDMTanBeta(GxBR_2hdm,tan_b_limit.getX(),gxbr_limit.getPlus2G())));
 		tan_b_limit.setObserved(double(THDMTanBeta(GxBR_2hdm,tan_b_limit.getX(),gxbr_limit.getObserved())));
 		limits_.push_back(tan_b_limit);
-		std::cout<<"m = "<<tan_b_limit.getX()<<" Observed: "<<tan_b_limit.getObserved()<<" Expected: "<<tan_b_limit.getMedian()<<std::endl;
+//		std::cout<<"m = "<<tan_b_limit.getX()<<" Observed: "<<tan_b_limit.getObserved()<<" Expected: "<<tan_b_limit.getMedian()<<std::endl;
 	}
 	return limits_;
 }
@@ -403,7 +426,7 @@ void THDMLimits::AddPlottingObjects(TH2F &frame, TLegend &leg, TGraph& obs, TGra
 			//p_gr->SetFillStyle(3002);
 			p_gr->SetFillColor(kAzure-4);
 			p_gr->SetFillColorAlpha(kAzure-4,0.35);
-			if(var_axis_=="z") p_gr->Draw("CFsame");
+			if(var_axis_=="z") p_gr->Draw("LFsame");//CFsame
 			else p_gr->Draw("LFsame");
 			patlas_results.push_back(p_gr);
 			

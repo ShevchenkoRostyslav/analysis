@@ -76,10 +76,10 @@ const bool MssmHbbSignal::leadingJetSelection(const std::shared_ptr<tools::Colle
 	if(!cuts_.check("dR23",jet2.deltaR(jet3) > dR_)) return false;
         if(!cuts_.check("dR13",jet1.deltaR(jet3) > dR_)) return false;
 
-        //Trigger selection
+////        Trigger selection
 //        if(!cuts_.check("TriggerBit",this->triggerResult(triggerLogicName_))) return false;
 //        if(!cuts_.check("TriggerMatching",this->OnlineSelection(jet1,jet2)))  return false;
-
+//
 //	//BTag selection
 //	if(!cuts_.check("btag1",jet1.btag() >= btag1_)) return false;
 //        if(!cuts_.check("btag2",jet2.btag() >= btag2_)) return false;
@@ -140,6 +140,7 @@ void MssmHbbSignal::fillHistograms(const std::shared_ptr<Collection<Jet> > &offl
 		(histo_.getHisto())["jet_pt3"]->Fill(jet3.pt(),weight);
 		(histo_.getHisto())["jet_eta3"]->Fill(jet3.eta(),weight);
 		(histo_.getHisto())["jet_phi3"]->Fill(jet3.phi(),weight);
+		(histo_.getHisto())["jet_flavor3"]->Fill(jet3.flavour(),weight);
 		(histo_.getHisto())["jet_btag_csv3"]->Fill(jet3.btag(),weight);
 		(histo_.getHisto())["jet_btag_cmva3"]->Fill(jet3.btag("btag_csvmva"),weight);
 		(histo_.getHisto())["jet_dR13"]->Fill(jet1.deltaR(jet3),weight);
@@ -239,10 +240,13 @@ void MssmHbbSignal::writeHistograms(){
 const double MssmHbbSignal::assignWeight(){
 double weight = 1;
 	if(isMC()) {
-//		weight = weight_["SFb_central"] * weight_["SFl_central"];
-		weight = weight_["PtEff_central"] * weight_["PU_central"] * weight_["SFb_central"] * weight_["SFl_central"];// * weight_["Signal_Shape"];
+		weight = weight_["NLO"];
+		weight *= weight_["PtEff_central"] ;// * weight_["Signal_Shape"];
+		weight *= weight_["PU_central"];
+		weight *= weight_["SFb_central"];
+		weight *= weight_["SFl_central"];
 		weight *= weight_["BTagEff_central"];
-		weight *= weight_["NLO"];
+//		weight *= weight_["LOscaleToNLO"];
 	}
 //	weight = weight_["PtEff_central"] * weight_["PU_central"];
 //	weight = 1;

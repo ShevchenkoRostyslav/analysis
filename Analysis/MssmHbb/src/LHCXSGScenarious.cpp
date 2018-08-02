@@ -20,6 +20,8 @@ std::string AvailableScenariosToString(AvailableScenarios scenario){
 	else if(scenario == HMSSM) return "hMSSM";
 	else if(scenario == TAU_PHOBIC) return "tau_phobic";
 	else if(scenario == TYPE2) return "type2";
+	else if(scenario == TYPE1) return "type1";
+	else if(scenario == LEPTON_SPECIFIC) return "lepton_specific";
 	else if(scenario == FLIPPED) return "flipped";
 	else throw std::logic_error("ERROR at LHCXSGScenarious::AvailableScenariosToString. Wrong Scenario ");
 }
@@ -51,6 +53,8 @@ std::unique_ptr<Scenario> Scenario::Create(AvailableScenarios scenario){
 	else if(scenario == HMSSM) return std::unique_ptr<hMSSM>(new hMSSM());
 	else if(scenario == TAU_PHOBIC) return std::unique_ptr<tau_phobic>(new tau_phobic());
 	else if(scenario == TYPE2) return std::unique_ptr<type2>(new type2());
+	else if(scenario == TYPE1) return std::unique_ptr<type1>(new type1());
+	else if(scenario == LEPTON_SPECIFIC) return std::unique_ptr<lepton_specific>(new lepton_specific());
 	else if(scenario == FLIPPED) return std::unique_ptr<flipped>(new flipped());
 	else throw std::logic_error("ERROR at LHCXSGScenarious::Create. Wrong Scenario: " + AvailableScenariosToString(scenario));
 }
@@ -80,6 +84,16 @@ type2::type2(){
 	availableResults_ = availableResults;
 }
 
+type1::type1(){
+	std::vector<std::string> availableResults = {};
+	availableResults_ = availableResults;
+}
+
+lepton_specific::lepton_specific(){
+	std::vector<std::string> availableResults = {};
+	availableResults_ = availableResults;
+}
+
 flipped::flipped(){
 	std::vector<std::string> availableResults = {"ATLAS-CONF-2017-055","1502.04478"};
 	availableResults_ = availableResults;
@@ -104,16 +118,27 @@ void Scenario::checkResultsToCompareWith(const std::string& pas){
 	}
 }
 
-TGraph mhmodp_200::getPreviousResults(const std::string& PAS) const{
+std::vector<TGraph> mhmodp_200::getPreviousResults(const std::string& PAS) const{
 	/*
 	* Previous results from 8 TeV according to AN
 	*/
-	std::array<double,8> x = {{100,140,160,200,300,350,400,500}};
-	std::array<double,8> y = {{19.8,19.6,18.0,19.2,24.8,30.0,36.5,53.5}};
-	TGraph gr(8,&x[0],&y[0]);
-	gr.SetLineStyle(2);
-	gr.SetLineColor(kBlack);
-	return gr;
+	std::vector<TGraph> results;
+	const int npoints = 8;
+	//Expected
+	std::array<double,npoints> x = {{100,140,160,200,300,350,400,500}};
+	std::array<double,npoints> y_exp = {{19.8,19.6,18.0,19.2,24.8,30.0,36.5,53.5}};
+	TGraph gr_exp(8,&x[0],&y_exp[0]);
+	gr_exp.SetLineStyle(2);
+	gr_exp.SetLineColor(kBlack);
+	results.push_back(gr_exp);
+
+	//Observed
+	std::array<double,npoints> y_obs = {{14.2,22.4,18.2,14.8,34.1,37.1,34.4,50.0}};
+	TGraph gr_obs(8,&x[0],&y_obs[0]);
+	gr_obs.SetLineColor(kBlack);
+	results.push_back(gr_obs);
+
+	return results;
 }
 
 TText mhmodp_200::getPreviousResultsLabel(const std::string& PAS) const{
@@ -122,23 +147,35 @@ TText mhmodp_200::getPreviousResultsLabel(const std::string& PAS) const{
 	* when available
 	*/
 //	TText text(400,37.5,"7+8 TeV expected");
-	TText text(420,41.5,"7+8 TeV exp.");
+//	TText text(420,41.5,"7+8 TeV exp.");
+//	TText text(400,37.5,"7+8 TeV exp./obs.");
+	TText text(420,41.5,"7+8 TeV");	
 	text.SetTextSize(gStyle->GetLabelSize("y")*0.7);
 	text.SetTextAngle(62.5);
 	return text;
 }
 
-TGraph light_stop::getPreviousResults(const std::string& PAS) const{
+std::vector<TGraph> light_stop::getPreviousResults(const std::string& PAS) const{
 	/*
 	* Previous results from 8 TeV according to AN
 	*/
+	std::vector<TGraph> results;
 	const int npoints = 7;
+	//Expected
 	std::array<double,npoints> x = {{100,140,160,200,300,350,400}};
-	std::array<double,npoints> y = {{24.7,24.3,22.1,24.2,32.7,41.4,58.6}};
-	TGraph gr(npoints,&x[0],&y[0]);
-	gr.SetLineStyle(2);
-	gr.SetLineColor(kBlack);
-	return gr;
+	std::array<double,npoints> y_exp = {{24.7,24.3,22.1,24.2,32.7,41.4,58.6}};
+	TGraph gr_exp(npoints,&x[0],&y_exp[0]);
+	gr_exp.SetLineStyle(2);
+	gr_exp.SetLineColor(kBlack);
+	results.push_back(gr_exp);
+
+	//Observed
+	std::array<double,npoints> y_obs = {{16.5,29.1,22.4,17.3,56.8,62.5,51.7}};
+	TGraph gr_obs(npoints,&x[0],&y_obs[0]);
+	gr_obs.SetLineColor(kBlack);
+	results.push_back(gr_obs);
+
+	return results;
 }
 
 TText light_stop::getPreviousResultsLabel(const std::string& PAS) const{
@@ -147,24 +184,35 @@ TText light_stop::getPreviousResultsLabel(const std::string& PAS) const{
 	* when available
 	*/
 //	TText text(370,39.0,"7+8 TeV expected");
-	TText text(352,45.0,"7+8 TeV exp.");
+//	TText text(352,45.0,"7+8 TeV exp.");
+	TText text(352,45.0,"7+8 TeV");
 	text.SetTextSize(gStyle->GetLabelSize("y")*0.7);
 	double angle = atan( 10 *(58.6 - 41.4)/(400-350) + 0.5) * 180. / TMath::Pi();
 	text.SetTextAngle(angle);
 	return text;
 }
 
-TGraph light_stau::getPreviousResults(const std::string& PAS) const{
+std::vector<TGraph> light_stau::getPreviousResults(const std::string& PAS) const{
 	/*
 	* Previous results from 8 TeV according to AN
 	*/
+	std::vector<TGraph> results;
 	const int npoints = 7;
+	//Expected
 	std::array<double,npoints> x = {{100,140,160,200,300,350,400}};
-	std::array<double,npoints> y = {{22.2,22.,20.,21.4,27.6,33.1,42.4}};
-	TGraph gr(npoints,&x[0],&y[0]);
-	gr.SetLineStyle(2);
-	gr.SetLineColor(kBlack);
-	return gr;
+	std::array<double,npoints> y_exp = {{22.2,22.,20.,21.4,27.6,33.1,42.4}};
+	TGraph gr_exp(npoints,&x[0],&y_exp[0]);
+	gr_exp.SetLineStyle(2);
+	gr_exp.SetLineColor(kBlack);
+	results.push_back(gr_exp);
+
+	//Observed
+	std::array<double,npoints> y_obs = {{15.4,25.7,20.2,15.9,41.4,44.1,39.0}};
+	TGraph gr_obs(npoints,&x[0],&y_obs[0]);
+	gr_obs.SetLineColor(kBlack);
+	results.push_back(gr_obs);
+
+	return results;
 }
 
 TText light_stau::getPreviousResultsLabel(const std::string& PAS) const{
@@ -173,18 +221,19 @@ TText light_stau::getPreviousResultsLabel(const std::string& PAS) const{
 	* when available
 	*/
 //	TText text(350,33.6,"7+8 TeV exp.");
-	TText text(369,38,"7+8 TeV exp.");
+//	TText text(369,38,"7+8 TeV exp.");
+	TText text(390,42,"7+8 TeV");
 	text.SetTextSize(gStyle->GetLabelSize("y")*0.7);
 	double angle = atan( 10 *(42.4 - 33.1)/(400-350) + 0.25) * 180. / TMath::Pi();
 	text.SetTextAngle(angle);
 	return text;
 }
 
-TGraph hMSSM::getPreviousResults(const std::string& PAS) const{
+std::vector<TGraph> hMSSM::getPreviousResults(const std::string& PAS) const{
 	/*
 	* Previous results from 8 TeV according to AN
 	*/
-	TGraph gr;
+	std::vector<TGraph> gr;
 	return gr;
 }
 
@@ -197,17 +246,28 @@ TText hMSSM::getPreviousResultsLabel(const std::string& PAS) const{
 	return text;
 }
 
-TGraph tau_phobic::getPreviousResults(const std::string& PAS) const{
+std::vector<TGraph> tau_phobic::getPreviousResults(const std::string& PAS) const{
 	/*
 	* Previous results from 8 TeV according to AN
 	*/
+	std::vector<TGraph> results;
 	const int npoints = 5;
+
+	//Expected
 	std::array<double,npoints> x = {{100,140,160,200,300}};
-	std::array<double,npoints> y = {{25.2,33.0,25.3,28.9,43.8}};
-	TGraph gr(npoints,&x[0],&y[0]);
-	gr.SetLineStyle(2);
-	gr.SetLineColor(kBlack);
-	return gr;
+	std::array<double,npoints> y_exp = {{25.2,33.0,25.3,28.9,43.8}};
+	TGraph gr_exp(npoints,&x[0],&y_exp[0]);
+	gr_exp.SetLineStyle(2);
+	gr_exp.SetLineColor(kBlack);
+	results.push_back(gr_exp);
+
+	//Observed
+	std::array<double,npoints> y_obs = {{16.4,66.5,25.7,19.3,82}};
+	TGraph gr_obs(npoints,&x[0],&y_obs[0]);
+	gr_obs.SetLineColor(kBlack);
+	results.push_back(gr_obs);
+
+	return results;
 }
 
 TText tau_phobic::getPreviousResultsLabel(const std::string& PAS) const{
@@ -215,7 +275,8 @@ TText tau_phobic::getPreviousResultsLabel(const std::string& PAS) const{
 	* Return a TText box with a sign for a previous results
 	* when available
 	*/
-	TText text(300,44.3,"7+8 TeV exp.");
+//	TText text(300,44.3,"7+8 TeV exp.");
+	TText text(300,44.3,"7+8 TeV");
 	text.SetTextSize(gStyle->GetLabelSize("y")*0.7);
 	double angle = atan( 5 *(43.8 - 28.9)/(400-350)) * 180. / TMath::Pi();
 	text.SetTextAngle(angle);
@@ -223,6 +284,14 @@ TText tau_phobic::getPreviousResultsLabel(const std::string& PAS) const{
 }
 
 std::vector<TGraph> type1::getPreviousResults(const std::string& var,const std::string& PAS) const{
+	/*
+	 * ATLAS results according to the scenario.
+	 */
+	std::vector<TGraph> gr;
+	return gr;
+}
+
+std::vector<TGraph> lepton_specific::getPreviousResults(const std::string& var,const std::string& PAS) const{
 	/*
 	 * ATLAS results according to the scenario.
 	 */
@@ -474,8 +543,112 @@ std::vector<TGraph> type2::getPreviousResults(const std::string& var,const std::
 				tan_lower_left.push_back(val.second);
 			}
 
+			std::vector<std::pair<double,double>> lower_right= {
+					{584.2,0.7},
+					{581.5,0.8},
+					{579.8,0.9},
+					{578.7,1},
+					{578.7,1.1},
+					{577.7,1.2},
+					{576,1.3},
+					{576,1.4},
+					{578.7,1.5},
+					{581.5,1.6},
+					{581.5,1.7},
+					{581.5,1.8},
+					{581.5,1.9},
+					{581.5,2.0},
+					{583.1,2.1},
+					{583.6,2.2},
+					{583.6,2.3},
+					{584.2,2.4},
+					{584.7,2.5},
+					{585.3,2.6},
+					{585.8,2.7},
+					{586.4,2.8},
+					{588.5,2.9},
+					{589.6,3.0},
+					{603.2,4.0},
+					{646.7,3.0},
+					{649.4,2.9},
+					{671.1,2.8},
+					{706.5,2.7},
+					{709.2,2.6},
+					{717.4,2.5},
+					{722.8,2.4},
+					{728.2,2.3},
+					{733.7,2.2},
+					{739.1,2.1},
+					{744.5,2.0},
+					{750.0,1.9},
+//					{755.4,2.0},
+//					{771.7,2.1},
+//					{771.1,2.2},
+//					{782.6,2.3},
+//					{788,2.4},
+					{798.9,2.5},
+					{804.3,2.4},
+					{807,2.3},
+					{809.8,2.2},
+					{812.5,2.1},
+					{815.2,2.0},
+					{815.2,1.9},
+					{817.9,1.8},
+					{819,1.7},
+					{819,1.6},
+					{819,1.5},
+					{820.6,1.4},
+					{819.5,1.3},
+					{817.9,1.2},
+					{817.9,1.1},
+					{817.8,1.0},
+					{815.2,0.9},
+					{806.,0.8},
+					{800.0,0.72},
+					{747.2,0.7}
+			};
+
+			std::vector<double> cos_lower_right, tan_lower_right;
+			for(const auto& val : lower_right) {
+				cos_lower_right.push_back(val.first);
+				tan_lower_right.push_back(val.second);
+			}
+
+			std::vector<std::pair<double,double>> upper_right= {
+					{546.1,50.},
+					{546.1,40.},
+					{557.0,30.},
+					{578.7,23.5},
+					{589.6,20},
+					{600.5,19},
+					{616.8,20},
+					{644,23.6},
+					{709.2,23.5},
+					{739.1,24},
+					{752.7,23.6},
+					{771.7,24},
+//					{796.2,20},
+					{796.2,19},
+					{817.9,20},
+					{850.5,23.5},
+					{850.5,24},
+					{883.1,30},
+					{894,40},
+					{904.9,50},
+			};
+
+			std::vector<double> cos_upper_right, tan_upper_right;
+			for(const auto& val : upper_right) {
+				cos_upper_right.push_back(val.first);
+				tan_upper_right.push_back(val.second);
+			}
+
 			TGraph fl_lower_left(cos_lower_left.size(),cos_lower_left.data(),tan_lower_left.data());
+			TGraph fl_lower_right(cos_lower_right.size(),cos_lower_right.data(),tan_lower_right.data());
+			TGraph fl_upper_right(cos_upper_right.size(),cos_upper_right.data(),tan_upper_right.data());
 			grs.push_back(fl_lower_left);
+			grs.push_back(fl_lower_right);
+			grs.push_back(fl_upper_right);
 		}
 		else if (lowerCase_var == "x"){
 			//LEFT
@@ -647,9 +820,99 @@ std::vector<TGraph> flipped::getPreviousResults(const std::string& var,const std
 					cos_lower_left.push_back(val.first);
 					tan_lower_left.push_back(val.second);
 				}
-			TGraph fl_lower_left(cos_lower_left.size(),cos_lower_left.data(),tan_lower_left.data());
 
-			grs.push_back(fl_lower_left);
+				std::vector<std::pair<double,double>> lower_right= {
+						{586.7,0.7},
+						{581.5,0.8},
+						{579.8,0.9},
+						{578.7,1},
+						{578.7,1.1},
+						{577.7,1.2},
+						{578.7,1.3},
+						{578.7,1.4},
+						{578.7,1.5},
+						{579.8,1.6},
+						{580.4,1.7},
+						{582.,1.8},
+						{582.6,1.9},
+						{584.2,2.0},
+						{584.7,2.1},
+						{585.3,2.2},
+						{585.8,2.3},
+						{586.4,2.4},
+						{586.9,2.5},
+						{586.9,2.6},
+						{589.6,2.7},
+						{600.5,4.0},
+//						{638.5,3.0},
+//						{639.1,2.9},
+//						{640.2,2.8},
+						{641.3,2.7},
+						{698.3,2.6},
+						{730.9,2},
+//						{736.4,1.9},
+//						{747.2,1.8},
+//						{747.2,1.7},
+						{752.7,1.6},
+//						{755.4,1.7},
+//						{758.1,1.8},
+//						{774.4,1.9},
+						{777.1,2.0},
+						{801.6,2.5},
+						{807.6,2.0},
+						{808.1,1.9},
+						{809.8,1.8},
+						{812.5,1.7},
+						{812.5,1.6},
+						{815.2,1.5},
+						{817.9,1.4},
+						{817.9,1.3},
+						{817.9,1.2},
+						{815.2,1.1},
+						{812.5,1.0},
+						{809.8,0.9},
+						{801.6,0.8},
+						{801.4,0.79},
+						{750,0.79},
+						{730.9,0.71}
+				};
+
+				std::vector<double> cos_lower_right, tan_lower_right;
+				for(const auto& val : lower_right) {
+					cos_lower_right.push_back(val.first);
+					tan_lower_right.push_back(val.second);
+				}
+
+				std::vector<std::pair<double,double>> upper_right= {
+						{539.1,50.},
+						{539.5,40.},
+						{546.1,30.},
+						{548.9,24},
+						{600.5,18},
+						{649.4,21.5},
+						{698.3,20},
+						{722.8,21.5},
+						{801.6,18},
+						{877.7,24},
+						{915.7,30},
+						{948.4,40},
+						{997.3,35},
+						{1000,50}
+				};
+
+				std::vector<double> cos_upper_right, tan_upper_right;
+				for(const auto& val : upper_right) {
+					cos_upper_right.push_back(val.first);
+					tan_upper_right.push_back(val.second);
+				}
+
+				TGraph fl_lower_left(cos_lower_left.size(),cos_lower_left.data(),tan_lower_left.data());
+				TGraph fl_lower_right(cos_lower_right.size(),cos_lower_right.data(),tan_lower_right.data());
+				TGraph fl_upper_right(cos_upper_right.size(),cos_upper_right.data(),tan_upper_right.data());
+				grs.push_back(fl_lower_left);
+				grs.push_back(fl_lower_right);
+				grs.push_back(fl_upper_right);
+
 			}
 			else if (lowerCase_var == "x"){
 				//LEFT
