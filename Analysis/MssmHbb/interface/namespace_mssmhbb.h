@@ -83,7 +83,7 @@ namespace mssmhbb{
 //	static const std::string path_bg_sr3 = cmsswBase + "/src/Analysis/BackgroundModel/test/novosibirsk_500to1700_25GeV_G4/workspace/FitContainer_workspace.root";
 	static const std::string path_bg_sr1 = (blinded) ?
 			cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root" :
-			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root";
+			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit_test/sr1/FitContainer_workspace_SR1.root";//cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr1/FitContainer_workspace_SR1.root";
 	static const std::string path_bg_sr2 = (blinded) ?
 			cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/FitContainer_workspace_SR2.root" :
 			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr2/FitContainer_workspace_SR2.root";
@@ -98,7 +98,7 @@ namespace mssmhbb{
 	//Observed data
 	static const std::string path_data_sr1 = (blinded) ?
 			cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr1/QCD_Templates_SR1.root" :
-			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr1/Data_obs_SR1.root";
+			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit_test/sr1/Data_obs_SR1.root" ;//cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr1/Data_obs_SR1.root";
 	static const std::string path_data_sr2 = (blinded) ?
 			cmsswBase + "/src/Analysis/MssmHbb/output/ReReco_bg_fit/sr2/QCD_Templates_SR2.root" :
 			cmsswBase + "/src/Analysis/MssmHbb/output/unblinded/ReReco_bg_fit/sr2/Data_obs_SR2.root";

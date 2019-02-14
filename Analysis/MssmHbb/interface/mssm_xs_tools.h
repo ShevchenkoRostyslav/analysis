@@ -1,14 +1,14 @@
-#ifndef ANALYSIS_MSSMHBB_INTERFACE_mssm_xs_tools_h
-#define ANALYSIS_MSSMHBB_INTERFACE_mssm_xs_tools_h
-
+#ifndef mssm_xs_tools_h
+#define mssm_xs_tools_h
+ 
 #include <map>
 #include <cmath>
 #include <string>
 #include <iostream>
-
+ 
 #include "TH2F.h"
 #include "TFile.h"
-
+ 
 /* ________________________________________________________________________________________________
  * Class: mssm_xs_tools
  *
@@ -17,41 +17,46 @@
  * models of the MSSM. This information is usually provided in form of 2d (TH2F) histograms in root
  * input files linked to the LHCXSWG-3 TWiki page (*). It is usually parametrized as a function of
  * the pseudoscalar neutral Higgs boson mass, mA, and the ratio between the vacuum expectation
- * values, tanb=v1/v2, of the two Higgs doublets in the MSSM, in the case of neutral Higgs boson
- * cross sections and in as a function of the charged Higgs boson mass mH+ and tanb in the case of
- * charged Higgs boson cross sections.
+ * values, tanb=v2/v1, of the two Higgs doublets in the MSSM, in the case of mass relations,
+ * neutral Higgs boson cross sections, decay widths or branching fractions and as a function of the
+ * charged Higgs boson mass mH+ and tanb in the case of charged Higgs boson cross sections, decay
+ * widths and branching fractions.  
  *
  * The access functions provided in this class are supposed to facilitate the process of finding
- * the proper histogram (following LHCXSWG-3 internal naming conventions) and the proper bin in the
+ * the proper histogram (following LHCXSWG internal naming conventions) and the proper bin in the
  * 2d histogram corresponding to mA (resp. mH+) and tanb, of which the latter is a root technicali-
- * ty (cf. mssm_xs_tools::read for more details).
+ * ty (cf. mssm_xs_tools::read for more details).  
  *
- * The names of the 2d histograms are build from building block separated by "_", to identify the
+ * The names of the 2d histograms are build from building blocks separated by "_", to identify the
  * contained information. The following building blocks exist:
  *
  * [MASS]   : indicating mass ("m");
  * [WIDTH]  : indicating width ("width");
  * [BOSON]  : indicating the boson type, used for cross section and decay info ("A", "H", "h");
  * [PROD]   : indicating the production type, separated by gluon-gluon fusion and production in
- *            association with b-quarks (in various flavour schemes, "gg", "bb4F", "bb5f", bbSantander);
- * [UNCERT] : indicating the kind of variation corresponding to a given uncertainty ("scaleUp",
- *            "scaleDown", pdfasUp", "pdfasDown");
+ *            association with b-quarks ("ggH", "bbH");
+ * [UNCERT] : indicating the kind of variation corresponding to a given uncertainty ("up", "down").
+ *            "up" and "down" give the absolute difference to the central scale "Delta \Sigma^\pm".
+ *            Some uncertainties are split into scale and pdf+alpha_s uncertainties, then
+ *            the prefix scale or pdfas to "up" and "down" allows to obtain the individual
+ *            uncertainties. Generally such individual uncertainties should be added in quadrature.
+ *            For this purpose some routines named _unc and _uncboundaries can be found below.
  * [DECAY]  : indicating the decay type (e.g. "tautau", "mumu", "bb", ...).
  *
  * The exact conventions of these building blocks are not always defined in a unique way and might
  * change with time. The user should not worry about such changes. For this reasons the access
  * functions provided by this class make use of a set of internal translation rules from a more
- * intuitive naming scheme to the histogram names. For the sake of simplicity this naming scheme
- * partially makes use use of the naming conventions as used for the individual building blocks of
- * the histogram names. For more information check the documentation for each individual transla-
- * tion rule in the class implementation. In the naming scheem used throughtout this class the
+ * intuitive naming scheme to the actual histogram names. For the sake of simplicity this naming
+ * scheme partially makes use of the naming conventions as used for the individual building blocks
+ * of the histogram names. For more information check the documentation for each individual trans-
+ * lation rule in the class implementation. In the naming scheme used throughtout this class the
  * following rules apply:
  *
  * Production: separate building block for [PROD] from building block for [BOSON] by "->" (e.g.
  *             "gg->A"). This will provide you with the corresponding central value for the cross
  *             section. There is a way to obtain the cross sections after uncertainty shifts by
  *             appending a tag for the [UNCERT] type to the production string, separated by "::" (
- *             "gg->A::scaleUp").
+ *             "gg->A::scaleup").
  * Decay     : separate building block for [BOSON] from building block for [DECAY] by "->" (e.g.
  *             "A->tautau"). This will provide you with the branching fraction for the correspon-
  *             ding decay.
@@ -62,7 +67,7 @@
  * NULL pointer for TH2F is returned. Make sure you catch these WARNINGS in further use of this
  * class. To hide away also this simple logic from the user a full set of fully documented pre-de-
  * fined access functions for all available information is also provided. These function can also
- * be used as reference for fuerther examples of the access logic described above (e.g. concerning
+ * be used as reference for further examples of the access logic described above (e.g. concerning
  * further conventions used for numerous building blocks of type [DECAY]).
  *
  * PHYSICS CONTENT:
@@ -70,26 +75,31 @@
  * (*)
  * https://twiki.cern.ch/twiki/bin/view/LHCPhysics/LHCHXSWG3
  */
- 
 class mssm_xs_tools{
-
+ 
  public:
   /// constructor
   mssm_xs_tools(const char* filename="", bool kINTERPLOTATION=false, unsigned verbosity=0);
   /// destructor
-  ~mssm_xs_tools(){};
-
-  /// a save way to access a histogram from the stack; returns NULL if histogram does not exist on stack
+  ~mssm_xs_tools(){ input_->Close(); };
+ 
+  /// a save way to access a histogram from the stack; if the histogram with name does not exist
+  /// already on the stack an attempt is made to load it from the input file; on success a bunch
+  /// of relevant global information is cashed: number of bins on x- and y-axis and the minimum
+  /// and maximum on x- and y-axis on first call; returns NULL if histogram does not exist on stack
+  /// nor in input file
   TH2F* hist(std::string name);
   /// get mass of a given Higgs boson for given values of mA and tanb (in GeV)
   double mass(const char* boson, double mA, double tanb){ return read(boson, mA, tanb, &mssm_xs_tools::mass_rule); }
-  /// get totla decay width of a given Higgs boson for given values of mA and tanb (in GeV)
+  /// get total decay width of a given Higgs boson for given values of mA and tanb (in GeV)
   double width(const char* boson, double mA, double tanb){ return read(boson, mA, tanb, &mssm_xs_tools::width_rule); }
   /// get branching fraction for a given decay of a given Higgs boson for given values of mA and tanb
   double br(const char* decay, double mA, double tanb){ return read(decay, mA, tanb, &mssm_xs_tools::br_rule); }
   /// get production cross section for a given production model of a given Higgs boson for given values of mA and tanb (in pb)
   double xsec(const char* mode, double mA, double tanb){ return read(mode, mA, tanb, &mssm_xs_tools::xsec_rule); }
-
+  /// Get mA for a given value of mass for a fixed value of tanb. The parameter mass can stand for hH or Hp, the meaning is determined from the parameter boson
+  double mass2mA(const char* boson, double m, double tanb);
+ 
   /*
    * pre-defined access function for the masses for A/H/h/H+
    */
@@ -100,10 +110,9 @@ class mssm_xs_tools{
   /// get mH+ for given value of mA and tanb (in GeV)
   double mHp(double mA, double tanb){ return mass("Hp", mA, tanb); }
   /// get mA for given value of mu in low-mH scenario (need a more complex name
-  /// name of the member function here not to shadow it by the function arg in
-  /// GeV)
+  /// of the member function here not to shadow it by the function arg in GeV)
   double mu2mA(double mu, double tanb){ return mass("A", mu, tanb); }
-
+ 
   /*
    * pre-defined access functions for total decay widths for A/H/h/H+
    */
@@ -117,7 +126,7 @@ class mssm_xs_tools{
   double width_Hp(double mA, double tanb){ return width("Hp", mA, tanb); }
   // get total decay width for t->H+b  (in GeV)
   double width_tHpb(double mA, double tanb){ return width("t_Hpb", mA, tanb); }
-
+ 
   /*
    * pre-defined access functions for A/H/h/H+ decays into quarks
    */
@@ -177,7 +186,7 @@ class mssm_xs_tools{
   double br_Hpusb(double mA, double tanb){ return br("Hp->usb", mA, tanb); }
   /// get BR(H+->udb) for given value of mA and tanb
   double br_Hpudb(double mA, double tanb){ return br("Hp->udb", mA, tanb); }
-
+ 
   /*
    * pre-defined access functions for A/H/h/H+ decays into leptons
    */
@@ -205,7 +214,7 @@ class mssm_xs_tools{
   double br_Hpmunu(double mA, double tanb){ return br("Hp->munu", mA, tanb); }
   /// get BR(H+->enu) for given value of mA and tanb
   double br_Hpenu(double mA, double tanb){ return br("Hp->enu", mA, tanb); }
-
+ 
   /*
    * pre-defined access functions for A/H/h decays into gauge bosons
    */
@@ -239,7 +248,7 @@ class mssm_xs_tools{
   double br_Hgammagamma(double mA, double tanb){ return br("H->gamgam", mA, tanb); }
   /// get BR(h->gammagamma) for given value of mA and tanb
   double br_hgammagamma(double mA, double tanb){ return br("h->gamgam", mA, tanb); }
-
+ 
   /*
    * pre-defined access functions for Higgs to Higgs/SUSY decays
    */
@@ -261,7 +270,7 @@ class mssm_xs_tools{
   double br_hSUSY(double mA, double tanb){ return br("h->SUSY", mA, tanb); }
   /// get BR(H+->SUSY) for given value of mA and tanb
   double br_HpSUSY(double mA, double tanb){ return br("Hp->SUSY", mA, tanb); }
-
+ 
   /*
    * pre-defined access functions for A/H/h/H+ production
    */
@@ -271,71 +280,54 @@ class mssm_xs_tools{
   double ggH_H(double mA, double tanb){ return xsec("gg->H", mA, tanb); }
   /// get cross section for production of h in gluon-gluon fusion (in pb)
   double ggH_h(double mA, double tanb){ return xsec("gg->h", mA, tanb); }
-  /// get cross section for production of A in association with b quarks (5FS) (in pb)
-  double bbH5F_A(double mA, double tanb){ return xsec("bb5F->A", mA, tanb); }
-  /// get cross section for production of H in association with b quarks (5FS) (in pb)
-  double bbH5F_H(double mA, double tanb){ return xsec("bb5F->H", mA, tanb); }
-  /// get cross section for production of h in association with b quarks (5FS) (in pb)
-  double bbH5F_h(double mA, double tanb){ return xsec("bb5F->h", mA, tanb); }
-  /// get cross section for production of A in association with b quarks (4FS) (in pb)
-  double bbH4F_A(double mA, double tanb){ return xsec("bb4F->A", mA, tanb); }
-  /// get cross section for production of H in association with b quarks (4FS) (in pb)
-  double bbH4F_H(double mA, double tanb){ return xsec("bb4F->H", mA, tanb); }
-  /// get cross section for production of h in association with b quarks (4FS) (in pb)
-  double bbH4F_h(double mA, double tanb){ return xsec("bb4F->h", mA, tanb); }
-  /// get cross section for production of A in association with b quarks (using Santander matching scheme) (in pb)
-  double bbHSantander_A(double mA, double tanb);
-  /// get cross section for production of H in association with b quarks (using Santander matching scheme) (in pb)
-  double bbHSantander_H(double mA, double tanb);
-  /// get cross section for production of h in association with b quarks (using Santander matching scheme) (in pb)
-  double bbHSantander_h(double mA, double tanb);
-
+  /// get cross section for production of A in association with b quarks (in pb)
+  double bbH_A(double mA, double tanb){ return xsec("bb->A", mA, tanb); }
+  /// get cross section for production of H in association with b quarks (in pb)
+  double bbH_H(double mA, double tanb){ return xsec("bb->H", mA, tanb); }
+  /// get cross section for production of h in association with b quarks (in pb)
+  double bbH_h(double mA, double tanb){ return xsec("bb->h", mA, tanb); }
+  /// get cross section for production of H+ directly from proton-proton collision (in pb)
+  double pp_Hp(double mA, double tanb){ return xsec("pp->Hp", mA, tanb); }
+ 
   /*
    * pre-defined access functions for A/H/h/H+ production uncertainties in several flavours
    */
-  /// get uncertainties for gluon-gluon fusion production of A from mu scale variations (in pb)
-  double ggH_A_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->A::scaleUp" : "gg->A::scaleDown", mA, tanb); }
-  /// get uncertainties for gluon-gluon fusion production of H from mu scale variations (in pb)
-  double ggH_H_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->H::scaleUp" : "gg->H::scaleDown", mA, tanb); }
-  /// get uncertainties for gluon-gluon fusion production of h from mu scale variations (in pb)
-  double ggH_h_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->h::scaleUp" : "gg->h::scaleDown", mA, tanb); }
-  /// get uncertainties for gluon-gluon fusion production of A from variations of pdfs and alphas (in pb)
-  double ggH_A_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->A::pdfasUp" : "gg->A::pdfasDown"), mA, tanb); }
-  /// get uncertainties for gluon-gluon fusion production of H from variations of pdfs and alphas (in pb)
-  double ggH_H_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->H::pdfasUp" : "gg->H::pdfasDown"), mA, tanb); }
-  /// get uncertainties for gluon-gluon fusion production of h from variations of pdfs and alphas (in pb)
-  double ggH_h_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->h::pdfasUp" : "gg->h::pdfasDown"), mA, tanb); }
-  /// get uncertainties for A production in association with b quarks from mu scale variations (5FS, in pb)
-  double bbH5F_A_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb5F->A::scaleUp" : "bb5F->A::scaleDown", mA, tanb); }
-  /// get uncertainties for H production in association with b quarks from mu scale variations (5FS, in pb)
-  double bbH5F_H_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb5F->H::scaleUp" : "bb5F->H::scaleDown", mA, tanb); }
-  /// get uncertainties for h production in association with b quarks from mu scale variations (5FS, in pb)
-  double bbH5F_h_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb5F->h::scaleUp" : "bb5F->h::scaleDown", mA, tanb); }
-  /// get uncertainties for A production in association with b quarks from mu scale variations (4FS, in pb)
-  double bbH4F_A_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb4F->A::scaleUp" : "bb4F->A::scaleDown", mA, tanb); }
-  /// get uncertainties for H production in association with b quarks from mu scale variations (4FS, in pb)
-  double bbH4F_H_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb4F->H::scaleUp" : "bb4F->H::scaleDown", mA, tanb); }
-  /// get uncertainties for h production in association with b quarks from mu scale variations (4FS, in pb)
-  double bbH4F_h_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb4F->h::scaleUp" : "bb4F->h::scaleDown", mA, tanb); }
-  /// get uncertainties for A production in association with b quarks from variations of pdfs and alphas (same for 4FS and 5FS, in pb)
-  double bbH5F_A_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "bb5F->A::pdfasUp" : "bb5F->A::pdfasDown"), mA, tanb); }
-  /// get uncertainties for H production in association with b quarks from variations of pdfs and alphas (same for 4FS and 5FS, in pb)
-  double bbH5F_H_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "bb5F->H::pdfasUp" : "bb5F->H::pdfasDown"), mA, tanb); }
-  /// get uncertainties for h production in association with b quarks from variations of pdfs and alphas (same for 4FS and 5FS, in pb)
-  double bbH5F_h_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "bb5F->h::pdfasUp" : "bb5F->h::pdfasDown"), mA, tanb); }
-  /// get uncertainties for A production in association with b quarks from mu variations (Santander matching scheme, in pb)
-  double bbHSantander_A_scale(double mA, double tanb, const bool kUP);
-  /// get uncertainties for H production in association with b quarks from mu variations (Santander matching scheme, in pb)
-  double bbHSantander_H_scale(double mA, double tanb, const bool kUP);
-  /// get uncertainties for h production in association with b quarks from mu variations (Santander matching scheme, in pb)
-  double bbHSantander_h_scale(double mA, double tanb, const bool kUP);
-  /// get uncertainties for A production in association with b quarks from pdf+alphas variations (Santander matching scheme, in pb)
-  double bbHSantander_A_pdfas(double mA, double tanb, const bool kUP);
-  /// get uncertainties for H production in association with b quarks from pdf+alphas variations (Santander matching scheme, in pb)
-  double bbHSantander_H_pdfas(double mA, double tanb, const bool kUP);
-  /// get uncertainties for h production in association with b quarks from pdf+alphas variations (Santander matching scheme, in pb)
-  double bbHSantander_h_pdfas(double mA, double tanb, const bool kUP);
+  /// get uncertainties for gluon-gluon fusion production of A from mu scale variations (in pb)  
+  double ggH_A_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->A::scaleup" : "gg->A::scaledown", mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of H from mu scale variations (in pb)  
+  double ggH_H_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->H::scaleup" : "gg->H::scaledown", mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of h from mu scale variations (in pb)  
+  double ggH_h_scale(double mA, double tanb, const bool kUP){ return xsec(kUP ? "gg->h::scaleup" : "gg->h::scaledown", mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of A from variations of pdfs and alphas (in pb)  
+  double ggH_A_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->A::pdfasup" : "gg->A::pdfasdown"), mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of H from variations of pdfs and alphas (in pb)  
+  double ggH_H_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->H::pdfasup" : "gg->H::pdfasdown"), mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of h from variations of pdfs and alphas (in pb)  
+  double ggH_h_pdfas(double mA, double tanb, const bool kUP){ return xsec((kUP ? "gg->h::pdfasup" : "gg->h::pdfasdown"), mA, tanb); }
+  /// get uncertainties for gluon-gluon fusion production of A (in pb)  
+  double ggH_A_unc(double mA, double tanb, const bool kUP);
+  /// get uncertainties for gluon-gluon fusion production of H (in pb)  
+  double ggH_H_unc(double mA, double tanb, const bool kUP);
+  /// get uncertainties for gluon-gluon fusion production of h (in pb)  
+  double ggH_h_unc(double mA, double tanb, const bool kUP);
+  /// get uncertainties for A production in association with b quarks (in pb)  
+  double bbH_A_unc(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb->A::up" : "bb->A::down", mA, tanb); }
+  /// get uncertainties for H production in association with b quarks (in pb)  
+  double bbH_H_unc(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb->H::up" : "bb->H::down", mA, tanb); }
+  /// get uncertainties for h production in association with b quarks (in pb)  
+  double bbH_h_unc(double mA, double tanb, const bool kUP){ return xsec(kUP ? "bb->h::up" : "bb->h::down", mA, tanb); }  
+  /// get uncertainties for H+ production directly from proton-proton collision (in pb)
+  double pp_Hp_unc(double mA, double tanb, const bool kUP){ return xsec(kUP ? "pp->Hp::up" : "pp->Hp::down", mA, tanb); }
 
+  /// routines for upper and lower values of uncertainties:
+  double ggH_A_uncboundaries(double mA, double tanb, const bool kUP);
+  double ggH_H_uncboundaries(double mA, double tanb, const bool kUP);
+  double ggH_h_uncboundaries(double mA, double tanb, const bool kUP);
+  double bbH_A_uncboundaries(double mA, double tanb, const bool kUP);
+  double bbH_H_uncboundaries(double mA, double tanb, const bool kUP);
+  double bbH_h_uncboundaries(double mA, double tanb, const bool kUP);
+  double pp_Hp_uncboundaries(double mA, double tanb, const bool kUP);
+ 
  private:
   /// open input file to access histograms (only needed if input file was not specified in the constructor)
   void setup(const char* filename);
@@ -356,53 +348,23 @@ class mssm_xs_tools{
   /// values mA and tanb, if kINTERPOL_ has been set to true during the instantiation of the class.
   double read(const char* key, double mA, double tanb, std::string (mssm_xs_tools::*rule)(const char* key)){
      std::string name = (this->*rule)(key);
-     if(name.find("Santander")!=std::string::npos){
-       if(name.find("_h")!=std::string::npos){
-	       if(name.find( "scaleDown" )!=std::string::npos){return bbHSantander_h_scale(mA, tanb, false);} else
-	       if(name.find( "scaleUp"   )!=std::string::npos){return bbHSantander_h_scale(mA, tanb, true );} else
-	       if(name.find( "pdfasDown" )!=std::string::npos){return bbHSantander_h_pdfas(mA, tanb, false);} else
-	       if(name.find( "pdfasUp"   )!=std::string::npos){return bbHSantander_h_pdfas(mA, tanb, true );}
-	       else{
-	         return bbHSantander_h(mA, tanb);
-	       }
-       } else
-       if(name.find("_H")!=std::string::npos){
-	       if(name.find( "scaleDown" )!=std::string::npos){return bbHSantander_H_scale(mA, tanb, false);} else
-	       if(name.find( "scaleUp"   )!=std::string::npos){return bbHSantander_H_scale(mA, tanb, true );} else
-	       if(name.find( "pdfasDown" )!=std::string::npos){return bbHSantander_H_pdfas(mA, tanb, false);} else
-	       if(name.find( "pdfasUp"   )!=std::string::npos){return bbHSantander_H_pdfas(mA, tanb, true );}
-	       else{
-	         return bbHSantander_H(mA, tanb);
-	       }
-       } else
-       if(name.find("_A")!=std::string::npos){
-	       if(name.find( "scaleDown" )!=std::string::npos){return bbHSantander_A_scale(mA, tanb, false);} else
-	       if(name.find( "scaleUp"   )!=std::string::npos){return bbHSantander_A_scale(mA, tanb, true );} else
-	       if(name.find( "pdfasDown" )!=std::string::npos){return bbHSantander_A_pdfas(mA, tanb, false);} else
-	       if(name.find( "pdfasUp"   )!=std::string::npos){return bbHSantander_A_pdfas(mA, tanb, true );}
-	       else{
-	         return bbHSantander_A(mA, tanb);
-	       }
-       }
-       else{
-         return -1;
-       }
-     }
-     else {
+     TH2F* h = hist(name);
+     if(h){
        if(kINTERPOL_){
-	       // restrict interplolation to boundaries of histogram, at the boundaries fall back to plain bin
-	       // content
-	       if(hist(name)->GetXaxis()->FindBin(mA  )<nbinsX_-1 && hist(name)->GetYaxis()->FindBin(tanb)<nbinsY_-1){
-	         return hist(name) ? hist(name)->Interpolate(mA,tanb) : -1.;
-	       }
-	       else{
-	         return hist(name) ? hist(name)->GetBinContent(hist(name)->FindBin(mA,tanb)) : -1.;
-	       }
+                 // restrict interpolation to boundaries of histogram, at the boundaries fall back to plain bin
+                 // content
+                 if(h->GetXaxis()->FindBin(mA  )<nbinsX_-1 && h->GetYaxis()->FindBin(tanb)<nbinsY_-1){
+                   return h->Interpolate(mA,tanb);
+                 }
+                 else{
+                   return h->GetBinContent(h->FindBin(mA,tanb));    
+                 }    
        }
        else{
-	       return hist(name) ? hist(name)->GetBinContent(hist(name)->FindBin(mA,tanb)) : -1.;
+               return h->GetBinContent(h->FindBin(mA,tanb));    
        }
      }
+     else{ return -1.; }
   }
   /// verbosity level
   unsigned verbosity_;
@@ -412,60 +374,136 @@ class mssm_xs_tools{
   TFile* input_;
   /// histogram container (filled in constructor)
   std::map<std::string, TH2F*> hists_;
+  /// flag that indicates whether meta information on the input histograms (given below
+  /// has already been cashed in a function call of hist or not
+  bool cashed_;
   /// maximal number of bins on x-axis (mA)   of TH2F (filled in function hist; used in
   /// function read in interpolation mode)
   int nbinsX_;
+  /// minimal and maximal element on x-axis (mA) of TH2F (filled in function hist; used
+  /// in function mH2mA)
+  double minX_, maxX_;
   /// maximal number of bins on y-axis (tanb) of TH2F (filled in function hist; used in
   /// function read in interpolation mode)
   int nbinsY_;
+  /// minimal and maximal element on y-axis (tanb) of TH2F (filled in function hist;
+  /// used in function mH2mA)
+  double minY_, maxY_;
 };
-
+ 
 inline double
-mssm_xs_tools::bbHSantander_A(double mA, double tanb){
-  double t=log(mA/4.92)-2.;
-  double fourflav=this->bbH4F_A(mA,tanb);
-  double fiveflav=this->bbH5F_A(mA,tanb);
-  return (1./(1.+t))*(fourflav+t*fiveflav);
+mssm_xs_tools::ggH_A_unc(double mA, double tanb, const bool kUP){
+  double scaleunc=this->ggH_A_scale(mA,tanb,kUP);
+  double pdfasunc=this->ggH_A_pdfas(mA,tanb,kUP);
+  double sign = -1;
+  if (kUP) sign = +1;
+  return sign*sqrt(pow(scaleunc,2)+pow(pdfasunc,2));
 }
 
 inline double
-mssm_xs_tools::bbHSantander_H(double mA, double tanb){
-  double t=log(this->mH(mA,tanb)/4.92)-2.;
-  double fourflav=this->bbH4F_H(mA,tanb);
-  double fiveflav=this->bbH5F_H(mA,tanb);
-  return (1./(1.+t))*(fourflav+t*fiveflav);
+mssm_xs_tools::ggH_H_unc(double mA, double tanb, const bool kUP){
+  double scaleunc=this->ggH_H_scale(mA,tanb,kUP);
+  double pdfasunc=this->ggH_H_pdfas(mA,tanb,kUP);
+  double sign = -1;
+  if (kUP) sign = +1;
+  return sign*sqrt(pow(scaleunc,2)+pow(pdfasunc,2));
 }
 
 inline double
-mssm_xs_tools::bbHSantander_h(double mA, double tanb){
-  double t=log(this->mh(mA,tanb)/4.92)-2.;
-  double fourflav=this->bbH4F_h(mA,tanb);
-  double fiveflav=this->bbH5F_h(mA,tanb);
-  return (1./(1.+t))*(fourflav+t*fiveflav);
+mssm_xs_tools::ggH_h_unc(double mA, double tanb, const bool kUP){
+  double scaleunc=this->ggH_h_scale(mA,tanb,kUP);
+  double pdfasunc=this->ggH_h_pdfas(mA,tanb,kUP);
+  double sign = -1;
+  if (kUP) sign = +1;
+  return sign*sqrt(pow(scaleunc,2)+pow(pdfasunc,2));
 }
 
 inline double
-mssm_xs_tools::bbHSantander_A_scale(double mA, double tanb, const bool kUP){
-  double t=log(mA/4.92)-2.;
-  double unc4F=this->bbH4F_A_scale(mA, tanb, kUP);
-  double unc5F=this->bbH5F_A_scale(mA, tanb, kUP);
-  return 1./(1+t)*(unc4F+(t*unc5F));
+mssm_xs_tools::ggH_h_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->ggH_h(mA,tanb);
+  double absunc =this->ggH_h_unc(mA,tanb,kUP);
+  return central+absunc;
 }
 
 inline double
-mssm_xs_tools::bbHSantander_H_scale(double mA, double tanb, const bool kUP){
-  double t=log(this->mH(mA, tanb)/4.92)-2.;
-  double unc4F=this->bbH4F_H_scale(mA, tanb, kUP);
-  double unc5F=this->bbH5F_H_scale(mA, tanb, kUP);
-  return 1./(1+t)*(unc4F+(t*unc5F));
+mssm_xs_tools::ggH_H_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->ggH_H(mA,tanb);
+  double absunc =this->ggH_H_unc(mA,tanb,kUP);
+  return central+absunc;
 }
 
 inline double
-mssm_xs_tools::bbHSantander_h_scale(double mA, double tanb, const bool kUP){
-  double t=log(this->mh(mA, tanb)/4.92)-2.;
-  double unc4F=this->bbH4F_h_scale(mA, tanb, kUP);
-  double unc5F=this->bbH5F_h_scale(mA, tanb, kUP);
-  return 1./(1+t)*(unc4F+(t*unc5F));
+mssm_xs_tools::ggH_A_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->ggH_A(mA,tanb);
+  double absunc =this->ggH_A_unc(mA,tanb,kUP);
+  return central+absunc;
 }
 
+inline double
+mssm_xs_tools::bbH_h_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->bbH_h(mA,tanb);
+  double absunc =this->bbH_h_unc(mA,tanb,kUP);
+  return central+absunc;
+}
+
+inline double
+mssm_xs_tools::bbH_H_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->bbH_H(mA,tanb);
+  double absunc =this->bbH_H_unc(mA,tanb,kUP);
+  return central+absunc;
+}
+
+inline double
+mssm_xs_tools::bbH_A_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->bbH_A(mA,tanb);
+  double absunc =this->bbH_A_unc(mA,tanb,kUP);
+  return central+absunc;
+}
+
+inline double
+mssm_xs_tools::pp_Hp_uncboundaries(double mA, double tanb, const bool kUP){
+  double central=this->pp_Hp(mA,tanb);
+  double absunc =this->pp_Hp_unc(mA,tanb,kUP);
+  return central+absunc;
+}
+
+/* ________________________________________________________________________________________________
+ * Class: mssm_xs_tools
+ *
+ * External C wrapper to make core functionality available in python, too.
+ */
+ 
+extern "C" {
+  /// constructor
+  mssm_xs_tools* mssm_xs_tools_new(const char* filename="", bool kINTERPLOTATION=false, unsigned verbosity=0){
+    return new mssm_xs_tools(filename, kINTERPLOTATION, verbosity);
+  };
+  /// destructor
+  void mssm_xs_tools_delete(mssm_xs_tools* obj){
+    delete obj;
+  };
+  /// get mass of a given Higgs boson for given values of mA and tanb (in GeV)
+  double mssm_xs_tools_mass(mssm_xs_tools* obj, const char* boson, double mA, double tanb){
+    //std::cout << obj->read(boson, mA, tanb, &mssm_xs_tools::mass_rule) << std::endl;
+    return obj->mass(boson, mA, tanb);
+  }
+  /// get mass of mA form the mass of a given other Higgs boson for given value of tanb (in GeV)
+  double mssm_xs_tools_mass2mA(mssm_xs_tools* obj, const char* boson, double m, double tanb){
+    //std::cout << obj->read(boson, mA, tanb, &mssm_xs_tools::mass_rule) << std::endl;
+    return obj->mass2mA(boson, m, tanb);
+  }
+  /// get total decay width of a given Higgs boson for given values of mA and tanb (in GeV)
+  double mssm_xs_tools_width(mssm_xs_tools* obj, const char* boson, double mA, double tanb){
+    return obj->width(boson, mA, tanb);
+  }
+  /// get branching fraction for a given decay of a given Higgs boson for given values of mA and tanb
+  double mssm_xs_tools_br(mssm_xs_tools* obj, const char* decay, double mA, double tanb){
+    return obj->br(decay, mA, tanb);
+  }
+  /// get production cross section for a given production model of a given Higgs boson for given values of mA and tanb (in pb)
+  double mssm_xs_tools_xsec(mssm_xs_tools* obj, const char* mode, double mA, double tanb){
+    return obj->xsec(mode, mA, tanb);
+  }
+}
+ 
 #endif // MSSM_XS_TOOLS_H
