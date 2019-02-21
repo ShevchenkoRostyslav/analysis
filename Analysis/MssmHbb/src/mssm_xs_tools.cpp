@@ -1,7 +1,7 @@
-
 #include "Analysis/MssmHbb/interface/mssm_xs_tools.h"
 
 #include <iostream>
+
 
 mssm_xs_tools::mssm_xs_tools(const char* filename, bool kINT, unsigned verbosity) : verbosity_(verbosity), kINTERPOL_(kINT){
   if(verbosity>99){
@@ -137,20 +137,3 @@ mssm_xs_tools::hist(std::string histname){
   }
   return hists_.find(histname)->second;
 }
-
-double
-mssm_xs_tools::bbHSantander_A_pdfas(double mA, double tanb, const bool kUP){
-  return bbH5F_A_pdfas(mA, tanb, kUP)/bbH5F_A(mA, tanb) * bbHSantander_A(mA, tanb);
-}
-
-double
-mssm_xs_tools::bbHSantander_H_pdfas(double mA, double tanb, const bool kUP){
-  return bbH5F_H_pdfas(mA, tanb, kUP)/bbH5F_H(mA, tanb) * bbHSantander_H(mA, tanb);
-}
-
-double
-mssm_xs_tools::bbHSantander_h_pdfas(double mA, double tanb, const bool kUP){
-  return bbH5F_h_pdfas(mA, tanb, kUP)/bbH5F_h(mA, tanb) * bbHSantander_h(mA, tanb);
-}
-
-

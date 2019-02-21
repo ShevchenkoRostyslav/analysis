@@ -472,7 +472,7 @@ mssm_xs_tools::pp_Hp_uncboundaries(double mA, double tanb, const bool kUP){
  *
  * External C wrapper to make core functionality available in python, too.
  */
- 
+ /*
 extern "C" {
   /// constructor
   mssm_xs_tools* mssm_xs_tools_new(const char* filename="", bool kINTERPLOTATION=false, unsigned verbosity=0){
@@ -505,5 +505,6 @@ extern "C" {
     return obj->xsec(mode, mA, tanb);
   }
 }
+*/
  
 #endif // MSSM_XS_TOOLS_H
